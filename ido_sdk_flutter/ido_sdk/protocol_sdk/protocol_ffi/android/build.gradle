@@ -1,0 +1,95 @@
+// The Android Gradle Plugin builds the native code with the Android NDK.
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def  ndkversion= localProperties.getProperty('ndk.version')
+if (ndkversion == null) {
+    ndkversion = '21.4.7075529'
+}
+
+group 'com.idosmart.protocol_ffi'
+version '1.0'
+
+buildscript {
+    ext.kotlin_version = '1.7.10'
+    repositories {
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+        mavenLocal()
+        mavenCentral()
+        google()
+        maven { url "https://jitpack.io" }
+        jcenter(){ url "https://jcenter.bintray.com/"}
+    }
+
+    dependencies {
+        // The Android Gradle Plugin knows how to build native code with the NDK.
+        classpath 'com.android.tools.build:gradle:7.2.0'
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    // Bumping the plugin compileSdkVersion requires all clients of this plugin
+    // to bump the version in their app.
+    compileSdkVersion 31
+
+    // Bumping the plugin ndkVersion requires all clients of this plugin to bump
+    // the version in their app and to download a newer version of the NDK.
+    ndkVersion ndkversion
+
+    //设置so库路径
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+            version "3.10.2"
+        }
+    }
+
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    defaultConfig {
+        minSdkVersion 16
+        // Invoke the shared CMake build with the Android Gradle Plugin.
+        externalNativeBuild {
+            cmake {
+                cppFlags "-fexceptions -std=c++14 -DSPDLOG_FMT_PRINTF -DPLATFORM_TYPE=1" //使用异常
+                cFlags "-DPLATFORM_TYPE=1" //定义 平台类型 android
+
+
+                //遇到编译错误 找不到string
+//                arguments "-DANDROID_STL=c++_static"
+
+//            abiFilters "armeabi"     //ndk 17及以上版本被取消
+            abiFilters "armeabi-v7a"
+            abiFilters "arm64-v8a"
+//                abiFilters "x86"
+//                abiFilters "x86_64"
+            }
+        }
+    }
+}
