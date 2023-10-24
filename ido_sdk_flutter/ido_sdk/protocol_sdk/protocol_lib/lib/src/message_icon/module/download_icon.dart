@@ -46,7 +46,7 @@ extension _DownloadIconExt on _DownloadIcon {
         final item = items[i];
         final path1 = item.iconCloudPath??'';
         final path2 = path??'';
-        if (path2.length > 0 && path1.contains(path2)) {
+        if (path2.isNotEmpty && path1.contains(path2)) {
             return item.packName ?? '';
         }
      }
@@ -55,7 +55,7 @@ extension _DownloadIconExt on _DownloadIcon {
 
   /// 执行下载图片
   Future<IDOAppIconInfoModel> _exec(IDOAppIconInfoModel model) async {
-    final dirPath = await _libMgr.messageIcon.ios_getIconDirPath();
+    final dirPath = await _libMgr.messageIcon.getIconDirPath();
     if (dirPath == '') {
       Future((){
         _completer?.complete(model);
@@ -63,13 +63,14 @@ extension _DownloadIconExt on _DownloadIcon {
       });
       return _completer!.future;
     }
-    final items = model?.items?.where((element) {
+    final items = model.items?.where((element) {
       var isDownload = element.isUpdateAppIcon ?? false;
-      var big = element.iconLocalPathBig ?? '';
-      return !isDownload && big.isEmpty;
+      var smart = element.iconLocalPath;
+      return !isDownload && smart.isEmpty;
     }).toList();
 
     if (items?.length == 0) {
+      logger?.d('local image file exists do not need to download');
       Future((){
         _completer?.complete(model);
         _completer = null;
@@ -130,15 +131,21 @@ extension _DownloadIconExt on _DownloadIcon {
   /// 图片裁剪并压缩
   Future<File?>_cropPicture(String path,String packName,int iconWidth,int iconHeight) async {
     logger?.d('cutting picture pack name == ${packName} path == ${path} width == ${iconWidth} height == ${iconHeight}');
-    final dirPath = await _libMgr.messageIcon.ios_getIconDirPath();
+    final dirPath = await _libMgr.messageIcon.getIconDirPath();
     var image = pkg_img.decodeImage(File(path).readAsBytesSync());
     if (image == null) {
       return Future(() => null);
     }
-    var newImage = pkg_img.copyResize(image!,width:iconWidth, height:iconHeight);
-    newImage = pkg_img.copyCropCircle(newImage!);
+    /// 格式转换
+    final pngImage = await _libMgr.tools.imageCompressToPng(path) ?? image;
+    /// 图片裁圆
+    final circleImage = pkg_img.copyCropCircle(pngImage);
+    /// 缩放
+    var resizeImage = pkg_img.copyResize(circleImage!,width:iconWidth, height:iconHeight,interpolation: pkg_img.Interpolation.cubic);
+    /// 存放路径
     final filePath = "${dirPath}/${packName}${'_46'}.png";
-    final file = await File(filePath).writeAsBytes(pkg_img.encodePng(newImage));
+    /// 写入文件
+    final file = await File(filePath).writeAsBytes(pkg_img.encodePng(resizeImage));
     ///图片压缩
     _coreMgr.compressToPNG(inputFilePath: file.path, outputFilePath: file.path);
     return file;

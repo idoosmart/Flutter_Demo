@@ -151,10 +151,9 @@ abstract class LocalStorage {
   Future<bool?> saveAuthMode(int authMode);
   Future<bool> cleanAuthMode([String? macAddress]);
 
-
   // 动态消息图标 信息
   Future<IDOAppIconInfoModel?> loadIconInfoDataByDisk();
   Future<bool> saveIconInfoDataToDisk(IDOAppIconInfoModel model);
-  Future<bool> cleanIconInfoData();
-
+  Future<bool> cleanIconInfoData(String macAddress);
+  Future<bool> removeIconDir(String dirPath);
 }

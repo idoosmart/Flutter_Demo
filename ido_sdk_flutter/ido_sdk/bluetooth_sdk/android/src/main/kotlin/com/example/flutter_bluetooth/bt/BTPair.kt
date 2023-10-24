@@ -1,6 +1,7 @@
 package com.example.flutter_bluetooth.bt
 
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -11,6 +12,7 @@ import android.os.Looper
 import com.example.flutter_bluetooth.Config
 import com.example.flutter_bluetooth.logger.Logger
 import com.example.flutter_bluetooth.utils.PairedDeviceUtils
+
 
 /**
  * @author tianwei
@@ -36,7 +38,7 @@ open class BTPair(val deviceAddress: String?) {
         bondStateListener = listener
         if (deviceAddress.isNullOrEmpty()) {
             logP("[BTConnectPresenter] connect deviceAddress is empty")
-            failed()
+//            failed()
             return
         }
         currentTryTimes = 0
@@ -50,7 +52,23 @@ open class BTPair(val deviceAddress: String?) {
             success()
             return
         }
-        scanBtDevice(deviceAddress)
+        if (pair(deviceAddress)) {
+            logP("[BTConnectPresenter] pairing, wait user confirm!")
+        }else{
+            logP("[BTConnectPresenter] pair failed!")
+        }
+//        scanBtDevice(deviceAddress)
+    }
+
+    open fun pair(strAddr: String?): Boolean {
+        val result = false
+        logP("[BTConnectPresenter] pair start: $strAddr")
+        //蓝牙设备适配器
+        val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+        val device = bluetoothAdapter?.getRemoteDevice(strAddr) ?: return false
+        logP("[BTConnectPresenter] createBond: ${device.name}(${device.address})")
+        PairedDeviceUtils.createBond(device)
+        return result
     }
 
     private fun scanBtDevice(deviceAddress: String?) {

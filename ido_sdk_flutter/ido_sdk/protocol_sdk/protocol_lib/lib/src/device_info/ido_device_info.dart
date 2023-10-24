@@ -213,7 +213,7 @@ class IDODeviceInfo {
       return Future(() => this);
     }
 
-    return _libMgr.send(evt: CmdEvtType.getDeviceInfoOnly).map((event) {
+    return _libMgr.send(evt: CmdEvtType.getDeviceInfo).map((event) {
       if (event.code == 0 && event.json != null) {
         final map = jsonDecode(event.json!);
         _device = DeviceInfoModel.fromJson(map);
@@ -270,6 +270,48 @@ class IDODeviceInfo {
     _deviceExt = storage?.loadDeviceInfoExtWith(libManager.macAddress);
     _subjectOnChanged.add(0);
     return Future(() => this);
+  }
+
+  /// 刷新当前设备sn（SDK内部使用）
+  Future<IDODeviceInfo?> refreshDeviceSn() async {
+    if (!_libMgr.isConnected) {
+      logger?.e('Unconnected calls are not supported');
+      throw UnsupportedError('Unconnected calls are not supported');
+    }
+    if (!_libMgr.funTable.getSupportGetSnInfo) {
+      logger?.e('refreshDeviceSn not supported');
+      return null;
+    }
+
+    return _libMgr.send(evt: CmdEvtType.getSnInfo).asyncMap((event) {
+      if (event.isOK && event.json != null) {
+        final map = jsonDecode(event.json!);
+        final sn = map['sn'];
+        _device?.sn = sn;
+        return this;
+      }
+      return null;
+    }).first;
+  }
+
+  /// 刷新当前设备bt name（SDK内部使用）
+  Future<IDODeviceInfo?> refreshDeviceBtName() async {
+    if (!_libMgr.isConnected) {
+      logger?.e('Unconnected calls are not supported');
+      throw UnsupportedError('Unconnected calls are not supported');
+    }
+    if (!(_libMgr.funTable.getBtAddrV2 && _libMgr.funTable.alarmCount > 0)) {
+      logger?.e('refreshDeviceBtName not supported');
+      return null;
+    }
+
+    return _libMgr.send(evt: CmdEvtType.getBtName).asyncMap((event) {
+      if (event.isOK && event.json != null) {
+        final map = jsonDecode(event.json!);
+        final btName = map['bt_name'];
+        _device?.btName = btName;
+      }
+    }).first;
   }
 
   /// 设置设备BT MacAddress（SDK内部使用）

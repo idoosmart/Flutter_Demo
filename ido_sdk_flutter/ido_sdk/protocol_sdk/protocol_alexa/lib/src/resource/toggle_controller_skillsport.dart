@@ -35,6 +35,10 @@ class ToggleControllerSkillSport {
                   "locale": "de-DE"
                 },
                 {
+                  "text": "Rumpfbeugen",
+                  "locale": "de-DE"
+                },
+                {
                   "text": "Abdominales",
                   "locale": "es-ES"
                 },
@@ -56,6 +60,14 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "Abdo",
+                  "locale": "fr-FR"
+                },
+                {
+                  "text": "Flexion du tronc",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Flexion du tronc",
                   "locale": "fr-FR"
                 },
                 {
@@ -81,7 +93,15 @@ class ToggleControllerSkillSport {
                   "locale": "en-AU"
                 },
                 {
+                  "text": "Push-up",
+                  "locale": "en-AU"
+                },
+                {
                   "text": "Push-ups",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Push-up",
                   "locale": "en-CA"
                 },
                 {
@@ -89,11 +109,23 @@ class ToggleControllerSkillSport {
                   "locale": "en-GB"
                 },
                 {
+                  "text": "Push-up",
+                  "locale": "en-GB"
+                },
+                {
                   "text": "Push-ups",
                   "locale": "en-IN"
                 },
                 {
+                  "text": "Push-up",
+                  "locale": "en-IN"
+                },
+                {
                   "text": "Push-ups",
+                  "locale": "en-US"
+                },
+                {
+                  "text": "Push-up",
                   "locale": "en-US"
                 },
                 {
@@ -114,6 +146,14 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "Pompes",
+                  "locale": "fr-FR"
+                },
+                {
+                  "text": "pompes prise large",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "pompes prise large",
                   "locale": "fr-FR"
                 },
                 {
@@ -147,7 +187,15 @@ class ToggleControllerSkillSport {
                   "locale": "en-AU"
                 },
                 {
+                  "text": "Dumbbell",
+                  "locale": "en-AU"
+                },
+                {
                   "text": "Dumbbells",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Dumbbell",
                   "locale": "en-CA"
                 },
                 {
@@ -155,7 +203,15 @@ class ToggleControllerSkillSport {
                   "locale": "en-GB"
                 },
                 {
+                  "text": "Dumbbell",
+                  "locale": "en-GB"
+                },
+                {
                   "text": "Dumbbells",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "Dumbbell",
                   "locale": "en-IN"
                 },
                 {
@@ -163,7 +219,15 @@ class ToggleControllerSkillSport {
                   "locale": "en-US"
                 },
                 {
+                  "text": "Dumbbell",
+                  "locale": "en-US"
+                },
+                {
                   "text": "Hanteln",
+                  "locale": "de-DE"
+                },
+                {
+                  "text": "Hantel",
                   "locale": "de-DE"
                 },
                 {
@@ -172,6 +236,14 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "Mancuernas",
+                  "locale": "es-MX"
+                },
+                {
+                  "text": "Mancuerna",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Mancuerna",
                   "locale": "es-MX"
                 },
                 {
@@ -261,11 +333,27 @@ class ToggleControllerSkillSport {
                   "locale": "es-MX"
                 },
                 {
+                  "text": "Aerobic",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Aerobic",
+                  "locale": "es-MX"
+                },
+                {
                   "text": "Aérobique",
                   "locale": "fr-CA"
                 },
                 {
                   "text": "Aérobique",
+                  "locale": "fr-FR"
+                },
+                {
+                  "text": "Aérobic",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Aérobic",
                   "locale": "fr-FR"
                 },
                 {
@@ -316,6 +404,14 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "Baile",
+                  "locale": "es-MX"
+                },
+                {
+                  "text": "Danza",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Danza",
                   "locale": "es-MX"
                 },
                 {
@@ -442,11 +538,27 @@ class ToggleControllerSkillSport {
                   "locale": "es-MX"
                 },
                 {
+                  "text": "Acrobacias",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Acrobacias",
+                  "locale": "es-MX"
+                },
+                {
                   "text": "Poutre",
                   "locale": "fr-CA"
                 },
                 {
                   "text": "Poutre",
+                  "locale": "fr-FR"
+                },
+                {
+                  "text": "Poutre d’équilibre",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Poutre d’équilibre",
                   "locale": "fr-FR"
                 },
                 {
@@ -492,7 +604,31 @@ class ToggleControllerSkillSport {
                   "locale": "en-US"
                 },
                 {
+                  "text": "HIIT",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "HIIT",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "HIIT",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "HIIT",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "HIIT",
+                  "locale": "en-US"
+                },
+                {
                   "text": "Hochintensives Intervalltraining",
+                  "locale": "de-DE"
+                },
+                {
+                  "text": "HIIT",
                   "locale": "de-DE"
                 },
                 {
@@ -512,6 +648,14 @@ class ToggleControllerSkillSport {
                   "locale": "es-MX"
                 },
                 {
+                  "text": "HIIT",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "HIIT",
+                  "locale": "es-MX"
+                },
+                {
                   "text": "Entraînement fractionné de haute intensité",
                   "locale": "fr-CA"
                 },
@@ -525,6 +669,14 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "entraînement fractionné de authencité",
+                  "locale": "fr-FR"
+                },
+                {
+                  "text": "HIIT",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "HIIT",
                   "locale": "fr-FR"
                 },
                 {
@@ -573,6 +725,26 @@ class ToggleControllerSkillSport {
                   "locale": "en-US"
                 },
                 {
+                  "text": "Functional training",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "Functional training",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Functional training",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "Functional training",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "Functional training",
+                  "locale": "en-US"
+                },
+                {
                   "text": "Funktionelles Krafttraining",
                   "locale": "de-DE"
                 },
@@ -582,6 +754,14 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "Entrenamiento de fuerza funcional",
+                  "locale": "es-MX"
+                },
+                {
+                  "text": "Entr. funcional",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Entr. funcional",
                   "locale": "es-MX"
                 },
                 {
@@ -655,11 +835,23 @@ class ToggleControllerSkillSport {
                   "locale": "de-DE"
                 },
                 {
+                  "text": "Core-Training",
+                  "locale": "de-DE"
+                },
+                {
                   "text": "Entrenamiento principal",
                   "locale": "es-ES"
                 },
                 {
                   "text": "Entrenamiento principal",
+                  "locale": "es-MX"
+                },
+                {
+                  "text": "Entrenamiento de core",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Entrenamiento de core",
                   "locale": "es-MX"
                 },
                 {
@@ -676,6 +868,14 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "l'Entraînement de base",
+                  "locale": "fr-FR"
+                },
+                {
+                  "text": "Core training",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Core training",
                   "locale": "fr-FR"
                 },
                 {
@@ -725,7 +925,51 @@ class ToggleControllerSkillSport {
                   "locale": "en-US"
                 },
                 {
+                  "text": "Step training",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "Step training",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Step training",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "Step training",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "Step training",
+                  "locale": "en-US"
+                },
+                {
+                  "text": "Stepper",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "Stepper",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Stepper",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "Stepper",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "Stepper",
+                  "locale": "en-US"
+                },
+                {
                   "text": "Laufband",
+                  "locale": "de-DE"
+                },
+                {
+                  "text": "Stepper",
                   "locale": "de-DE"
                 },
                 {
@@ -737,11 +981,27 @@ class ToggleControllerSkillSport {
                   "locale": "es-MX"
                 },
                 {
+                  "text": "Stepper",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Stepper",
+                  "locale": "es-MX"
+                },
+                {
                   "text": "Tapis roulant",
                   "locale": "fr-CA"
                 },
                 {
                   "text": "Tapis roulant",
+                  "locale": "fr-FR"
+                },
+                {
+                  "text": "Stepper",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Stepper",
                   "locale": "fr-FR"
                 },
                 {
@@ -783,7 +1043,31 @@ class ToggleControllerSkillSport {
                   "locale": "en-US"
                 },
                 {
+                  "text": "Cooldown",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "Cooldown",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Cooldown",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "Cooldown",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "Cooldown",
+                  "locale": "en-US"
+                },
+                {
                   "text": "Entspannungstraining",
+                  "locale": "de-DE"
+                },
+                {
+                  "text": "Abkühlung",
                   "locale": "de-DE"
                 },
                 {
@@ -795,11 +1079,35 @@ class ToggleControllerSkillSport {
                   "locale": "es-MX"
                 },
                 {
+                  "text": "Relajación",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Relajación",
+                  "locale": "es-MX"
+                },
+                {
+                  "text": "Enfriamiento",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Enfriamiento",
+                  "locale": "es-MX"
+                },
+                {
                   "text": "Relaxation",
                   "locale": "fr-CA"
                 },
                 {
                   "text": "Relaxation",
+                  "locale": "fr-FR"
+                },
+                {
+                  "text": "Récupération",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Récupération",
                   "locale": "fr-FR"
                 },
                 {
@@ -812,6 +1120,26 @@ class ToggleControllerSkillSport {
                 },{
                   "text": "Relaxamento",
                   "locale": "pt-BR"
+                },
+                {
+                  "text": "cool down",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "cool down",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "cool down",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "cool down",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "cool down",
+                  "locale": "en-US"
                 }
               ]
             },
@@ -841,6 +1169,26 @@ class ToggleControllerSkillSport {
                   "locale": "en-US"
                 },
                 {
+                  "text": "Strength training",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "Strength training",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Strength training",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "Strength training",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "Strength training",
+                  "locale": "en-US"
+                },
+                {
                   "text": "Traditionelles Krafttraining",
                   "locale": "de-DE"
                 },
@@ -854,6 +1202,14 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "Entrenamiento de fuerza tradicional",
+                  "locale": "es-MX"
+                },
+                {
+                  "text": "Entr. de fuerza",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Entr. de fuerza",
                   "locale": "es-MX"
                 },
                 {
@@ -923,6 +1279,14 @@ class ToggleControllerSkillSport {
                   "locale": "fr-FR"
                 },
                 {
+                  "text": "Tractions",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Tractions",
+                  "locale": "fr-FR"
+                },
+                {
                   "text": "Trazioni alla sbarra",
                   "locale": "it-IT"
                 },
@@ -961,6 +1325,26 @@ class ToggleControllerSkillSport {
                   "locale": "en-US"
                 },
                 {
+                  "text": "Jumping jack",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "Jumping jack",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Jumping jack",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "Jumping jack",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "Jumping jack",
+                  "locale": "en-US"
+                },
+                {
                   "text": "Hampelmänner",
                   "locale": "de-DE"
                 },
@@ -970,6 +1354,14 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "Saltos en tijeras",
+                  "locale": "es-MX"
+                },
+                {
+                  "text": "Jumping jack",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Jumping jack",
                   "locale": "es-MX"
                 },
                 {
@@ -986,6 +1378,14 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "Sauts à étoiles",
+                  "locale": "fr-FR"
+                },
+                {
+                  "text": "Jumping jacks",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Jumping jacks",
                   "locale": "fr-FR"
                 },
                 {
@@ -1082,6 +1482,14 @@ class ToggleControllerSkillSport {
                   "locale": "fr-FR"
                 },
                 {
+                  "text": "Flexions des genoux",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Flexions des genoux",
+                  "locale": "fr-FR"
+                },
+                {
                   "text": "Squat",
                   "locale": "it-IT"
                 },
@@ -1123,6 +1531,26 @@ class ToggleControllerSkillSport {
                   "locale": "en-US"
                 },
                 {
+                  "text": "High knee lift",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "High knee lift",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "High knee lift",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "High knee lift",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "High knee lift",
+                  "locale": "en-US"
+                },
+                {
                   "text": "Knie hochheben",
                   "locale": "de-DE"
                 },
@@ -1135,11 +1563,27 @@ class ToggleControllerSkillSport {
                   "locale": "es-MX"
                 },
                 {
+                  "text": "Elevaciones de rodilla",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Elevaciones de rodilla",
+                  "locale": "es-MX"
+                },
+                {
                   "text": "Lever de genou",
                   "locale": "fr-CA"
                 },
                 {
                   "text": "Lever de genou",
+                  "locale": "fr-FR"
+                },
+                {
+                  "text": "Levers de genoux",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Levers de genoux",
                   "locale": "fr-FR"
                 },
                 {
@@ -1271,11 +1715,27 @@ class ToggleControllerSkillSport {
                   "locale": "es-MX"
                 },
                 {
+                  "text": "Halterofilia",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Halterofilia",
+                  "locale": "es-MX"
+                },
+                {
                   "text": "Barre à disques",
                   "locale": "fr-CA"
                 },
                 {
                   "text": "Barre à disques",
+                  "locale": "fr-FR"
+                },
+                {
+                  "text": "Haltères à disque",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Haltères à disque",
                   "locale": "fr-FR"
                 },
                 {
@@ -1662,7 +2122,51 @@ class ToggleControllerSkillSport {
                   "locale": "en-US"
                 },
                 {
+                  "text": "Free sparing",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "Free sparing",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Free sparing",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "Free sparing",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "Free sparing",
+                  "locale": "en-US"
+                },
+                {
+                  "text": "Kickboxing",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "Kickboxing",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Kickboxing",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "Kickboxing",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "Kickboxing",
+                  "locale": "en-US"
+                },
+                {
                   "text": "kostenlose Sparring",
+                  "locale": "de-DE"
+                },
+                {
+                  "text": "Kickboxen",
                   "locale": "de-DE"
                 },
                 {
@@ -1694,11 +2198,27 @@ class ToggleControllerSkillSport {
                   "locale": "es-MX"
                 },
                 {
+                  "text": "Kickboxing",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Kickboxing",
+                  "locale": "es-MX"
+                },
+                {
                   "text": "Combat libre",
                   "locale": "fr-CA"
                 },
                 {
                   "text": "Combat libre",
+                  "locale": "fr-FR"
+                },
+                {
+                  "text": "Kickboxing",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Kickboxing",
                   "locale": "fr-FR"
                 },
                 {
@@ -1744,6 +2264,26 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "Fencing",
+                  "locale": "en-US"
+                },
+                {
+                  "text": "Kendo",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "Kendo",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Kendo",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "Kendo",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "Kendo",
                   "locale": "en-US"
                 },
                 {
@@ -1879,6 +2419,14 @@ class ToggleControllerSkillSport {
                   "locale": "es-MX"
                 },
                 {
+                  "text": "Gimnásticos",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Gimnásticos",
+                  "locale": "es-MX"
+                },
+                {
                   "text": "Gymnastique",
                   "locale": "fr-CA"
                 },
@@ -1925,7 +2473,31 @@ class ToggleControllerSkillSport {
                   "locale": "en-US"
                 },
                 {
+                  "text": "Single bar",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "Single bar",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Single bar",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "Single bar",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "Single bar",
+                  "locale": "en-US"
+                },
+                {
                   "text": "horizontale Linie",
+                  "locale": "de-DE"
+                },
+                {
+                  "text": "Reck",
                   "locale": "de-DE"
                 },
                 {
@@ -1950,6 +2522,14 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "Barre horizontale",
+                  "locale": "fr-FR"
+                },
+                {
+                  "text": "Barre fixe",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Barre fixe",
                   "locale": "fr-FR"
                 },
                 {
@@ -2019,11 +2599,27 @@ class ToggleControllerSkillSport {
                   "locale": "es-MX"
                 },
                 {
+                  "text": "Barras",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Barras",
+                  "locale": "es-MX"
+                },
+                {
                   "text": "Barres parallèles",
                   "locale": "fr-CA"
                 },
                 {
                   "text": "Barres parallèles",
+                  "locale": "fr-FR"
+                },
+                {
+                  "text": "Barres",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Barres",
                   "locale": "fr-FR"
                 },
                 {
@@ -2088,6 +2684,10 @@ class ToggleControllerSkillSport {
                   "locale": "de-DE"
                 },
                 {
+                  "text": "Kardio-Trainer",
+                  "locale": "de-DE"
+                },
+                {
                   "text": "Cardio cruiser",
                   "locale": "es-ES"
                 },
@@ -2096,11 +2696,27 @@ class ToggleControllerSkillSport {
                   "locale": "es-MX"
                 },
                 {
+                  "text": "Entrenamiento de cardio",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Entrenamiento de cardio",
+                  "locale": "es-MX"
+                },
+                {
                   "text": "Cardio cruiser",
                   "locale": "fr-CA"
                 },
                 {
                   "text": "Cardio cruiser",
+                  "locale": "fr-FR"
+                },
+                {
+                  "text": "Cardio-training",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Cardio-training",
                   "locale": "fr-FR"
                 },
                 {
@@ -2155,6 +2771,14 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "Máquina de escalada",
+                  "locale": "es-MX"
+                },
+                {
+                  "text": "Escaladora",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Escaladora",
                   "locale": "es-MX"
                 },
                 {
@@ -2281,6 +2905,14 @@ class ToggleControllerSkillSport {
                   "locale": "es-MX"
                 },
                 {
+                  "text": "Pimpón",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Pimpón",
+                  "locale": "es-MX"
+                },
+                {
                   "text": "Tennis de table",
                   "locale": "fr-CA"
                 },
@@ -2388,6 +3020,26 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "Football",
+                  "locale": "en-US"
+                },
+                {
+                  "text": "Soccer",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "Soccer",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Soccer",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "Soccer",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "Soccer",
                   "locale": "en-US"
                 },
                 {
@@ -2829,7 +3481,31 @@ class ToggleControllerSkillSport {
                   "locale": "en-US"
                 },
                 {
+                  "text": "American Football",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "American Football",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "American Football",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "American Football",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "American Football",
+                  "locale": "en-US"
+                },
+                {
                   "text": "Rugby",
+                  "locale": "de-DE"
+                },
+                {
+                  "text": "Amerikanischer Fußball",
                   "locale": "de-DE"
                 },
                 {
@@ -2854,6 +3530,14 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "Rugby",
+                  "locale": "fr-FR"
+                },
+                {
+                  "text": "Football américain",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Football américain",
                   "locale": "fr-FR"
                 },
                 {
@@ -2892,6 +3576,26 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "Squash",
+                  "locale": "en-US"
+                },
+                {
+                  "text": "Racquetball",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "Racquetball",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Racquetball",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "Racquetball",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "Racquetball",
                   "locale": "en-US"
                 },
                 {
@@ -2961,11 +3665,23 @@ class ToggleControllerSkillSport {
                   "locale": "de-DE"
                 },
                 {
+                  "text": "Softball",
+                  "locale": "de-DE"
+                },
+                {
                   "text": "Sóftbol",
                   "locale": "es-ES"
                 },
                 {
                   "text": "Sóftbol",
+                  "locale": "es-MX"
+                },
+                {
+                  "text": "Softball",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Softball",
                   "locale": "es-MX"
                 },
                 {
@@ -3088,6 +3804,26 @@ class ToggleControllerSkillSport {
                   "locale": "en-US"
                 },
                 {
+                  "text": "Shuttlecock kicking",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "Shuttlecock kicking",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Shuttlecock kicking",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "Shuttlecock kicking",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "Shuttlecock kicking",
+                  "locale": "en-US"
+                },
+                {
                   "text": "Federball",
                   "locale": "de-DE"
                 },
@@ -3105,6 +3841,14 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "Volant",
+                  "locale": "fr-FR"
+                },
+                {
+                  "text": "Jeu du volant",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Jeu du volant",
                   "locale": "fr-FR"
                 },
                 {
@@ -3212,6 +3956,146 @@ class ToggleControllerSkillSport {
                   "locale": "en-US"
                 },
                 {
+                  "text": "c. pacer",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "c. pacer",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "c. pacer",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "c. pacer",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "c. pacer",
+                  "locale": "en-US"
+                },
+                {
+                  "text": "separate",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "separate",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "separate",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "separate",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "separate",
+                  "locale": "en-US"
+                },
+                {
+                  "text": "c. pap",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "c. pap",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "c. pap",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "c. pap",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "c. pap",
+                  "locale": "en-US"
+                },
+                {
+                  "text": "cpap",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "cpap",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "cpap",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "cpap",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "cpap",
+                  "locale": "en-US"
+                },
+                {
+                  "text": "c. pap taco",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "c. pap taco",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "c. pap taco",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "c. pap taco",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "c. pap taco",
+                  "locale": "en-US"
+                },
+                {
+                  "text": "septic tank",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "septic tank",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "septic tank",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "septic tank",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "septic tank",
+                  "locale": "en-US"
+                },
+                {
+                  "text": "septic tank raw",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "septic tank raw",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "septic tank raw",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "septic tank raw",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "septic tank raw",
+                  "locale": "en-US"
+                },
+                {
                   "text": "Sepak takraw",
                   "locale": "de-DE"
                 },
@@ -3225,6 +4109,14 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "takraw Sepak",
+                  "locale": "es-MX"
+                },
+                {
+                  "text": "Sepak takraw",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Sepak takraw",
                   "locale": "es-MX"
                 },
                 {
@@ -3385,6 +4277,14 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "Alpinisme",
+                  "locale": "fr-FR"
+                },
+                {
+                  "text": "Trekking",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Trekking",
                   "locale": "fr-FR"
                 },
                 {
@@ -3561,6 +4461,14 @@ class ToggleControllerSkillSport {
                   "locale": "de-DE"
                 },
                 {
+                  "text": "Street dance",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Street dance",
+                  "locale": "es-MX"
+                },
+                {
                   "text": "Baile callejero",
                   "locale": "es-ES"
                 },
@@ -3704,6 +4612,14 @@ class ToggleControllerSkillSport {
                   "locale": "fr-FR"
                 },
                 {
+                  "text": "Danse de salon",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Danse de salon",
+                  "locale": "fr-FR"
+                },
+                {
                   "text": "Balli di gruppo",
                   "locale": "it-IT"
                 },
@@ -3739,6 +4655,26 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "Frisbee",
+                  "locale": "en-US"
+                },
+                {
+                  "text": "Dics sports",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "Dics sports",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Dics sports",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "Dics sports",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "Dics sports",
                   "locale": "en-US"
                 },
                 {
@@ -3800,7 +4736,51 @@ class ToggleControllerSkillSport {
                   "locale": "en-US"
                 },
                 {
+                  "text": "dart board",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "dart board",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "dart board",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "dart board",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "dart board",
+                  "locale": "en-US"
+                },
+                {
                   "text": "Darts",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "Darts",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Darts",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "Darts",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "Darts",
+                  "locale": "en-US"
+                },
+                {
+                  "text": "Darts",
+                  "locale": "de-DE"
+                },
+                {
+                  "text": "Dart",
                   "locale": "de-DE"
                 },
                 {
@@ -3919,6 +4899,26 @@ class ToggleControllerSkillSport {
                   "locale": "en-US"
                 },
                 {
+                  "text": "Stairs",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "Stairs",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Stairs",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "Stairs",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "Stairs",
+                  "locale": "en-US"
+                },
+                {
                   "text": "Treppensteigen",
                   "locale": "de-DE"
                 },
@@ -3996,11 +4996,27 @@ class ToggleControllerSkillSport {
                   "locale": "es-MX"
                 },
                 {
+                  "text": "Ala delta",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Ala delta",
+                  "locale": "es-MX"
+                },
+                {
                   "text": "Cerf-volant",
                   "locale": "fr-CA"
                 },
                 {
                   "text": "Cerf-volant",
+                  "locale": "fr-FR"
+                },
+                {
+                  "text": "Vol libre",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Vol libre",
                   "locale": "fr-FR"
                 },
                 {
@@ -4079,70 +5095,79 @@ class ToggleControllerSkillSport {
               ]
             },
             {
-              "instance": "Skiing",
+              "instance": "Ice skating",
               "sutype": "27",
               "stopcmd": "27",
               "friendlyNames": [
                 {
-                  "text": "Skiing",
+                  "text": "Ice skating",
                   "locale": "en-AU"
                 },
                 {
-                  "text": "Skiing",
+                  "text": "Ice skating",
                   "locale": "en-CA"
                 },
                 {
-                  "text": "Skiing",
+                  "text": "Ice skating",
                   "locale": "en-GB"
                 },
                 {
-                  "text": "Skiing",
+                  "text": "Ice skating",
                   "locale": "en-IN"
                 },
                 {
-                  "text": "Skiing",
+                  "text": "Ice skating",
                   "locale": "en-US"
                 },
                 {
-                  "text": "Skifahren",
+                  "text": "Schlittschuhlaufen",
                   "locale": "de-DE"
                 },
                 {
-                  "text": "Esquí",
+                  "text": "Eislaufen",
+                  "locale": "de-DE"
+                },
+                {
+                  "text": "Patinaje",
                   "locale": "es-ES"
                 },
                 {
-                  "text": "Esquí",
+                  "text": "Patinaje",
                   "locale": "es-MX"
                 },
                 {
-                  "text": "Ski",
+                  "text": "Patinaje sobre hielo",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Patinaje sobre hielo",
+                  "locale": "es-MX"
+                },
+                {
+                  "text": "Patinage",
                   "locale": "fr-CA"
                 },
                 {
-                  "text": "Ski",
+                  "text": "Patinage",
                   "locale": "fr-FR"
                 },
                 {
-                  "text": "Skill",
+                  "text": "Patinage sur glace",
                   "locale": "fr-CA"
                 },
                 {
-                  "text": "Skill",
+                  "text": "Patinage sur glace",
                   "locale": "fr-FR"
                 },
                 {
-                  "text": "Sciare",
+                  "text": "Pattinaggio",
                   "locale": "it-IT"
                 },
                 {
-                  "text": "スキー",
+                  "text": "アイススケート",
                   "locale": "ja-JP"
                 },{
-                  "text": "Esquiar",
-                  "locale": "pt-BR"
-                },{
-                  "text": "sky",
+                  "text": "Patinação",
                   "locale": "pt-BR"
                 }
               ]
@@ -4174,6 +5199,10 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "Schlittenfahren",
+                  "locale": "de-DE"
+                },
+                {
+                  "text": "Rodeln",
                   "locale": "de-DE"
                 },
                 {
@@ -4231,7 +5260,51 @@ class ToggleControllerSkillSport {
                   "locale": "en-US"
                 },
                 {
+                  "text": "bob's light",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "bob's light",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "bob's light",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "bob's light",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "bob's light",
+                  "locale": "en-US"
+                },
+                {
+                  "text": "box light",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "box light",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "box light",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "box light",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "box light",
+                  "locale": "en-US"
+                },
+                {
                   "text": "Schnee auto",
+                  "locale": "de-DE"
+                },
+                {
+                  "text": "Bobfahren",
                   "locale": "de-DE"
                 },
                 {
@@ -4362,11 +5435,27 @@ class ToggleControllerSkillSport {
                   "locale": "es-MX"
                 },
                 {
+                  "text": "Deporte inv.",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Deporte inv.",
+                  "locale": "es-MX"
+                },
+                {
                   "text": "Sports de neige",
                   "locale": "fr-CA"
                 },
                 {
                   "text": "Sports de neige",
+                  "locale": "fr-FR"
+                },
+                {
+                  "text": "Autres sports d’hiver",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Autres sports d’hiver",
                   "locale": "fr-FR"
                 },
                 {
@@ -4416,6 +5505,26 @@ class ToggleControllerSkillSport {
                   "locale": "en-US"
                 },
                 {
+                  "text": "Downhill skiing",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "Downhill skiing",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Downhill skiing",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "Downhill skiing",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "Downhill skiing",
+                  "locale": "en-US"
+                },
+                {
                   "text": "Ski Alpin",
                   "locale": "de-DE"
                 },
@@ -4425,6 +5534,14 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "esquiar alpino",
+                  "locale": "es-MX"
+                },
+                {
+                  "text": "Esquí alpino",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Esquí alpino",
                   "locale": "es-MX"
                 },
                 {
@@ -4489,6 +5606,14 @@ class ToggleControllerSkillSport {
                   "locale": "es-MX"
                 },
                 {
+                  "text": "Esquí de fondo",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Esquí de fondo",
+                  "locale": "es-MX"
+                },
+                {
                   "text": "Ski de fond",
                   "locale": "fr-CA"
                 },
@@ -4542,6 +5667,10 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "Eisstockschießen",
+                  "locale": "de-DE"
+                },
+                {
+                  "text": "Curling",
                   "locale": "de-DE"
                 },
                 {
@@ -4737,6 +5866,10 @@ class ToggleControllerSkillSport {
                   "locale": "de-DE"
                 },
                 {
+                  "text": "starte Surfen",
+                  "locale": "de-DE"
+                },
+                {
                   "text": "acuaplano",
                   "locale": "es-ES"
                 },
@@ -4807,6 +5940,26 @@ class ToggleControllerSkillSport {
                   "locale": "en-US"
                 },
                 {
+                  "text": "Sailing",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "Sailing",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Sailing",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "Sailing",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "Sailing",
+                  "locale": "en-US"
+                },
+                {
                   "text": "Segeln",
                   "locale": "de-DE"
                 },
@@ -4816,6 +5969,14 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "Navegación a vela",
+                  "locale": "es-MX"
+                },
+                {
+                  "text": "Vela",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Vela",
                   "locale": "es-MX"
                 },
                 {
@@ -4999,6 +6160,26 @@ class ToggleControllerSkillSport {
                   "locale": "en-US"
                 },
                 {
+                  "text": "Power boating",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "Power boating",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Power boating",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "Power boating",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "Power boating",
+                  "locale": "en-US"
+                },
+                {
                   "text": "Motorbootfahren",
                   "locale": "de-DE"
                 },
@@ -5011,11 +6192,27 @@ class ToggleControllerSkillSport {
                   "locale": "es-MX"
                 },
                 {
+                  "text": "Navegación a motor",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Navegación a motor",
+                  "locale": "es-MX"
+                },
+                {
                   "text": "Motonautisme",
                   "locale": "fr-CA"
                 },
                 {
                   "text": "Motonautisme",
+                  "locale": "fr-FR"
+                },
+                {
+                  "text": "Naut. moteur",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Naut. moteur",
                   "locale": "fr-FR"
                 },
                 {
@@ -5057,6 +6254,46 @@ class ToggleControllerSkillSport {
                   "locale": "en-US"
                 },
                 {
+                  "text": "Paddle boarding",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "Paddle boarding",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Paddle boarding",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "Paddle boarding",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "Paddle boarding",
+                  "locale": "en-US"
+                },
+                {
+                  "text": "Padding",
+                  "locale": "en-AU"
+                },
+                {
+                  "text": "Padding",
+                  "locale": "en-CA"
+                },
+                {
+                  "text": "Padding",
+                  "locale": "en-GB"
+                },
+                {
+                  "text": "Padding",
+                  "locale": "en-IN"
+                },
+                {
+                  "text": "Padding",
+                  "locale": "en-US"
+                },
+                {
                   "text": "Kanufahren",
                   "locale": "de-DE"
                 },
@@ -5066,6 +6303,14 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "Canoa",
+                  "locale": "es-MX"
+                },
+                {
+                  "text": "Piragüismo",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Piragüismo",
                   "locale": "es-MX"
                 },
                 {
@@ -5131,6 +6376,14 @@ class ToggleControllerSkillSport {
                   "locale": "es-MX"
                 },
                 {
+                  "text": "Remo",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Remo",
+                  "locale": "es-MX"
+                },
+                {
                   "text": "Aviron",
                   "locale": "fr-CA"
                 },
@@ -5189,11 +6442,27 @@ class ToggleControllerSkillSport {
                   "locale": "es-MX"
                 },
                 {
+                  "text": "Carrera dragón",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Carrera dragón",
+                  "locale": "es-MX"
+                },
+                {
                   "text": "Course en bateau-dragon",
                   "locale": "fr-CA"
                 },
                 {
                   "text": "Course en bateau-dragon",
+                  "locale": "fr-FR"
+                },
+                {
+                  "text": "Course bat.-drgons",
+                  "locale": "fr-CA"
+                },
+                {
+                  "text": "Course bat.-drgons",
                   "locale": "fr-FR"
                 },
                 {
@@ -5300,7 +6569,11 @@ class ToggleControllerSkillSport {
                   "locale": "en-US"
                 },
                 {
-                  "text": "treiben",
+                  "text": "Rafting",
+                  "locale": "de-DE"
+                },
+                {
+                  "text": "starte treiben",
                   "locale": "de-DE"
                 },
                 {
@@ -5309,6 +6582,14 @@ class ToggleControllerSkillSport {
                 },
                 {
                   "text": "Descenso de ríos",
+                  "locale": "es-MX"
+                },
+                {
+                  "text": "Rafting",
+                  "locale": "es-ES"
+                },
+                {
+                  "text": "Rafting",
                   "locale": "es-MX"
                 },
                 {
@@ -5339,875 +6620,6 @@ class ToggleControllerSkillSport {
                   "locale": "pt-BR"
                 }, {
                   "text": "Exercício de rave",
-                  "locale": "pt-BR"
-                }
-              ]
-            },
-            {
-              "instance": "Skateboarding",
-              "sutype": "180",
-              "stopcmd": "180",
-              "friendlyNames": [
-                {
-                  "text": "Skateboarding",
-                  "locale": "en-AU"
-                },
-                {
-                  "text": "Skateboarding",
-                  "locale": "en-CA"
-                },
-                {
-                  "text": "Skateboarding",
-                  "locale": "en-GB"
-                },
-                {
-                  "text": "Skateboarding",
-                  "locale": "en-IN"
-                },
-                {
-                  "text": "Skateboarding",
-                  "locale": "en-US"
-                },
-                {
-                  "text": "Skateboarden",
-                  "locale": "de-DE"
-                },
-                {
-                  "text": "Monopatinaje",
-                  "locale": "es-ES"
-                },
-                {
-                  "text": "Monopatinaje",
-                  "locale": "es-MX"
-                },
-                {
-                  "text": "Skateboard",
-                  "locale": "fr-CA"
-                },
-                {
-                  "text": "Skateboard",
-                  "locale": "fr-FR"
-                },
-                {
-                  "text": "Skateboard",
-                  "locale": "it-IT"
-                },
-                {
-                  "text": "スケートボード",
-                  "locale": "ja-JP"
-                }, {
-                  "text": "Andar de skate",
-                  "locale": "pt-BR"
-                }
-              ]
-            },
-            {
-              "instance": "Rock climbing",
-              "sutype": "181",
-              "stopcmd": "181",
-              "friendlyNames": [
-                {
-                  "text": "Rock climbing",
-                  "locale": "en-AU"
-                },
-                {
-                  "text": "Rock climbing",
-                  "locale": "en-CA"
-                },
-                {
-                  "text": "Rock climbing",
-                  "locale": "en-GB"
-                },
-                {
-                  "text": "Rock climbing",
-                  "locale": "en-IN"
-                },
-                {
-                  "text": "Rock climbing",
-                  "locale": "en-US"
-                },
-                {
-                  "text": "Klettern",
-                  "locale": "de-DE"
-                },
-                {
-                  "text": "Escalada de rocas",
-                  "locale": "es-ES"
-                },
-                {
-                  "text": "Escalada de rocas",
-                  "locale": "es-MX"
-                },
-                {
-                  "text": "Escalade",
-                  "locale": "fr-CA"
-                },
-                {
-                  "text": "Escalade",
-                  "locale": "fr-FR"
-                },
-                {
-                  "text": "Arrampicata",
-                  "locale": "it-IT"
-                },
-                {
-                  "text": "ロッククライミング",
-                  "locale": "ja-JP"
-                }, {
-                  "text": "Escalada em rocha",
-                  "locale": "pt-BR"
-                }
-              ]
-            },
-            {
-              "instance": "Bungee jumping",
-              "sutype": "182",
-              "stopcmd": "182",
-              "friendlyNames": [
-                {
-                  "text": "Bungee jumping",
-                  "locale": "en-AU"
-                },
-                {
-                  "text": "Bungee jumping",
-                  "locale": "en-CA"
-                },
-                {
-                  "text": "Bungee jumping",
-                  "locale": "en-GB"
-                },
-                {
-                  "text": "Bungee jumping",
-                  "locale": "en-IN"
-                },
-                {
-                  "text": "Bungee jumping",
-                  "locale": "en-US"
-                },
-                {
-                  "text": "Bungee-Jumping",
-                  "locale": "de-DE"
-                },
-                {
-                  "text": "Puenting",
-                  "locale": "es-ES"
-                },
-                {
-                  "text": "Puenting",
-                  "locale": "es-MX"
-                },
-                {
-                  "text": "puente",
-                  "locale": "es-ES"
-                },
-                {
-                  "text": "puente",
-                  "locale": "es-MX"
-                },
-                {
-                  "text": "Saut à l’élastique",
-                  "locale": "fr-CA"
-                },
-                {
-                  "text": "Saut à l’élastique",
-                  "locale": "fr-FR"
-                },
-                {
-                  "text": "Bungee jumping",
-                  "locale": "it-IT"
-                },
-                {
-                  "text": "バンジージャンプ",
-                  "locale": "ja-JP"
-                }, {
-                  "text": "Bungee",
-                  "locale": "pt-BR"
-                }, {
-                  "text": "Banho",
-                  "locale": "pt-BR"
-                }
-              ]
-            },
-            {
-              "instance": "Parkour",
-              "sutype": "183",
-              "stopcmd": "183",
-              "friendlyNames": [
-                {
-                  "text": "Parkour",
-                  "locale": "en-AU"
-                },
-                {
-                  "text": "Parkour",
-                  "locale": "en-CA"
-                },
-                {
-                  "text": "Parkour",
-                  "locale": "en-GB"
-                },
-                {
-                  "text": "Parkour",
-                  "locale": "en-IN"
-                },
-                {
-                  "text": "parker",
-                  "locale": "en-IN"
-                },
-                {
-                  "text": "Parkour",
-                  "locale": "en-US"
-                },
-                {
-                  "text": "Parkour",
-                  "locale": "de-DE"
-                },
-                {
-                  "text": "Parkour",
-                  "locale": "es-ES"
-                },
-                {
-                  "text": "Parkour",
-                  "locale": "es-MX"
-                },
-                {
-                  "text": "Parkour",
-                  "locale": "fr-CA"
-                },
-                {
-                  "text": "Parkour",
-                  "locale": "fr-FR"
-                },
-                {
-                  "text": "Parcours",
-                  "locale": "fr-CA"
-                },
-                {
-                  "text": "Parcours",
-                  "locale": "fr-FR"
-                },
-                {
-                  "text": "Parkour",
-                  "locale": "it-IT"
-                },
-                {
-                  "text": "パルクール",
-                  "locale": "ja-JP"
-                }, {
-                  "text": "Parkour",
-                  "locale": "pt-BR"
-                }
-              ]
-            },
-            {
-              "instance": "BMX",
-              "sutype": "184",
-              "stopcmd": "184",
-              "friendlyNames": [
-                {
-                  "text": "BMX",
-                  "locale": "en-AU"
-                },
-                {
-                  "text": "BMX",
-                  "locale": "en-CA"
-                },
-                {
-                  "text": "BMX",
-                  "locale": "en-GB"
-                },
-                {
-                  "text": "BMX",
-                  "locale": "en-IN"
-                },
-                {
-                  "text": "BMX",
-                  "locale": "en-US"
-                },
-                {
-                  "text": "b.m.x",
-                  "locale": "en-AU"
-                },
-                {
-                  "text": "b.m.x",
-                  "locale": "en-CA"
-                },
-                {
-                  "text": "b.m.x",
-                  "locale": "en-GB"
-                },
-                {
-                  "text": "b.m.x",
-                  "locale": "en-IN"
-                },
-                {
-                  "text": "b.m.x",
-                  "locale": "en-US"
-                },
-                {
-                  "text": "BMX",
-                  "locale": "de-DE"
-                },
-                {
-                  "text": "BMX",
-                  "locale": "es-ES"
-                },
-                {
-                  "text": "BMX",
-                  "locale": "es-MX"
-                },
-                {
-                  "text": "BMX",
-                  "locale": "fr-CA"
-                },
-                {
-                  "text": "BMX",
-                  "locale": "fr-FR"
-                },
-                {
-                  "text": "BMX",
-                  "locale": "it-IT"
-                },
-                {
-                  "text": "BMX",
-                  "locale": "ja-JP"
-                }, {
-                  "text": "BMX",
-                  "locale": "pt-BR"
-                }
-              ]
-            },{
-              "instance": "Zumba",
-              "sutype": "185",
-              "stopcmd": "185",
-              "friendlyNames": [
-                {
-                  "text": "Zumba",
-                  "locale": "en-AU"
-                },
-                {
-                  "text": "Zumba",
-                  "locale": "en-CA"
-                },
-                {
-                  "text": "Zumba",
-                  "locale": "en-GB"
-                },
-                {
-                  "text": "Zumba",
-                  "locale": "en-IN"
-                },
-                {
-                  "text": "Zumba",
-                  "locale": "en-US"
-                },
-                {
-                  "text": "Zumba",
-                  "locale": "de-DE"
-                },
-                {
-                  "text": "Zumba",
-                  "locale": "es-ES"
-                },
-                {
-                  "text": "Zumba",
-                  "locale": "es-MX"
-                },
-                {
-                  "text": "Zumba",
-                  "locale": "fr-CA"
-                },
-                {
-                  "text": "Zumba",
-                  "locale": "fr-FR"
-                },
-                {
-                  "text": "Zumba",
-                  "locale": "it-IT"
-                },
-                {
-                  "text": "ズンバ",
-                  "locale": "ja-JP"
-                }, {
-                  "text": "Zumba",
-                  "locale": "pt-BR"
-                }
-              ]
-            },{
-              "instance": "Others",
-              "sutype": "186",
-              "stopcmd": "186",
-              "friendlyNames": [
-                {
-                  "text": "Others",
-                  "locale": "en-AU"
-                },
-                {
-                  "text": "Others",
-                  "locale": "en-CA"
-                },
-                {
-                  "text": "Others",
-                  "locale": "en-GB"
-                },
-                {
-                  "text": "Others",
-                  "locale": "en-IN"
-                },
-                {
-                  "text": "Others",
-                  "locale": "en-US"
-                },
-                {
-                  "text": "Sonstige",
-                  "locale": "de-DE"
-                },
-                {
-                  "text": "Ejercicios libres",
-                  "locale": "es-ES"
-                },
-                {
-                  "text": "Ejercicios libres",
-                  "locale": "es-MX"
-                },
-                {
-                  "text": "Autre",
-                  "locale": "fr-CA"
-                },
-                {
-                  "text": "Autre",
-                  "locale": "fr-FR"
-                },
-                {
-                  "text": "Altri",
-                  "locale": "it-IT"
-                },
-                {
-                  "text": "その他",
-                  "locale": "ja-JP"
-                }, {
-                  "text": "Outros",
-                  "locale": "pt-BR"
-                }
-              ]
-            }, {
-              "instance": "Volleyball",
-              "sutype": "23",
-              "stopcmd": "233",
-              "friendlyNames": [
-                {
-                  "text": "Volleyball",
-                  "locale": "en-AU"
-                },{
-                  "text": "Volleyball",
-                  "locale": "en-CA"
-                },{
-                  "text": "Volleyball",
-                  "locale": "en-GB"
-                },{
-                  "text": "Volleyball",
-                  "locale": "en-IN"
-                },{
-                  "text": "Volleyball",
-                  "locale": "en-US"
-                },{
-                  "text": "Volleyball",
-                  "locale": "de-DE"
-                },{
-                  "text": "Volleyball",
-                  "locale": "es-ES"
-                },{
-                  "text": "Volleyball",
-                  "locale": "es-MX"
-                },{
-                  "text": "Volleyball",
-                  "locale": "fr-CA"
-                },{
-                  "text": "Volleyball",
-                  "locale": "fr-FR"
-                },{
-                  "text": "Volleyball",
-                  "locale": "it-IT"
-                },{
-                  "text": "Volleyball",
-                  "locale": "ja-JP"
-                },{
-                  "text": "Volleyball",
-                  "locale": "pt-BR"
-                }
-              ]
-            },
-            {
-              "instance": "cross_country_race",
-              "sutype": "189",
-              "stopcmd": "237",
-              "friendlyNames": [
-                {
-                  "text": "Cross-country race",
-                  "locale": "en-AU"
-                },{
-                  "text": "Cross-country race",
-                  "locale": "en-CA"
-                },{
-                  "text": "Cross-country race",
-                  "locale": "en-GB"
-                },{
-                  "text": "Cross-country race",
-                  "locale": "en-IN"
-                },{
-                  "text": "Cross-country race",
-                  "locale": "en-US"
-                },{
-                  "text": "Cross-country race",
-                  "locale": "de-DE"
-                },{
-                  "text": "Cross-country race",
-                  "locale": "es-ES"
-                },{
-                  "text": "Cross-country race",
-                  "locale": "es-MX"
-                },{
-                  "text": "Cross-country race",
-                  "locale": "fr-CA"
-                },{
-                  "text": "Cross-country race",
-                  "locale": "fr-FR"
-                },{
-                  "text": "Cross-country race",
-                  "locale": "it-IT"
-                },{
-                  "text": "Cross-country race",
-                  "locale": "ja-JP"
-                },{
-                  "text": "Cross-country race",
-                  "locale": "pt-BR"
-                }
-              ]
-            },
-            {
-              "instance": "Crunches",
-              "sutype": "190",
-              "stopcmd": "236",
-              "friendlyNames": [
-                {
-                  "text": "Crunches",
-                  "locale": "en-AU"
-                },{
-                  "text": "Crunches",
-                  "locale": "en-CA"
-                },{
-                  "text": "Crunches",
-                  "locale": "en-GB"
-                },{
-                  "text": "Crunches",
-                  "locale": "en-IN"
-                },{
-                  "text": "Crunches",
-                  "locale": "en-US"
-                },{
-                  "text": "Crunches",
-                  "locale": "de-DE"
-                },{
-                  "text": "Crunches",
-                  "locale": "es-ES"
-                },{
-                  "text": "Crunches",
-                  "locale": "es-MX"
-                },{
-                  "text": "Crunches",
-                  "locale": "fr-CA"
-                },{
-                  "text": "Crunches",
-                  "locale": "fr-FR"
-                },{
-                  "text": "Crunches",
-                  "locale": "it-IT"
-                },{
-                  "text": "Crunches",
-                  "locale": "ja-JP"
-                },{
-                  "text": "Crunches",
-                  "locale": "pt-BR"
-                }
-              ]
-            },
-            {
-              "instance": "cross_training",
-              "sutype": "33",
-              "stopcmd": "235",
-              "friendlyNames": [
-                {
-                  "text": "Cross training",
-                  "locale": "en-AU"
-                },{
-                  "text": "Cross training",
-                  "locale": "en-CA"
-                },{
-                  "text": "Cross training",
-                  "locale": "en-GB"
-                },{
-                  "text": "Cross training",
-                  "locale": "en-IN"
-                },{
-                  "text": "Cross training",
-                  "locale": "en-US"
-                },{
-                  "text": "Cross training",
-                  "locale": "de-DE"
-                },{
-                  "text": "Cross training",
-                  "locale": "es-ES"
-                },{
-                  "text": "Cross training",
-                  "locale": "es-MX"
-                },{
-                  "text": "Cross training",
-                  "locale": "fr-CA"
-                },{
-                  "text": "Cross training",
-                  "locale": "fr-FR"
-                },{
-                  "text": "Cross training",
-                  "locale": "it-IT"
-                },{
-                  "text": "Cross training",
-                  "locale": "ja-JP"
-                },{
-                  "text": "Cross training",
-                  "locale": "pt-BR"
-                }
-              ]
-            },
-            {
-              "instance": "Kabaddi",
-              "sutype": "192",
-              "stopcmd": "232",
-              "friendlyNames": [
-                {
-                  "text": "Kabaddi",
-                  "locale": "en-AU"
-                },{
-                  "text": "Kabaddi",
-                  "locale": "en-CA"
-                },{
-                  "text": "Kabaddi",
-                  "locale": "en-GB"
-                },{
-                  "text": "Kabaddi",
-                  "locale": "en-IN"
-                },{
-                  "text": "Kabaddi",
-                  "locale": "en-US"
-                },{
-                  "text": "Kabaddi",
-                  "locale": "de-DE"
-                },{
-                  "text": "Kabaddi",
-                  "locale": "es-ES"
-                },{
-                  "text": "Kabaddi",
-                  "locale": "es-MX"
-                },{
-                  "text": "Kabaddi",
-                  "locale": "fr-CA"
-                },{
-                  "text": "Kabaddi",
-                  "locale": "fr-FR"
-                },{
-                  "text": "Kabaddi",
-                  "locale": "it-IT"
-                },{
-                  "text": "Kabaddi",
-                  "locale": "ja-JP"
-                },{
-                  "text": "Kabaddi",
-                  "locale": "pt-BR"
-                }
-              ]
-            },
-            {
-              "instance": "Trampoline",
-              "sutype": "195",
-              "stopcmd": "231",
-              "friendlyNames": [
-                {
-                  "text": "Trampoline",
-                  "locale": "en-AU"
-                },{
-                  "text": "Trampoline",
-                  "locale": "en-CA"
-                },{
-                  "text": "Trampoline",
-                  "locale": "en-GB"
-                },{
-                  "text": "Trampoline",
-                  "locale": "en-IN"
-                },{
-                  "text": "Trampoline",
-                  "locale": "en-US"
-                },{
-                  "text": "Trampoline",
-                  "locale": "de-DE"
-                },{
-                  "text": "Trampoline",
-                  "locale": "es-ES"
-                },{
-                  "text": "Trampoline",
-                  "locale": "es-MX"
-                },{
-                  "text": "Trampoline",
-                  "locale": "fr-CA"
-                },{
-                  "text": "Trampoline",
-                  "locale": "fr-FR"
-                },{
-                  "text": "Trampoline",
-                  "locale": "it-IT"
-                },{
-                  "text": "Trampoline",
-                  "locale": "ja-JP"
-                },{
-                  "text": "Trampoline",
-                  "locale": "pt-BR"
-                }
-              ]
-            },
-            {
-              "instance": "hula_hoop",
-              "sutype": "196",
-              "stopcmd": "230",
-              "friendlyNames": [
-                {
-                  "text": "Hula hoop",
-                  "locale": "en-AU"
-                },{
-                  "text": "Hula hoop",
-                  "locale": "en-CA"
-                },{
-                  "text": "Hula hoop",
-                  "locale": "en-GB"
-                },{
-                  "text": "Hula hoop",
-                  "locale": "en-IN"
-                },{
-                  "text": "Hula hoop",
-                  "locale": "en-US"
-                },{
-                  "text": "Hula hoop",
-                  "locale": "de-DE"
-                },{
-                  "text": "Hula hoop",
-                  "locale": "es-ES"
-                },{
-                  "text": "Hula hoop",
-                  "locale": "es-MX"
-                },{
-                  "text": "Hula hoop",
-                  "locale": "fr-CA"
-                },{
-                  "text": "Hula hoop",
-                  "locale": "fr-FR"
-                },{
-                  "text": "Hula hoop",
-                  "locale": "it-IT"
-                },{
-                  "text": "Hula hoop",
-                  "locale": "ja-JP"
-                },{
-                  "text": "Hula hoop",
-                  "locale": "pt-BR"
-                }
-              ]
-            },
-            {
-              "instance": "Car racing",
-              "sutype": "197",
-              "stopcmd": "229",
-              "friendlyNames": [
-                {
-                  "text": "Car racing",
-                  "locale": "en-AU"
-                },{
-                  "text": "Car racing",
-                  "locale": "en-CA"
-                },{
-                  "text": "Car racing",
-                  "locale": "en-GB"
-                },{
-                  "text": "Car racing",
-                  "locale": "en-IN"
-                },{
-                  "text": "Car racing",
-                  "locale": "en-US"
-                },{
-                  "text": "Car racing",
-                  "locale": "de-DE"
-                },{
-                  "text": "Car racing",
-                  "locale": "es-ES"
-                },{
-                  "text": "Car racing",
-                  "locale": "es-MX"
-                },{
-                  "text": "Car racing",
-                  "locale": "fr-CA"
-                },{
-                  "text": "Car racing",
-                  "locale": "fr-FR"
-                },{
-                  "text": "Car racing",
-                  "locale": "it-IT"
-                },{
-                  "text": "Car racing",
-                  "locale": "ja-JP"
-                },{
-                  "text": "Car racing",
-                  "locale": "pt-BR"
-                }
-              ]
-            },
-            {
-              "instance": "Burpee",
-              "sutype": "191",
-              "stopcmd": "234",
-              "friendlyNames": [
-                {
-                  "text": "Burpee",
-                  "locale": "en-AU"
-                },{
-                  "text": "Burpee",
-                  "locale": "en-CA"
-                },{
-                  "text": "Burpee",
-                  "locale": "en-GB"
-                },{
-                  "text": "Burpee",
-                  "locale": "en-IN"
-                },{
-                  "text": "Burpee",
-                  "locale": "en-US"
-                },{
-                  "text": "Burpee",
-                  "locale": "de-DE"
-                },{
-                  "text": "Burpee",
-                  "locale": "es-ES"
-                },{
-                  "text": "Burpee",
-                  "locale": "es-MX"
-                },{
-                  "text": "Burpee",
-                  "locale": "fr-CA"
-                },{
-                  "text": "Burpee",
-                  "locale": "fr-FR"
-                },{
-                  "text": "Burpee",
-                  "locale": "it-IT"
-                },{
-                  "text": "Burpee",
-                  "locale": "ja-JP"
-                },{
-                  "text": "Burpee",
                   "locale": "pt-BR"
                 }
               ]

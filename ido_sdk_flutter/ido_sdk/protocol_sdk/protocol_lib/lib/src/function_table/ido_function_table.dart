@@ -433,6 +433,21 @@ class BaseFunctionTable {
   /// 运动显示个数
   int get sportShowNum => ft?.sportShowNum ?? 0;
 
+  /// 有氧健身操
+  bool get sportAerobicsBodybuildingExercise => ft?.aerobicsBodybuildingExercise ?? false;
+
+  /// 引体向上
+  bool get sportPullUp => ft?.pullUp ?? false;
+
+  /// 单杠
+  bool get sportHighBar => ft?.highBar ?? false;
+
+  /// 双杠
+  bool get sportParallelBars => ft?.parallelBars ?? false;
+
+  /// 越野跑
+  bool get sportTrailRunning => ft?.trailRunning ?? false;
+
   // ------------------ 获取 ------------------
 
   /// 获取实时数据
@@ -480,8 +495,8 @@ class BaseFunctionTable {
   /// 语音功能
   bool get getVoiceTransmission => ft?.exTableMain7VoiceTransmission ?? false;
 
-  /// 喝水开关通知类型
-  bool get getDrinkWaterNotifyFlag => ft?.v3DrinkWaterAddNotifyFlag ?? false;
+  /// 设置喝水开关通知类型
+  bool get setDrinkWaterAddNotifyFlag => ft?.v3DrinkWaterAddNotifyFlag ?? false;
 
   /// 获取重启日志错误码和标志位
   bool get getDeviceLogState => ft?.v3GetDevLogState ?? false;
@@ -518,9 +533,6 @@ class BaseFunctionTable {
 
   /// 获取过热日志
   bool get getHeatLog => ft?.exTableMain8V3GetHeatLog ?? false;
-
-  @Deprecated('Use getWalkReminderV3')
-  bool get v3GetWalkReminder => ft?.v3GetWalkReminder ?? false;
 
   /// 获取走动提醒 v3
   bool get getWalkReminderV3 => ft?.v3GetWalkReminder ?? false;
@@ -622,7 +634,7 @@ class BaseFunctionTable {
   bool get getSupportSetRepeatTypeOnScheduleReminderV3 => ft?.v3SupportSetRepeatTypeOnScheduleReminder ?? false;
 
   /// 经期开关
-  bool get getSupportSetMenstrualOnOff => ft?.supportSetMenstrualOnOff ?? false;
+  bool get getSupportSetMenstrualReminderOnOff => ft?.supportSetMenstrualReminderOnOff ?? false;
 
   /// 版本信息
   bool get getVersionInfo => ft?.versionInfo ?? false;
@@ -661,7 +673,37 @@ class BaseFunctionTable {
   bool get getAutoActivitySwitchAddSmartRope => ft?.autoActivitySwitchAddSmartRope ?? false;
 
   // TODO 待添加该字段注释说明
+  bool get getAutoActivitySetGetUseNewStructExchange => ft?.autoActivitySetGetUseNewStructExchange ?? false;
+
+  /// 支持走动提醒设置/获取免提醒时间段
   bool get getSupportSetGetNoReminderOnWalkReminderV2 => ft?.v2SupportSetGetNoReminderOnWalkReminder ?? false;
+
+  /// 支持获取sn信息
+  bool get getSupportGetSnInfo => ft?.supportGetSnInfo ?? false;
+
+  /// 日程提醒不显示标题
+  bool get getScheduleReminderNotDisplayTitle => ft?.scheduleReminderNotDisplayTitle ?? false;
+
+  /// 城市名称
+  bool get getSupportV3LongCityName => ft?.v3SupportV3LongCityName ?? false;
+
+  /// 亮度设置支持夜间亮度等级设置
+  bool get getSupportAddNightLevelV2 => ft?.v2SupportAddNightLevel ?? false;
+
+  /// 固件支持使用表盘框架使用argb6666编码格式
+  bool get getSupportDialFrameEncodeFormatArgb6666 => ft?.supportDialFrameEncodeFormatArgb6666 ?? false;
+
+  /// 固件支持app下发手机操作系统信息
+  bool get getSupportAppSendPhoneSystemInfo => ft?.supportAppSendPhoneSystemInfo ?? false;
+
+  /// 固件管理切换快/慢速模式，APP不下发设置链接参数(快慢速）
+  bool get getDeviceControlFastModeAlone => ft?.deviceControlFastModeAlone ?? false;
+
+  /// 设备支持一键双连，区分配对时APP展示引导页还是直接下发配对指令
+  bool get getSupportOnekeyDoubleContact => ft?.supportOnekeyDoubleContact ?? false;
+
+  /// 语音助手状态
+  bool get getSupportSetVoiceAssistantStatus => ft?.supportSetVoiceAssistantStatus ?? false;
 
   // ------------------ 设置 ------------------
 
@@ -669,17 +711,13 @@ class BaseFunctionTable {
   bool get setScientificSleepSwitch => ft?.v3SupportSetScientificSleepSwitch ?? false;
 
   /// 设置夜间体温开关
-  @Deprecated('Use setTemperatureSwitchHealth')
-  bool get setTemperatureSwitch => ft?.v3HealthSyncTemperature ?? false;
-
-  /// 设置夜间体温开关
   bool get setTemperatureSwitchHealth => ft?.v3HealthSyncTemperature ?? false;
 
   /// 心率监测
   bool get setHeartRateMonitor => ft?.heartRateMonitor ?? false;
 
-  /// 喝水提醒
-  bool get setDrinkWaterReminder => ft?.v2SupportSetNoReminderOnDrinkReminder ?? false;
+  /// 支持喝水提醒设置免提醒时间段
+  bool get setNoReminderOnDrinkReminder => ft?.v2SupportSetNoReminderOnDrinkReminder ?? false;
 
   /// 默认是支持agps off升级
   bool get setAgpsOffLine => ft?.agpsOffline ?? false;
@@ -742,10 +780,6 @@ class BaseFunctionTable {
 
   /// 压力过高提醒
   bool get setPressureHighReminder => ft?.exTableMain11PressureHighThresholdReminder ?? false;
-
-  /// v3壁纸表盘颜色设置
-  @Deprecated('use setWallpaperOnlyTimeColor')
-  bool get setSetWallpaperColor => ft?.v2SupportWallpaperWatchFaceOnlyTimeColor ?? false;
 
   /// 壁纸表盘颜色设置
   bool get setWallpaperOnlyTimeColor => ft?.v2SupportWallpaperWatchFaceOnlyTimeColor ?? false;
@@ -888,8 +922,8 @@ class BaseFunctionTable {
   /// 支持V3天气 下发空气质量等级
   bool get setWeatherAirGrade => ft?.v3SupportSetV3WeatcherAddAirGrade ?? false;
 
-  /// 喝水提醒增加通知类型
-  bool get setDrinkWaterReminderAddNotify => ft?.exMain4DrinkWaterReminder ?? false;
+  /// 支持设置喝水提醒
+  bool get setDrinkWaterReminder => ft?.exMain4DrinkWaterReminder ?? false;
 
   /// 呼吸率开关设置
   bool get setRespirationRate => ft?.v2V3SupportRespirationRate ?? false;
@@ -938,6 +972,9 @@ class BaseFunctionTable {
 
   /// 设置屏幕亮度
   bool get setScreenBrightness => ft?.exScreenBrightness ?? false;
+
+  /// 设置设备音乐音量
+  bool get setSetPhoneVoice => ft?.exTableMain10SetPhoneVoice ?? false;
 
   // ------------------ 语言 ------------------
 
@@ -1122,6 +1159,12 @@ class BaseFunctionTable {
 
   /// 数据交换增加实时的配速字段
   bool get syncExchangeDataReplyAddRealTimeSpeedPaceV3 => ft?.v3SupportV3ExchangeDataReplyAddRealTimeSpeedPace ?? false;
+
+  /// 多运行结束时间使用UTC模式
+  bool get syncHealthSyncV3ActivityEndTimeUseUtcMode => ft?.healthSyncV3ActivityEndTimeUseUtcMode ?? false;
+
+  /// 支持数据同步时开启快速模式
+  bool get syncSupportSetFastModeWhenSyncConfig => ft?.supportSetFastModeWhenSyncConfig ?? false;
 
 // ------------------ 闹钟 ------------------
 
@@ -1423,7 +1466,6 @@ extension IDOFunctionTableExt on IDOFunctionTable {
       'sportNoticeStepper': sportNoticeStepper,
       'sportShowNum': sportShowNum,
       'setScientificSleepSwitch': setScientificSleepSwitch,
-      'setTemperatureSwitch': setTemperatureSwitch,
       'setTemperatureSwitchHealth': setTemperatureSwitchHealth,
       'setHeartRateMonitor': setHeartRateMonitor,
       'setDrinkWaterReminder': setDrinkWaterReminder,
@@ -1447,7 +1489,6 @@ extension IDOFunctionTableExt on IDOFunctionTable {
       'setNotSupportHrHighAlarm': setNotSupportHrHighAlarm,
       'setNotSupportPhotoWallpaper': setNotSupportPhotoWallpaper,
       'setPressureHighReminder': setPressureHighReminder,
-      'setSetWallpaperColor': setSetWallpaperColor,
       'setWallpaperOnlyTimeColor': setWallpaperOnlyTimeColor,
       'setWallpaperDial': setWallpaperDial,
       'setSupportBreathRate': setSupportBreathRate,
@@ -1491,7 +1532,6 @@ extension IDOFunctionTableExt on IDOFunctionTable {
       'setSportMediumIcon': setSportMediumIcon,
       'setWeatherSunTime': setWeatherSunTime,
       'setWeatherAirGrade': setWeatherAirGrade,
-      'setDrinkWaterReminderAddNotify': setDrinkWaterReminderAddNotify,
       'setRespirationRate': setRespirationRate,
       'setMaxBloodOxygen': setMaxBloodOxygen,
       'setBleControlMusic': setBleControlMusic,
@@ -1581,6 +1621,7 @@ extension IDOFunctionTableExt on IDOFunctionTable {
       'alexaSetSetOnOffTypeV3': alexaSetSetOnOffTypeV3,
       'alexaSetWeatherV3': alexaSetWeatherV3,
       'alexaTimeNewV3': alexaTimeNewV3,
+      'getSupportV3BleMusic':getSupportV3BleMusic,
       'setAlexaControll100brightness': setAlexaControll100brightness,
     });
   }

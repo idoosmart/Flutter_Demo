@@ -42,7 +42,7 @@ class _SetAppName implements SetAppName {
 extension _SetAppNameExt on _SetAppName {
 
   Future<bool> _exec(List<IDOAppInfo> items) async {
-    if (items.length == 0) {
+    if (items.isEmpty) {
       Future((){
         _completer?.complete(false);
         _completer = null;

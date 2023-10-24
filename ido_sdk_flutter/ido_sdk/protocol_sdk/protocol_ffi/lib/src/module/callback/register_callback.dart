@@ -31,8 +31,8 @@ extension IDOProtocolAPIExtRegisterCallback on IDOProtocolAPI {
     final rs = bindings.ProtocolNoticeCallbackReg(
         ffi.Pointer.fromFunction(_registerNoticeCallback));
     logger?.d('call clib - ProtocolNoticeCallbackReg rs:$rs');
-    logger?.d('call clib - c库通知app事件回调注册 rs:$rs');
-    logger?.d('call clib - 快速配置完成回调 1 - c函数注册 rs:$rs');
+    // logger?.d('call clib - c库通知app事件回调注册 rs:$rs');
+    //logger?.d('call clib - 快速配置完成回调 1 - c函数注册 rs:$rs');
     return rs;
   }
 

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:alexa_net/alexa_net.dart';
 import 'package:dio/dio.dart';
@@ -10,12 +11,15 @@ import 'package:protocol_alexa/src/module/upload_directives.dart';
 import 'package:protocol_alexa/src/module/voice.dart';
 import 'package:protocol_lib/protocol_lib.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:alexa_channel/alexa_channel.dart';
 
 import '../../protocol_alexa.dart';
+import '../private/local_storage/local_storage.dart';
 import '../private/logger/logger.dart';
 import '../private/reachability/alexa_reachability.dart';
 import '../service/model/directive_model.dart';
 import '../service/model/timer_model.dart';
+import '../service/model/voicealarm_model.dart';
 import '../service/service_manager.dart';
 import '../private/tools/data_box.dart';
 import 'capabilities_report.dart';
@@ -43,8 +47,13 @@ abstract class AlexaClient {
 
   Auth get auth;
 
+  UploadDirectivesAnalysis get uploadDirectivesAnalysis;
+
   /// 计时器
   List createTimerArr();
+
+  /// 闹钟
+  Future<List> createAlarmArr(bool isCreate);
 
   /// 创建下行流
   Future<bool> createNewDirectives();

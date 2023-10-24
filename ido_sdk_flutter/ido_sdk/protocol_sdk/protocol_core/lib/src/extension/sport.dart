@@ -7,6 +7,10 @@ import '../manager/manager_clib.dart';
 
 extension IDOProtocolCoreManagerExtSport on IDOProtocolCoreManager {
 
+  void initParameter() {
+    return IDOProtocolClibManager().cLib.initParameter();
+  }
+
   /// gsp运动后优化轨迹,根据运动类型初始化速度阈值，若输入其他运动类型，会导致无运动轨迹
   ///
   /// [motionTypeIn] 运动类型：

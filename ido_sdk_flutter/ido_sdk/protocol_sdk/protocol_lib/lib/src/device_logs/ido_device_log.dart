@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:protocol_core/protocol_core.dart';
+import 'package:protocol_lib/src/private/logger/logger.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../ido_protocol_lib.dart';
@@ -40,7 +41,9 @@ abstract class IDODeviceLog {
   Future<String> get logDirPath;
 
   /// 开始获取日志
-  Stream<bool> startGet(List<IDOLogType> types);
+  /// types 日志类型
+  /// timeOut 最大获取日志时长 (单位秒，默认60秒)
+  Stream<bool> startGet({required List<IDOLogType> types,int timeOut = 60});
 
   /// 取消
   void cancel();

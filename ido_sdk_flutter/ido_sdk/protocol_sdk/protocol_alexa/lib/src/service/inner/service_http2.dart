@@ -13,9 +13,9 @@ part 'service_http2.g.dart';
 abstract class ServiceHttp2 {
   factory ServiceHttp2(Dio dio) => _ServiceHttp2(dio);
 
-  static ServiceHttp2? _instance;
-  static ServiceHttp2 get instance =>
-      _instance ??= ServiceHttp2(HttpClient.getInstance().dioV2);
+  // static ServiceHttp2? _instance;
+  // static ServiceHttp2 get instance =>
+  //     _instance ??= ServiceHttp2(HttpClient.getInstance().dioV2);
 
   /// ping
   @GET("/ping")
@@ -70,6 +70,14 @@ abstract class ServiceHttp2 {
       @Header(urlType) String header,
       @Header('Authorization') String accessToken,
       @Body() Map<String, dynamic> mapBody,
+      @CancelRequest() CancelToken? cancelToken);
+
+  /// 获取闹钟
+  @GET("/v1/alerts/alarms/{id}")
+  Future<String> getAlarms(
+      @Header(urlType) String header,
+      @Header('Authorization') String accessToken,
+      @Path('id') String id,
       @CancelRequest() CancelToken? cancelToken);
 
   /// 提醒

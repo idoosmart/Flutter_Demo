@@ -11,7 +11,7 @@ class _DownDirectivesAnalysis implements DownDirectivesAnalysis {
 
   /**< 技能 -- 系统和自定义技能分析判断 */
   void voiceRecognitionWithType({required Map func}) {
-    print('voiceRecognitionWithType = $func');
+    logger?.v('voiceRecognitionWithType = $func');
     final nameType = func["name"];
     if (nameType == "TurnOn" ||
         nameType == "TurnOff" ||
@@ -54,11 +54,17 @@ class _DownDirectivesAnalysis implements DownDirectivesAnalysis {
       /**< token失效 */
       /**< 发空语音包检查token是否有效 */
       //缺少403退出
+      logger?.v('ResetUserInactivity 挤退');
       final reportMap = returnNullMap();
       ServiceManager().sendEventPart(
           accessToken: Auth().accessToken!,
           dataBody: reportMap.toData(),
-          label: 'reportMap');
+          label: 'reportMap').then((value) {
+            if (value.httpCode == 403){
+              logger?.v('ResetUserInactivity 挤退 -- 403退出');
+              AlexaClient().auth.logout();
+            }
+      });
     } else if (type == "SetIndicator") {
       /**< 设置通知 */
       IndicatorPoint().setIndicator();
@@ -121,7 +127,8 @@ class _DownDirectivesAnalysis implements DownDirectivesAnalysis {
             "v2_sport_type":typeInt
           };
           final json = jsonEncode(map);
-
+          AlexaClient().isSmartHomeSkill = true;
+          logger?.v('isSmartHomeSkill = true');
           libManager
               .send(
               evt: CmdEvtType.setControllSports,
@@ -133,7 +140,8 @@ class _DownDirectivesAnalysis implements DownDirectivesAnalysis {
         final map = {"sports_type":typeInt
         };
         final json = jsonEncode(map);
-
+        AlexaClient().isSmartHomeSkill = true;
+        logger?.v('isSmartHomeSkill = true');
         libManager
             .send(
                 evt: CmdEvtType.setControllSports,
@@ -162,6 +170,8 @@ class _DownDirectivesAnalysis implements DownDirectivesAnalysis {
         });
       } else {
         /**< 跳转UI */
+        AlexaClient().isSmartHomeSkill = true;
+        logger?.v('isSmartHomeSkill = true');
         libManager
             .send(
                 evt: CmdEvtType.setControllUIJump, json: '{"type":${typeInt}}')
@@ -171,7 +181,7 @@ class _DownDirectivesAnalysis implements DownDirectivesAnalysis {
       }
     } else if (func == '6') {
       /**< 控制音乐 */
-      int onOff = 0xAA;
+      int onOff = 1;
 
       libManager
           .send(
@@ -207,7 +217,7 @@ class _DownDirectivesAnalysis implements DownDirectivesAnalysis {
     } else if (func == '8') {
       /**< 调节亮度 */
       int subTypeInt = 0;
-      if (subType.isNotEmpty) {
+      if (subType != null && subType != "null") {
         subTypeInt = (double.tryParse(subType) ?? 0.0).toInt();
       }
       final map = {"ui_type":1,
@@ -281,11 +291,18 @@ class _DownDirectivesAnalysis implements DownDirectivesAnalysis {
     var toggleSkill;
 
     if (name == "TurnOn" || name == "TurnOff") {
-      is100Sport = isToggleControllerSkill_sport(instance: instance);
-      if (is100Sport) {
+      bool is100Sport1 = isToggleControllerSkill_sport(instance: instance);
+      bool is100Sport2 = isToggleControllerSkill_sport2(instance: instance);
+
+      if (is100Sport1) {
         ///**< 100 sport ToggleController */
+        is100Sport = is100Sport1;
         toggleSkill =
             ToggleControllerSkillSport.getToggleControllerSkillSport();
+      }else if (is100Sport2){
+        is100Sport = is100Sport2;
+        toggleSkill =
+            ToggleControllerSkillSport2.getToggleControllerSkillSport2();
       } else {
         ///**< ToggleController */
         toggleSkill = ToggleControllerSkill.getToggleControllerSkill();
@@ -321,8 +338,8 @@ class _DownDirectivesAnalysis implements DownDirectivesAnalysis {
     if (instance == "brightness") {
       type = exchangeBrightnessSkill(map: map);
       subType = map["rangeValue"];
-      final rangeValueDelta = int.tryParse(map["rangeValueDelta"]) ?? 0;
-      if (subType.isEmpty &&
+      final rangeValueDelta = double.tryParse(map["rangeValueDelta"]) ?? 0;
+      if (subType == null &&
           (rangeValueDelta == 3 ||
               rangeValueDelta == 5 ||
               rangeValueDelta == 100)) {
@@ -344,14 +361,16 @@ class _DownDirectivesAnalysis implements DownDirectivesAnalysis {
 
   /// 转换亮度技能
   String exchangeBrightnessSkill({required Map map}) {
+    /**< 亮度增减 */
     final rangeValue = map["rangeValue"];
-    if (rangeValue.isNotEmpty) {
+    if (rangeValue != null && rangeValue != "null") {
       if (libManager.funTable.setAlexaControll100brightness) {
         return "8";
       }
       return "4";
     }
-    final rangeValueDelta = int.tryParse(map["rangeValueDelta"]) ?? 0;
+    String rangeValueDeltaStr = map["rangeValueDelta"];
+    final rangeValueDelta = (double.tryParse(rangeValueDeltaStr) ?? 0).toInt();
     if (rangeValueDelta == 1) {
       if (libManager.funTable.setAlexaControll100brightness) {
         return "6";
@@ -386,6 +405,24 @@ class _DownDirectivesAnalysis implements DownDirectivesAnalysis {
     return false;
   }
 
+  /**< 是否100种运动 */
+  bool isToggleControllerSkill_sport2({required String instance}) {
+    ///**< 100 sport ToggleController */
+    final Map toggle100JsonResult =
+    ToggleControllerSkillSport2.getToggleControllerSkillSport2();
+    ;
+    List toggle100SkillList = toggle100JsonResult["skill"];
+    final skill = toggle100SkillList.first;
+    List capability = skill["capability"];
+    for (Map item in capability) {
+      String itemInstance = item["instance"];
+      if (instance == itemInstance) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /**< 解析下行流语音文本数据, 组建Map数据，供下面方法使用 */
   Map<dynamic, dynamic> typeInDirectivesWithData(
       {required DirectiveModel model}) {
@@ -405,6 +442,22 @@ class _DownDirectivesAnalysis implements DownDirectivesAnalysis {
         }
       } /**< 删除 */
       else if (name == "DeleteAlerts" || name == "DeleteAlert") {
+
+        if(payload?.token != null){
+          var payloadtoken = payload?.token;
+          if (payloadtoken is String){
+            detail = {"type":name,"token":[payloadtoken]};
+          }else if (payloadtoken is List){
+            detail = {"type":name,"token":[payloadtoken?.first]};
+          }
+        }else if (payload?.tokens != null){
+          var payloadtoken = payload?.tokens;
+          if (payloadtoken is String){
+            detail = {"type":name,"token":[payloadtoken]};
+          }else if (payloadtoken is List){
+            detail = {"type":name,"token":payloadtoken};
+          }
+        }
       }
       /**< 挤退 */
       else if (name == "ResetUserInactivity") {
@@ -438,11 +491,13 @@ class _DownDirectivesAnalysis implements DownDirectivesAnalysis {
           "rangeValueDelta": rangeValueDeltaStr
         };
         AlexaClient().isSmartHomeSkill = true;
+        logger?.v('isSmartHomeSkill = true');
         final reportMap = smartHomeReport(model: model);
+        logger?.v('上报开关数据 -- smartHomeReport  = ${reportMap.toJsonString()}');
         ServiceManager().sendEventPart(
             accessToken: Auth().accessToken!,
             dataBody: reportMap.toData(),
-            label: name);
+            label: "smartHomeReport");
       } else if (name == "ReportState" && header?.correlationToken != null) {
         smartHomeReportState(model: model);
       }
@@ -489,7 +544,7 @@ class _DownDirectivesAnalysis implements DownDirectivesAnalysis {
       double? rangeValue = payload?.rangeValue;
       String rangeValueStr = "${rangeValue}";
 
-      if (rangeValueStr.isEmpty) {
+      if (rangeValue == null) {
         rangeValueStr = "1";
       }
       context = {
@@ -525,7 +580,7 @@ class _DownDirectivesAnalysis implements DownDirectivesAnalysis {
     }
 
     Map context;
-    if (instance == null || instance == "Sport") {
+    if (instance == null || instance == "Sport" || instance == "Sport2") {
       context = uploadAllToggleControllerState();
     } else {
       int value = await getHealthValue(instance: instance) as int;
@@ -567,9 +622,9 @@ class _DownDirectivesAnalysis implements DownDirectivesAnalysis {
   }
 
   String getTimeOfSample() {
-    DateTime now = DateTime.now();
+    DateTime now = DateTime.now().toUtc();
     String utcTimer =
-        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}T${now.hour}:${now.minute}:${now.second}Z";
+        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}T${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}Z";
     return utcTimer;
   }
 
@@ -643,7 +698,7 @@ class _DownDirectivesAnalysis implements DownDirectivesAnalysis {
       value = await AlexaClient()
           .delegate
           ?.getHealthValue(AlexaGetValueType.weekWorkoutCount);
-    } else if (instance == "Body Battery") {
+    } else if (instance == "Body Battery" || instance == "Body Energy") {
       value = await AlexaClient()
           .delegate
           ?.getHealthValue(AlexaGetValueType.bodyBattery);
@@ -654,7 +709,8 @@ class _DownDirectivesAnalysis implements DownDirectivesAnalysis {
     }
 
     /**< 心率做特殊处理 不取alexa返回文字 */
-    AlexaClient().isSmartHomeSkill = false;
+    AlexaClient().isSmartHomeSkill = true;
+    logger?.v('isSmartHomeSkill = true');
     if (instance == "Weekly Heartrate Sensor") {
       value = await AlexaClient()
           .delegate
@@ -728,12 +784,17 @@ class _DownDirectivesAnalysis implements DownDirectivesAnalysis {
     ///**< 100 sport ToggleController */
     final Map toggle100JsonResult =
         ToggleControllerSkillSport.getToggleControllerSkillSport();
-    ;
     final toggle100SkillList = toggle100JsonResult["skill"];
+
+    ///**< 100 sport2 ToggleController */
+    final Map toggle100JsonResult2 =
+    ToggleControllerSkillSport2.getToggleControllerSkillSport2();
+    final toggle100SkillList2 = toggle100JsonResult2["skill"];
 
     List allSkills = [];
     allSkills.addAll(toggleSkillList);
     allSkills.addAll(toggle100SkillList);
+    allSkills.addAll(toggle100SkillList2);
 
     String utcTimer = getTimeOfSample();
     List instances = [];

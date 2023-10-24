@@ -188,6 +188,8 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
       Viber: json['Viber'] as bool?,
       WatchDial: json['WatchDial'] as bool?,
       activitySwitch: json['activity_switch'] as bool?,
+      aerobicsBodybuildingExercise:
+          json['aerobics_bodybuilding_exercise'] as bool?,
       agpsOffline: json['agps_offline'] as bool?,
       agpsOnline: json['agps_online'] as bool?,
       alarmBath: json['alarmBath'] as bool?,
@@ -214,6 +216,8 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
           json['auto_activity_end_switch_not_display'] as bool?,
       autoActivityPauseSwitchNotDisplay:
           json['auto_activity_pause_switch_not_display'] as bool?,
+      autoActivitySetGetUseNewStructExchange:
+          json['auto_activity_set_get_use_new_struct_exchange'] as bool?,
       autoActivitySwitchAddBicycle:
           json['auto_activity_switch_add_bicycle'] as bool?,
       autoActivitySwitchAddSmartRope:
@@ -234,6 +238,8 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
       defaultConfig: json['defaultConfig'] as bool?,
       defaultSportType: json['defaultSportType'] as bool?,
       deviceUpdate: json['deviceUpdate'] as bool?,
+      deviceControlFastModeAlone:
+          json['device_control_fast_mode_alone'] as bool?,
       displayMode: json['displayMode'] as bool?,
       disturbHaveRangRepeat: json['disturb_have_rang_repeat'] as bool?,
       doNotDisturb: json['doNotDisturb'] as bool?,
@@ -362,11 +368,13 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
       heartRateMonitor: json['heartRateMonitor'] as bool?,
       heartRateOffByDefault: json['heart_rate_off_by_default'] as bool?,
       hidPhoto: json['hidPhoto'] as bool?,
+      highBar: json['high_bar'] as bool?,
       indoorCycle: json['indoor_cycle'] as bool?,
       indoorRun: json['indoor_run'] as bool?,
       indoorWalk: json['indoor_walk'] as bool?,
       instagram: json['instagram'] as bool?,
       isNeedSyncV2: json['is_need_sync_v2'] as bool?,
+      langBrazilianPortuguese: json['lang_brazilian_portuguese'] as bool?,
       langCh: json['lang_ch'] as bool?,
       langCzech: json['lang_czech'] as bool?,
       langEng: json['lang_eng'] as bool?,
@@ -375,6 +383,7 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
       langGerman: json['lang_german'] as bool?,
       langItalian: json['lang_italian'] as bool?,
       langJapanese: json['lang_japanese'] as bool?,
+      langMalay: json['lang_malay'] as bool?,
       langNorwegian: json['lang_norwegian'] as bool?,
       langPersia: json['lang_persia'] as bool?,
       langSpanish: json['lang_spanish'] as bool?,
@@ -436,10 +445,15 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
       outdoorFun: json['outdoor_fun'] as bool?,
       outdoorRun: json['outdoor_run'] as bool?,
       outdoorWalk: json['outdoor_walk'] as bool?,
+      parachuting: json['parachuting'] as bool?,
+      parallelBars: json['parallel_bars'] as bool?,
       pilates: json['pilates'] as bool?,
       poolSwim: json['pool_swim'] as bool?,
+      pullUp: json['pull_up'] as bool?,
       realtimeData: json['realtimeData'] as bool?,
       rower: json['rower'] as bool?,
+      scheduleReminderNotDisplayTitle:
+          json['schedule_reminder_not_display_title'] as bool?,
       scientificSleepSwitchOffByDefault:
           json['scientific_sleep_switch_off_by_default'] as bool?,
       screenBrightness5Level: json['screen_brightness_5_level'] as bool?,
@@ -448,6 +462,7 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
       singleSport: json['singleSport'] as bool?,
       skype: json['skype'] as bool?,
       sleepMonitor: json['sleepMonitor'] as bool?,
+      smartRope: json['smart_rope'] as bool?,
       sportModeSort: json['sport_mode_sort'] as bool?,
       sportShowNum: json['sport_show_num'] as int?,
       sportType0Badminton: json['sport_type0_badminton'] as bool?,
@@ -491,6 +506,9 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
       standingWaterSkiing: json['standing_water_skiing'] as bool?,
       staticHR: json['staticHR'] as bool?,
       stepCalculation: json['stepCalculation'] as bool?,
+      supportAlipay: json['support_alipay'] as bool?,
+      supportAppSendPhoneSystemInfo:
+          json['support_app_send_phone_system_info'] as bool?,
       supportBaidu: json['support_baidu'] as bool?,
       supportBarometricAltimeter: json['support_barometric_altimeter'] as bool?,
       supportBleControlPhotograph:
@@ -501,6 +519,9 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
       supportCallingQuickReply: json['support_calling_quick_reply'] as bool?,
       supportCompass: json['support_compass'] as bool?,
       supportControlMiniProgram: json['support_control_mini_program'] as bool?,
+      supportDialFrameEncodeFormatArgb6666:
+          json['support_dial_frame_encode_format_argb6666'] as bool?,
+      supportDingtalk: json['support_dingtalk'] as bool?,
       supportDouyin: json['support_douyin'] as bool?,
       supportEleme: json['support_eleme'] as bool?,
       supportEncryptedCodeResend0405:
@@ -518,11 +539,13 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
       supportGetV3DeviceAlgorithmVersion:
           json['support_get_v3_device_algorithm_version'] as bool?,
       supportGetWalkReminder: json['support_get_walk_reminder'] as bool?,
+      supportHamaFitMove: json['support_hama_fit_move'] as bool?,
       supportJd: json['support_jd'] as bool?,
       supportLoudspeaker: json['support_loudspeaker'] as bool?,
-      supportMakeWatchDailCompressModeLz4:
-          json['support_make_watch_dail_compress_mode_lz4'] as bool?,
+      supportLvglDialFrame: json['support_lvgl_dial_frame'] as bool?,
       supportMeituan: json['support_meituan'] as bool?,
+      supportOnekeyDoubleContact:
+          json['support_onekey_double_contact'] as bool?,
       supportOverFindPhone: json['support_over_find_phone'] as bool?,
       supportPerMinuteOne: json['support_per_minute_one'] as bool?,
       supportPinduoduo: json['support_pinduoduo'] as bool?,
@@ -543,7 +566,10 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
       supportSetFastModeWhenSyncConfig:
           json['support_set_fast_mode_when_sync_config'] as bool?,
       supportSetFitnessGuidance: json['support_set_fitness_guidance'] as bool?,
-      supportSetMenstrualOnOff: json['support_set_menstrual_on_off'] as bool?,
+      supportSetHistoricalMenstruationUseVersion2:
+          json['support_set_historical_menstruation_use_version2'] as bool?,
+      supportSetMenstrualReminderOnOff:
+          json['support_set_menstrual_reminder_on_off'] as bool?,
       supportSetMenuListTypeMeasure:
           json['support_set_menu_list_type_measure'] as bool?,
       supportSetPeripheralsInfo: json['support_set_peripherals_info'] as bool?,
@@ -558,6 +584,8 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
           json['support_set_v3_weatcher_add_snowfall'] as bool?,
       supportSetV3WeatcherSendStructVersion04:
           json['support_set_v3_weatcher_send_struct_version_04'] as bool?,
+      supportSetVoiceAssistantStatus:
+          json['support_set_voice_assistant_status'] as bool?,
       supportSixAxisSensor: json['support_six_axis_sensor'] as bool?,
       supportSmartCompetitor: json['support_smart_competitor'] as bool?,
       supportSyncActivityData3dDistanceSpeed:
@@ -584,7 +612,9 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
           json['support_sync_health_swim_get_avg_frequency'] as bool?,
       supportSyncHealthSwimGetAvgSpeed:
           json['support_sync_health_swim_get_avg_speed'] as bool?,
+      supportTaobao: json['support_taobao'] as bool?,
       supportTmail: json['support_tmail'] as bool?,
+      supportToutiao: json['support_toutiao'] as bool?,
       supportTypeResetDeviceBluetooth:
           json['support_type_reset_device_bluetooth'] as bool?,
       supportUpdateGps: json['support_update_gps'] as bool?,
@@ -616,6 +646,7 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
       tipInfoContact: json['tipInfoContact'] as bool?,
       tipInfoContent: json['tipInfoContent'] as bool?,
       tipInfoNum: json['tipInfoNum'] as bool?,
+      trailRunning: json['trail_running'] as bool?,
       uiControllSports: json['ui_controll_sports'] as bool?,
       unitSet: json['unitSet'] as bool?,
       upHandGestrue: json['upHandGestrue'] as bool?,
@@ -876,6 +907,7 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
       'Viber': instance.Viber,
       'WatchDial': instance.WatchDial,
       'activity_switch': instance.activitySwitch,
+      'aerobics_bodybuilding_exercise': instance.aerobicsBodybuildingExercise,
       'agps_offline': instance.agpsOffline,
       'agps_online': instance.agpsOnline,
       'alarmBath': instance.alarmBath,
@@ -902,6 +934,8 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
           instance.autoActivityEndSwitchNotDisplay,
       'auto_activity_pause_switch_not_display':
           instance.autoActivityPauseSwitchNotDisplay,
+      'auto_activity_set_get_use_new_struct_exchange':
+          instance.autoActivitySetGetUseNewStructExchange,
       'auto_activity_switch_add_bicycle': instance.autoActivitySwitchAddBicycle,
       'auto_activity_switch_add_smart_rope':
           instance.autoActivitySwitchAddSmartRope,
@@ -921,6 +955,7 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
       'defaultConfig': instance.defaultConfig,
       'defaultSportType': instance.defaultSportType,
       'deviceUpdate': instance.deviceUpdate,
+      'device_control_fast_mode_alone': instance.deviceControlFastModeAlone,
       'displayMode': instance.displayMode,
       'disturb_have_rang_repeat': instance.disturbHaveRangRepeat,
       'doNotDisturb': instance.doNotDisturb,
@@ -1041,11 +1076,13 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
       'heartRateMonitor': instance.heartRateMonitor,
       'heart_rate_off_by_default': instance.heartRateOffByDefault,
       'hidPhoto': instance.hidPhoto,
+      'high_bar': instance.highBar,
       'indoor_cycle': instance.indoorCycle,
       'indoor_run': instance.indoorRun,
       'indoor_walk': instance.indoorWalk,
       'instagram': instance.instagram,
       'is_need_sync_v2': instance.isNeedSyncV2,
+      'lang_brazilian_portuguese': instance.langBrazilianPortuguese,
       'lang_ch': instance.langCh,
       'lang_czech': instance.langCzech,
       'lang_eng': instance.langEng,
@@ -1054,6 +1091,7 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
       'lang_german': instance.langGerman,
       'lang_italian': instance.langItalian,
       'lang_japanese': instance.langJapanese,
+      'lang_malay': instance.langMalay,
       'lang_norwegian': instance.langNorwegian,
       'lang_persia': instance.langPersia,
       'lang_spanish': instance.langSpanish,
@@ -1115,10 +1153,15 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
       'outdoor_fun': instance.outdoorFun,
       'outdoor_run': instance.outdoorRun,
       'outdoor_walk': instance.outdoorWalk,
+      'parachuting': instance.parachuting,
+      'parallel_bars': instance.parallelBars,
       'pilates': instance.pilates,
       'pool_swim': instance.poolSwim,
+      'pull_up': instance.pullUp,
       'realtimeData': instance.realtimeData,
       'rower': instance.rower,
+      'schedule_reminder_not_display_title':
+          instance.scheduleReminderNotDisplayTitle,
       'scientific_sleep_switch_off_by_default':
           instance.scientificSleepSwitchOffByDefault,
       'screen_brightness_5_level': instance.screenBrightness5Level,
@@ -1127,6 +1170,7 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
       'singleSport': instance.singleSport,
       'skype': instance.skype,
       'sleepMonitor': instance.sleepMonitor,
+      'smart_rope': instance.smartRope,
       'sport_mode_sort': instance.sportModeSort,
       'sport_show_num': instance.sportShowNum,
       'sport_type0_badminton': instance.sportType0Badminton,
@@ -1168,6 +1212,9 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
       'standing_water_skiing': instance.standingWaterSkiing,
       'staticHR': instance.staticHR,
       'stepCalculation': instance.stepCalculation,
+      'support_alipay': instance.supportAlipay,
+      'support_app_send_phone_system_info':
+          instance.supportAppSendPhoneSystemInfo,
       'support_baidu': instance.supportBaidu,
       'support_barometric_altimeter': instance.supportBarometricAltimeter,
       'support_ble_control_photograph': instance.supportBleControlPhotograph,
@@ -1176,6 +1223,9 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
       'support_calling_quick_reply': instance.supportCallingQuickReply,
       'support_compass': instance.supportCompass,
       'support_control_mini_program': instance.supportControlMiniProgram,
+      'support_dial_frame_encode_format_argb6666':
+          instance.supportDialFrameEncodeFormatArgb6666,
+      'support_dingtalk': instance.supportDingtalk,
       'support_douyin': instance.supportDouyin,
       'support_eleme': instance.supportEleme,
       'support_encrypted_code_resend_04_05':
@@ -1192,11 +1242,12 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
       'support_get_v3_device_algorithm_version':
           instance.supportGetV3DeviceAlgorithmVersion,
       'support_get_walk_reminder': instance.supportGetWalkReminder,
+      'support_hama_fit_move': instance.supportHamaFitMove,
       'support_jd': instance.supportJd,
       'support_loudspeaker': instance.supportLoudspeaker,
-      'support_make_watch_dail_compress_mode_lz4':
-          instance.supportMakeWatchDailCompressModeLz4,
+      'support_lvgl_dial_frame': instance.supportLvglDialFrame,
       'support_meituan': instance.supportMeituan,
+      'support_onekey_double_contact': instance.supportOnekeyDoubleContact,
       'support_over_find_phone': instance.supportOverFindPhone,
       'support_per_minute_one': instance.supportPerMinuteOne,
       'support_pinduoduo': instance.supportPinduoduo,
@@ -1215,7 +1266,10 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
       'support_set_fast_mode_when_sync_config':
           instance.supportSetFastModeWhenSyncConfig,
       'support_set_fitness_guidance': instance.supportSetFitnessGuidance,
-      'support_set_menstrual_on_off': instance.supportSetMenstrualOnOff,
+      'support_set_historical_menstruation_use_version2':
+          instance.supportSetHistoricalMenstruationUseVersion2,
+      'support_set_menstrual_reminder_on_off':
+          instance.supportSetMenstrualReminderOnOff,
       'support_set_menu_list_type_measure':
           instance.supportSetMenuListTypeMeasure,
       'support_set_peripherals_info': instance.supportSetPeripheralsInfo,
@@ -1230,6 +1284,8 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
           instance.supportSetV3WeatcherAddSnowfall,
       'support_set_v3_weatcher_send_struct_version_04':
           instance.supportSetV3WeatcherSendStructVersion04,
+      'support_set_voice_assistant_status':
+          instance.supportSetVoiceAssistantStatus,
       'support_six_axis_sensor': instance.supportSixAxisSensor,
       'support_smart_competitor': instance.supportSmartCompetitor,
       'support_sync_activity_data_3d_distance_speed':
@@ -1253,7 +1309,9 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
           instance.supportSyncHealthSwimGetAvgFrequency,
       'support_sync_health_swim_get_avg_speed':
           instance.supportSyncHealthSwimGetAvgSpeed,
+      'support_taobao': instance.supportTaobao,
       'support_tmail': instance.supportTmail,
+      'support_toutiao': instance.supportToutiao,
       'support_type_reset_device_bluetooth':
           instance.supportTypeResetDeviceBluetooth,
       'support_update_gps': instance.supportUpdateGps,
@@ -1282,6 +1340,7 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
       'tipInfoContact': instance.tipInfoContact,
       'tipInfoContent': instance.tipInfoContent,
       'tipInfoNum': instance.tipInfoNum,
+      'trail_running': instance.trailRunning,
       'ui_controll_sports': instance.uiControllSports,
       'unitSet': instance.unitSet,
       'upHandGestrue': instance.upHandGestrue,

@@ -1829,6 +1829,22 @@ class ProtocolFfiBindings {
   late final _ProtocolGetFlashLogStart = _ProtocolGetFlashLogStartPtr
       .asFunction<int Function(int, ffi.Pointer<ffi.Char>)>();
 
+  /// @brief 设置flash获取时间，单位秒，默认一分钟
+  /// @return int SUCCESS(0)成功
+  int ProtocolGetFlashLogSetTime(
+    int time,
+  ) {
+    return _ProtocolGetFlashLogSetTime(
+      time,
+    );
+  }
+
+  late final _ProtocolGetFlashLogSetTimePtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int)>>(
+          'ProtocolGetFlashLogSetTime');
+  late final _ProtocolGetFlashLogSetTime =
+      _ProtocolGetFlashLogSetTimePtr.asFunction<int Function(int)>();
+
   /// @brief 获取flash日志停止
   /// @return int SUCCESS(0)成功
   int ProtocolGetFlashLogStop() {

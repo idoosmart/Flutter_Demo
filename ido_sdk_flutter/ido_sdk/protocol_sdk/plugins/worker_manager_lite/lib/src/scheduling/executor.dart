@@ -31,6 +31,11 @@ abstract class Executor {
 
   /// 查找指定任务数量
   int findTaskCount({required int evtBase, required int evtType, String? json});
+
+  /// 获取当前队列的指令列表
+  List<int> getQueueList();
+
+  int? getCurrentWorkTask();
 }
 
 class _Executor implements Executor {
@@ -220,6 +225,16 @@ class _Executor implements Executor {
       }
     });
     return count;
+  }
+
+  @override
+  List<int> getQueueList() {
+    return _queue.toList().map((e) => e.runnable.arg2 as int).toList();
+  }
+
+  @override
+  int? getCurrentWorkTask() {
+    return _worker.evtType;
   }
 
   void _logInfo(String info) {

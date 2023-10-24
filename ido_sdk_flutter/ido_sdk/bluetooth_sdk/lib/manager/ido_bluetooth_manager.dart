@@ -46,7 +46,7 @@ class _IDOBluetoothManager
   //heartPingSecond:心跳包间隔(ios)
   //outputToConsole：输出日志
   @override
-  register({int heartPingSecond = 5, bool outputToConsole = false}) async{
+  register({int heartPingSecond = 25, bool outputToConsole = false}) async{
     //日志
     await _registerLog();
     //通道
@@ -130,12 +130,15 @@ class _IDOBluetoothManager
   //监听设备状态
   _listenDeviceState(IDOBluetoothDeviceStateModel event) {
     addLog(
-        '_listenDeviceState，macAddress = ${event.macAddress},'
+        '_listenDeviceState，macAddress = ${event.macAddress},currentDevice?.macAddress = ${currentDevice?.macAddress}'
         'errorState = '
         '${event.errorState.toString()} isOTA = $isOTA , isAutoConnect = $isAutoConnect, '
         'isNeedGetMacAddress = '
         '${currentDevice?.isNeedGetMacAddress},state = ${event.state}',
         method: '_listenDeviceState');
+    if (event.macAddress != currentDevice?.macAddress) {
+      return;
+    }
     currentDevice?.state = event.state;
     if (event.state == IDOBluetoothDeviceStateType.connected ||
         event.state == IDOBluetoothDeviceStateType.disconnected) {
@@ -285,7 +288,7 @@ class _IDOBluetoothManager
     }
     cancelAllTimeout();
     addConnectTimeout();
-    addLog('start connect ${device.macAddress} name = ${device.name},',
+    addLog('开始连接start connect ${device.macAddress} name = ${device.name},',
         method: 'connect');
     //先断链上个设备
     IDOBluetoothDeviceModel? lastDevice = currentDevice;
@@ -589,6 +592,7 @@ class _IDOBluetoothManager
           Platform.isIOS &&
           currentDevice != null &&
           currentDevice!.isNeedGetMacAddress) {
+        //首次绑定需要获取Mac地址，这里挡住，保证后续链接已经有Mac地址
         return false;
       }else {
         _deviceSubject.add(currentDevice ?? IDOBluetoothDeviceModel());

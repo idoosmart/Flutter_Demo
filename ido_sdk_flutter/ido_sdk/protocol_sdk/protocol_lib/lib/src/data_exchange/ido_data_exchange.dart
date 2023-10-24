@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:protocol_core/protocol_core.dart';
 import 'package:protocol_lib/src/private/logger/logger.dart';
 
@@ -39,7 +40,7 @@ enum ExchangeStatus {
   appEndPlan, /// app结束运动计划
   appEndPlanReply, /// app结束运动计划 ble回复
   appSwitchAction, /// app切换动作
-  appSwitchActionReply, /// app结束运动计划 ble回复
+  appSwitchActionReply, /// app切换动作 ble回复
   appBlePause, /// app发起的运动 ble发起暂停
   appBlePauseReply, /// app发起的运动 ble发起暂停 app回复
   appBleRestore, /// app发起的运动 ble发起恢复

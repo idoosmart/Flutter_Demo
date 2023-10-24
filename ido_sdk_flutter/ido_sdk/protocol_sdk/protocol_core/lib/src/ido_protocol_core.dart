@@ -37,7 +37,8 @@ abstract class IDOProtocolCoreManager {
       int? val1,
       int? val2,
       bool useQueue,
-      CmdPriority cmdPriority});
+      CmdPriority cmdPriority,
+      Map<String, String>? cmdMap});
 
   /// 数据同步
   CancelableOperation<CmdResponse> sync(
@@ -173,11 +174,15 @@ abstract class IDOProtocolCoreManager {
   StreamSubscription listenControlEvent(void Function(Tuple3 t3) func);
 
   /// 初始化log
-  initLogs();
+  initLogs({bool outputToConsoleClib = false});
   // /// 注入logger实例（日志合并）
   // static void setLogger(LoggerManager? aLogger) {
   //   logger = aLogger;
   //   Executor.showLog = false;
   //   IDOProtocolAPI.setLogger(aLogger);
   // }
+
+  /// 设置flash获取时间，单位秒，默认一分钟
+  /// return int SUCCESS(0)成功
+  int setProtocolGetFlashLogSetTime(int time);
 }

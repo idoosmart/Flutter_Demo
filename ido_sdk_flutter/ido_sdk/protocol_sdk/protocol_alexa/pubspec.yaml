@@ -1,6 +1,6 @@
 name: protocol_alexa
 description: ido protocol_alexa lib (private)
-version: 2.0.0
+version: 2.0.8
 homepage:
 publish_to: none
 
@@ -23,11 +23,14 @@ dependencies:
   uuid: ^3.0.7
   path_provider: ^2.0.11
   flutter_native_timezone: ^2.0.0
+#  intl: ^0.17.0
 
   protocol_lib:
     path: ../protocol_lib/
   alexa_net:
     path: ../plugins/alexa_net
+  alexa_channel:
+    path: ../plugins/alexa_channel
   ido_logger:
     path: ../plugins/ido_logger/
   json_annotation: 4.8.0

@@ -1,3 +1,5 @@
+import 'package:protocol_lib/src/private/logger/logger.dart';
+
 import 'base_file_model.dart';
 
 import '../type_define/type_define.dart';
@@ -77,4 +79,11 @@ class MessageFileModel extends BaseFileModel {
       required this.packName,
       super.fileSize})
       : super(fileType: FileTransType.msg);
+
+  @override
+  String toString() {
+    return 'MessageFileModel{evtType: $evtType, packName: $packName, fileType: $fileType, '
+        'filePath: $filePath, fileName: $fileName, fileSize: $fileSize, '
+        'originalFileSize: $originalFileSize}';
+  }
 }

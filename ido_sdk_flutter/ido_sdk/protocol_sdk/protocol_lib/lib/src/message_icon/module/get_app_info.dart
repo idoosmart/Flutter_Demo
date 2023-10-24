@@ -69,7 +69,7 @@ extension _GetAppInfoExt on _GetAppInfo {
           final results = responseObject['results'] as List<dynamic>?;
           if (results?.length == 0) {
             final dic = {"bundleId":"","success":false,"artworkUrl100":"",
-              "trackName":"","country":"","message":"data is empty"};
+              "trackName":"","country":"","version":"","message":"data is empty"};
             return dic;
           }else {
             logger?.d('response == ${results}');
@@ -78,26 +78,27 @@ extension _GetAppInfoExt on _GetAppInfo {
             var id = objc?['bundleId'] as String? ?? '';
             var appName = objc?['trackName'] as String? ?? '';
             var code = objc?['country'] as String? ?? country;
+            var version = objc?['version'] as String? ?? '';
             final dic = {"bundleId":id,"success":true,"artworkUrl100":path,
-              "trackName":appName,"country":code,"message":"request data success"};
+              "trackName":appName,"country":code,"version":version,"message":"request data success"};
             logger?.d('get app info success == ${dic}');
             return dic;
           }
         }).catchError((error){
           logger?.d(error.toString());
           final dic = {"bundleId":"","success":false,"artworkUrl100":"",
-            "trackName":"","country":"","message":error.toString()};
+            "trackName":"","country":"","version":"","message":error.toString()};
           return dic;
         });
       }).onError((error, stackTrace) {
         final dic = {"bundleId":"","success":false,"artworkUrl100":"",
-          "trackName":"","country":"","message":error.toString()};
+          "trackName":"","country":"","version":"","message":error.toString()};
         return dic;
       }).timeout(
           const Duration(seconds: 5),
           onTimeout: () {
             final dic = {"bundleId":"","success":false,"artworkUrl100":"",
-              "trackName":"","country":"","message":"request data timeout"};
+              "trackName":"","country":"","version":"","message":"request data timeout"};
             return dic;
           });
       futures.add(future);
@@ -106,13 +107,14 @@ extension _GetAppInfoExt on _GetAppInfo {
     allTasks.then((value) {
       final allItems = value as List?;
       allItems?.forEach((element) {
-        model?.items?.forEach((item) {
+        model.items?.forEach((item) {
           final bundleId = element['bundleId'] as String? ?? '';
           if (bundleId == item.packName) {
-            item?.appName = element['trackName'] as String? ?? '';
-            item?.packName = element['bundleId'] as String? ?? '';
-            item?.iconCloudPath = element['artworkUrl100'] as String? ?? '';
-            item?.countryCode = element['country'] as String?;
+            item.appName = element['trackName'] as String? ?? '';
+            item.packName = element['bundleId'] as String? ?? '';
+            item.iconCloudPath = element['artworkUrl100'] as String? ?? '';
+            item.countryCode = element['country'] as String? ?? '';
+            item.appVersion = element['version'] as String? ?? '';
           }
         });
       });

@@ -45,4 +45,8 @@ abstract class IDODeviceBind {
   /// 设置c库绑定模式 mode: 0 没有绑定, 1 已经绑定, 2 升级模式, 3 重连, 4 泰凌微
   StreamSubscription listenUpdateSetModeNotification(
       void Function(int mode) func);
+
+  /// 监听解绑 (SDK内部使用）
+  StreamSubscription listenUnbindNotification(
+      void Function(String macAddress) func);
 }

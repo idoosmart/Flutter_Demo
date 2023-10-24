@@ -1,20 +1,21 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:ui';
 
-import 'package:path/path.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:protocol_core/protocol_core.dart';
 import 'package:archive/archive_io.dart';
 import 'package:protocol_lib/protocol_lib.dart';
 import 'package:protocol_lib/src/private/logger/logger.dart';
+import 'package:image/image.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 import '../device_info/model/device_info_ext_model.dart';
 import '../function_table/model/function_table_model.dart';
 import '../function_table/ido_function_table.dart';
 import '../type_define/image_type.dart';
 import '../private/local_storage/local_storage.dart';
+
 
 /// c库工具
 class IDOTool {
@@ -96,6 +97,11 @@ class IDOTool {
 
   // ------------------------------ GPS轨迹工具 ------------------------------
 
+  /// 初始化算法内部参数
+  void initParameter() {
+    _coreMgr.initParameter();
+  }
+
   /// gsp运动后优化轨迹,根据运动类型初始化速度阈值，若输入其他运动类型，会导致无运动轨迹
   ///
   /// [motionTypeIn] 运动类型：
@@ -128,6 +134,48 @@ class IDOTool {
   String gpsSmoothData({required String json}) {
     return _coreMgr.smoothData(json: json);
   }
+
+  /// 字符串按最大字节截取
+  /// input：字符串
+  /// maxByteLen：最大字节长度
+  String truncateString(String input,int maxByteLen) {
+    if (input == null || input.isEmpty) {
+      return '';
+    }
+    int byteLength = 0;
+    int charIndex = 0;
+    while (byteLength < maxByteLen && charIndex < input.length) {
+      int charCode = input.codeUnitAt(charIndex);
+      int bytesPerChar = 0;
+      if (charCode <= 0x7F) {
+        bytesPerChar = 1;
+      } else if (charCode <= 0x7FF) {
+        bytesPerChar = 2;
+      } else if (charCode <= 0xFFFF) {
+        bytesPerChar = 3;
+      } else {
+        bytesPerChar = 4;
+      }
+      if (byteLength + bytesPerChar > maxByteLen) {
+        break;
+      }
+      byteLength += bytesPerChar;
+      charIndex++;
+    }
+    return input.substring(0, charIndex);
+  }
+
+  /// 图片格式转换 png 添加透明背景色
+  /// src: 原图片
+  Future<Image?> imageCompressToPng(String imagePath) async {
+    final jpgBytes = File(imagePath).readAsBytesSync();
+    final  pngBytes = await FlutterImageCompress.compressWithList(
+      jpgBytes,
+      format: CompressFormat.png,
+    );
+    return decodeImage(pngBytes);
+  }
+
 }
 
 /// 来电提醒 、消息提醒
@@ -183,6 +231,8 @@ class IDOCallNotice {
   int missedV2MissedCallEvt() {
     return _coreMgr.missedV2MissedCallEvt();
   }
+
+
 }
 
 /// 协议库缓存
@@ -218,6 +268,19 @@ class IDOCache {
     return await compute(_doZip, info);
   }
 
+  /// 导出消息图标 返回压缩后日志zip文件绝对路径
+  Future<String?> exportMsgIconCache() async {
+    final pathSDK = await LocalStorage.pathSDKStatic();
+    final msgIconPath = await storage?.pathMessageIcon();
+    if (msgIconPath == null) {
+      logger?.e("get pathMessageIcon is null");
+      return null;
+    }
+    //return await compute(_doZip, "$pathSDK/logs");
+    final info = _ExportInfo(msgIconPath, "$pathSDK/message_icon.zip");
+    return await compute(_doZip, info);
+  }
+
   /// 导出flash日志 返回压缩后日志zip文件绝对路径
   Future<String?> exportLogFlash() async {
     final path =  await storage?.pathDeviceLog();
@@ -226,43 +289,23 @@ class IDOCache {
       return null;
     }
 
-    final inoutDir = "$path/flash";
     final outputFile = "$path/flash_logs.zip";
-    // 删除缓存
-    final dir = Directory(inoutDir);
-    if (dir.existsSync()) {
-      dir.listSync().forEach((entity) {
-        if (entity is File) {
-          entity.deleteSync();
-        }
-      });
-    }
+
+    /// 删除原来的压缩文件
     final zipFile = File(outputFile);
     if (zipFile.existsSync()) {
       zipFile.deleteSync();
     }
 
-    final rs = await libManager.deviceLog.startGet([
-      IDOLogType.general,
-      IDOLogType.reset,
-      IDOLogType.hardware,
-      IDOLogType.algorithm,
-      IDOLogType.restart
-    ]).first;
+    /// flash 日志只获取通用日志
+    final rs = await libManager.deviceLog.startGet(types:[IDOLogType.general]).first;
     if (rs) {
       final logPath = await libManager.deviceLog.logDirPath;
       final info = _ExportInfo("$logPath/flash", outputFile);
-      return await compute(_doZip, info);
+      final filePath = await compute(_doZip, info);
+      return filePath;
     }
     return null;
-  }
-
-  /// 加载指定设备功能表
-  @Deprecated('Use loadFuncTableByDisk(...)')
-  Future<FunctionTableModel?> loadFuncTable(
-      {required String macAddress}) async {
-    final macAddr = macAddress.replaceAll(':', '').toUpperCase();
-    return storage?.loadFunctionTableWith(macAddress: macAddr);
   }
 
   /// 加载指定设备功能表
@@ -270,7 +313,7 @@ class IDOCache {
       {required String macAddress}) async {
     final macAddr = macAddress.replaceAll(':', '').toUpperCase();
     final ft = await storage?.loadFunctionTableWith(macAddress: macAddr);
-    logger?.d('loadFuncTableByDisk rs:$ft');
+    logger?.d('loadFuncTableByDisk $macAddress rs:$ft');
     if (ft == null) return null;
     return BaseFunctionTable()..initFunTableModel(ft);
   }
@@ -280,7 +323,7 @@ class IDOCache {
       {required String macAddress}) async {
     final macAddr = macAddress.replaceAll(':', '').toUpperCase();
     final ft = await storage?.loadFunctionTableWith(macAddress: macAddr);
-    logger?.d('loadFuncTableByDisk rs:$ft');
+    logger?.d('loadFuncTableJsonByDisk $macAddress rs:$ft');
     if (ft == null) return null;
     return jsonEncode(ft.toJson());
   }

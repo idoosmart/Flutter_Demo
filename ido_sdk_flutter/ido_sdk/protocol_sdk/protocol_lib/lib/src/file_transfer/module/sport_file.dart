@@ -20,6 +20,7 @@ class SportFile extends BaseFile {
 
   @override
   Future<bool> configParamIfNeed() async {
+    logger?.d("call configParamIfNeed ${fileItem.fileType}");
     final rs = await _getTranConfigReplyIfNeed(fileItem);
     return Future(() => rs != null);
   }

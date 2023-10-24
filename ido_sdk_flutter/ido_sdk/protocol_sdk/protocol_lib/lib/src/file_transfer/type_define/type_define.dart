@@ -67,21 +67,19 @@ typedef CallbackFileTransStatusMultiple = void Function(
 typedef CallbackFileTransErrorCode = void Function(
     int index, int errorCode, int errorCodeFromDevice, int finishingTime);
 
-const _anyone = 'anyone';
-
 /// 传输文件类型
 enum FileTransType {
   /// 固件升级
   fw({'.fw'}),
 
-  /// 图片资源升级
-  fzbin({'.fzbin', _anyone}),
+  /// 图片资源升级 (不指定后缀即不限后缀)
+  fzbin({}),
 
   /// 字库升级
   bin({'.bin'}),
 
-  /// 语言包升级
-  lang({'.zip', '.lang', _anyone}),
+  /// 语言包升级 (不指定后缀即不限后缀)
+  lang({}),
 
   /// BT升级
   bt({'.bt'}),
@@ -131,8 +129,7 @@ enum FileTransType {
   final Set<String> typeNameSet;
 
   /// 扩展名是否匹配
-  bool isContainsExt(String ext) =>
-      typeNameSet.contains(ext) ? true : typeNameSet.contains(_anyone);
+  bool isContainsExt(String ext) => typeNameSet.isEmpty || typeNameSet.contains(ext);
 }
 
 enum FileTransStatus {

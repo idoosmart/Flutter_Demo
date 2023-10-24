@@ -61,7 +61,7 @@ typedef enum
 	VBUS_EVT_APP_SET_UINT                            = 108,	   //设置单位 struct protocol_set_unit
 	VBUS_EVT_APP_SET_HAND                            = 109,	   //设置左右手 struct protocol_set_handle
     
-	VBUS_EVT_APP_SET_APP_OS                          = 110,
+	VBUS_EVT_APP_SET_APP_OS                          = 110,    //设置手机系统
 	VBUS_EVT_APP_SET_NOTICE                          = 111,    //设置通知中心 struct protocol_set_notice
 	VBUS_EVT_APP_SET_HEART_RATE_INTERVAL             = 112,    //设置心率区间 struct protocol_heart_rate_interval
 	VBUS_EVT_APP_SET_HEART_RATE_MODE                 = 113,	   //设置心率模式 struct protocol_heart_rate_mode
@@ -101,7 +101,7 @@ typedef enum
 	VBUS_EVT_APP_SET_SPORT_MODE_SORT                 = 164,    //设置运动模式排序 struct protocol_sport_mode_sort
 	VBUS_EVT_APP_SET_WALK_REMINDER                   = 165,	   //设置走动提醒	struct protocol_set_walk_reminder
 	VBUS_EVT_APP_SET_BREATHE_TRAIN                   = 166,	   //呼吸训练	struct protocol_set_breathe_train
-	VBUS_EVT_APP_SET_ACTIVITY_SWITCH			     = 167,    //运动开关设置 struct protocol_activity_switch
+	VBUS_EVT_APP_SET_ACTIVITY_SWITCH			     = 167,    //运动模式识别开关设置 struct protocol_activity_switch
 	VBUS_EVT_APP_SET_DRINK_WATER_REMINDER            = 168,    //设置喝水提醒 struct protocol_drink_water_reminder
     VBUS_EVT_APP_SET_IOT_BUTTON_NAME                 = 169,    //设置IOT按钮 struct protocol_iot_button_name
     
@@ -129,6 +129,7 @@ typedef enum
     VBUS_EVT_APP_SET_NOTIFICATION_STATUS             = 190,    //手机app通过这个命令开关，实现通知应用状态设置   struct protocol_set_notification_status    struct protocol_set_base_reply
 	VBUS_EVT_APP_SET_RESPI_RATE_ON_OFF               = 191,    //手机app通过这个命令开关，设置呼吸率开关  struct protocol_set_respi_rate_on_off
     VBUS_EVT_APP_SET_BODY_POWER_ON_OFF               = 192,    //手机app通过这个命令开关，设置身体电量开关  struct protocol_set_body_power_on_off
+    VBUS_EVT_APP_SET_VOICE_ASSISTANT_ON_OFF          = 193,    //手机app通过这个命令开关，设置手机语音助手开关  struct protocol_set_voice_assistant_on_off
 
 	VBUS_EVT_APP_BIND_START                          = 200,    //绑定 struct protocol_start_bind,struct protocol_start_bind_reply
 	VBUS_EVT_APP_BIND_REMOVE                         = 201,	   //解绑
@@ -136,13 +137,9 @@ typedef enum
 	VBUS_EVT_APP_BIND_REFUSE                         = 203,	   //绑定拒绝
 	VBUS_EVT_APP_SET_ENCRYPTED_AUTH                  = 204,    //发送计算好的授权数据     struct protocol_start_encrypted_auth,struct protocol_start_encrypted_auth_reply
     VBUS_EVT_APP_GET_ENCRYPTED_CODE                  = 205,    //获取授权数据 protocol_start_aut_code_reply
-    VBUS_EVT_APP_GET_DEVICE_INFO_CONTINUE_GET_SN     = 208,    //获得设备信息临时保存,等待获取sn信息(c内部使用)
-	VBUS_EVT_APP_GET_DEVICE_INFO_CONTINUE_GET_BT     = 209,    //获得设备信息临时保存,等待获取bt名称(c内部使用)
-    
-    VBUS_EVT_APP_GET_DEVICE_INFO_ONLY                = 290,    //获得设备信息 单独事件 不会组合一起下发获取bt名称指令 初次绑定时使用此事件去获取设备信息struct protocol_device_info
     
 	VBUS_EVT_APP_APP_GET_MAC                         = 300,	   //获得mac struct protocol_device_mac
-	VBUS_EVT_APP_GET_DEVICE_INFO                     = 301,	   //获得设备信息 组合事件 在支持获取bt名称的情况下会组合上报bt名称 初次绑定时不用此事件去获取设备信息struct protocol_device_info
+	VBUS_EVT_APP_GET_DEVICE_INFO                     = 301,	   //获得设备信息 struct protocol_device_info
     VBUS_EVT_APP_GET_FUNC_TABLE                      = 302,	   //(内部使用)
     VBUS_EVT_APP_GET_FUNC_TABLE_USER                 = 303,    //获取功能表 struct protocol_get_func_table
     VBUS_EVT_APP_GET_LIVE_DATA                       = 304,    //获得实时数据 struct protocol_get_live_data,struct protocol_get_live_data_reply

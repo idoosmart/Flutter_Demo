@@ -1,6 +1,6 @@
 name: protocol_lib
 description: ido protocol_lib (private)
-version: 4.0.0
+version: 4.0.11
 homepage:
 publish_to: none
 
@@ -19,14 +19,17 @@ dependencies:
   crypto: ^3.0.2
 #  shared_preferences: ^2.0.15
   path_provider: ^2.0.11
-  image: ^3.2.2
+  image: ^4.0.15  #^3.2.2
   http: ^0.13.5
   get_storage: ^2.0.3
+  flutter_image_compress: ^2.0.4
 
   protocol_core:
     path: ../protocol_core/
   ido_logger:
     path: ../plugins/ido_logger/
+  native_channel:
+    path: ../plugins/native_channel
 
 
 dev_dependencies:

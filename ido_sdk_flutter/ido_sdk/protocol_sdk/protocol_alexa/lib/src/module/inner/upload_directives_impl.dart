@@ -4,8 +4,8 @@ class _UploadDirectivesAnalysis implements UploadDirectivesAnalysis {
   static String kContentTypeJSON = "application/json";
   static String kContentTypeAudio = "application/octet-stream";
   _FileTool? _fileReceive;
-  bool _isSmartHomeSkill = false;
   String? _speechFinishedLastToken;
+  StreamSubscription? _subscriptMp3Upload;
 
   /**< 解析上行流语音文本数据 */
   void parsingTextDirectivesAnalysis(
@@ -53,6 +53,8 @@ class _UploadDirectivesAnalysis implements UploadDirectivesAnalysis {
       String? name = header?.name;
       String? type = payload?.type;
       AudioItem? audioPlayItem = payload?.audioItem;
+
+      // final dialogRequestId = payload?.dialogRequestId;
 
       if (token != null) {
         /**< 发送结束指令 */
@@ -147,9 +149,9 @@ class _UploadDirectivesAnalysis implements UploadDirectivesAnalysis {
         contents.contains("が応答していません") ||
         contents.contains("Please try reconnecting your device") ||
         contents.length == 0) {
-      logger?.d('调用 创建下行流通道');
+      logger?.d('is not responding');
       // 创建下行流
-      AlexaClient().createNewDirectives();
+      // AlexaClient().createNewDirectives();
     }
 
     //勿扰模式处理
@@ -180,7 +182,7 @@ class _UploadDirectivesAnalysis implements UploadDirectivesAnalysis {
   }
 
   ////**< 发送文本或者语音给设备 */
-  void voiceRecognition(String contents, bool question, String? path) async {
+  void voiceRecognition(String contents, bool question, String? path) {
     /**< 显示文本 */
     if (contents.length > 0) {
       final utf8List = utf8.encode(contents);
@@ -188,16 +190,17 @@ class _UploadDirectivesAnalysis implements UploadDirectivesAnalysis {
       if (utf8List.length > 500) {
         contents = contents.substring(0, 500);
       }
-      if (_isSmartHomeSkill) {
-        logger?.v('SmartHomeSkill');
-        return;
+      if (AlexaClient().isSmartHomeSkill != null) {
+        if (AlexaClient().isSmartHomeSkill == true){
+          logger?.v('SmartHomeSkill');
+          return;
+        }
       }
       int flag_is_continue = 1;
       if (question == false) {
         flag_is_continue = 0;
       }
 
-      logger?.v('voiceRecognition text = ${contents}');
 
       final map = {"version":2,
         "flag_is_continue":flag_is_continue,
@@ -206,21 +209,26 @@ class _UploadDirectivesAnalysis implements UploadDirectivesAnalysis {
       };
       final json = jsonEncode(map);
 
-      final envent = await libManager.send(
+      logger?.v('voiceRecognition text json = ${json}');
+
+      libManager.send(
           evt: CmdEvtType.setVoiceReplyTxtV3,
-          json: json);
-      if (question == false) {
-        /**< 音频播放 */
-        playAudio(path: path);
-      }
+          json: json).listen((event) {
+        if (question == false) {
+          logger?.v('is question, 准备播放音频');
+          /**< 音频播放 */
+          playAudio(path: path);
+        }
+      });
+
     } else {
 
       final map = {"phone_state":1};
       final json = jsonEncode(map);
-      final rs = await libManager.send(
-          evt: CmdEvtType.setRecognitionState, json: json);
-
-      logger?.v('setRecognitionState Fail = ${rs.toString()}');
+      libManager.send(
+          evt: CmdEvtType.setRecognitionState, json: json).listen((event) {
+        logger?.v('setRecognitionState Fail = ${event.toString()}');
+      });
     }
   }
 
@@ -463,6 +471,7 @@ class _UploadDirectivesAnalysis implements UploadDirectivesAnalysis {
   }
 
   _tranFile(String filePath) {
+
     Stream<List<bool>> exec(List<BaseFileModel> items) {
       final t = libManager.transFile.transferMultiple(
           fileItems: items,
@@ -474,8 +483,9 @@ class _UploadDirectivesAnalysis implements UploadDirectivesAnalysis {
             logger?.v(
                 '进度：${currentIndex + 1}/$totalCount $currentProgress $totalProgress');
           }, cancelPrevTranTask: true);
-      t.listen((event) {
+      _subscriptMp3Upload = t.listen((event) {
         logger?.v('传输结束 结果:${event.toString()}');
+        _subscriptMp3Upload = null;
       });
       return t;
     }
@@ -495,6 +505,15 @@ class _UploadDirectivesAnalysis implements UploadDirectivesAnalysis {
     }
 
     mp3();
+  }
+
+  @override
+  void cancelMp3Upload() {
+    if (_subscriptMp3Upload != null) {
+      logger?.v("取消执行中的reply.pcm到设备的发送任务");
+      _subscriptMp3Upload?.cancel();
+      _subscriptMp3Upload = null;
+    }
   }
 }
 

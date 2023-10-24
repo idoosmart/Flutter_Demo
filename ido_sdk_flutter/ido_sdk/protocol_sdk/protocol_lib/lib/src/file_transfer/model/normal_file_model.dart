@@ -1,3 +1,5 @@
+import 'package:protocol_lib/src/private/logger/logger.dart';
+
 import 'base_file_model.dart';
 
 /// 根据FileTransType区分
@@ -12,4 +14,10 @@ class NormalFileModel extends BaseFileModel {
       required super.filePath,
       required super.fileName,
       super.fileSize});
+
+  @override
+  String toString() {
+    return 'NormalFileModel{fileType: $fileType, filePath: $filePath, fileName: '
+    '$fileName, fileSize: $fileSize, originalFileSize: $originalFileSize}';
+  }
 }

@@ -10,6 +10,7 @@ import android.bluetooth.le.ScanResult
 import com.example.flutter_bluetooth.utils.Constants
 import com.example.flutter_bluetooth.dfu.BleDFUState
 import com.example.flutter_bluetooth.dfu.parser.ScannerServiceParser
+import com.example.flutter_bluetooth.logger.Logger
 
 
 /**
@@ -68,16 +69,20 @@ object ProtoMaker {
         deviceAddress: String, status: Int, state: Int, error: Int = Constants.BleConnectFailedError.DEFAULT.ordinal
     ): Map<String, Any?> {
         val map = hashMapOf<String, Any?>()
-        val resultState = when (state) {
-            BluetoothProfile.STATE_CONNECTING -> Constants.BleConnectState.STATE_CONNECTING
-            BluetoothProfile.STATE_CONNECTED -> Constants.BleConnectState.STATE_CONNECTED
-            BluetoothProfile.STATE_DISCONNECTING -> Constants.BleConnectState.STATE_DISCONNECTING
-            else -> Constants.BleConnectState.STATE_DISCONNECTED
+        try {
+            val resultState = when (state) {
+                BluetoothProfile.STATE_CONNECTING -> Constants.BleConnectState.STATE_CONNECTING
+                BluetoothProfile.STATE_CONNECTED -> Constants.BleConnectState.STATE_CONNECTED
+                BluetoothProfile.STATE_DISCONNECTING -> Constants.BleConnectState.STATE_DISCONNECTING
+                else -> Constants.BleConnectState.STATE_DISCONNECTED
+            }
+            map["uuid"] = ""
+            map["macAddress"] = deviceAddress
+            map["state"] = resultState
+            map["errorState"] = error
+        } catch (e: Exception) {
+            Logger.p("makeConnectState e: $e")
         }
-        map["uuid"] = ""
-        map["macAddress"] = deviceAddress
-        map["state"] = resultState
-        map["errorState"] = error
         return map
     }
 

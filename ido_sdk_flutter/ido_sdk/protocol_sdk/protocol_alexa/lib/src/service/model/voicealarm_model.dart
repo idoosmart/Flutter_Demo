@@ -1,15 +1,18 @@
-import 'dart:ui';
+import 'package:json_annotation/json_annotation.dart';
 
-class VoiceAlarmModel{
-  //170不显示(删除) 85显示
-  int? status;
-  int? year;
-  int? month;
-  int? day;
-  int? hour;
-  int? minute;
-  int? alarmId;
-  int? repeat;
+part 'voicealarm_model.g.dart';
+
+@JsonSerializable()
+class VoiceAlarmModel {
+   int? status;
+   int? year;
+   int? month;
+   int? day;
+   int? hour;
+   int? minute;
+   @JsonKey(name: 'alarm_id')
+   int? alarmId;
+   int? repeat;
 
   VoiceAlarmModel({
     this.status,
@@ -22,30 +25,24 @@ class VoiceAlarmModel{
     this.repeat,
   });
 
-  factory VoiceAlarmModel.fromJson(Map<String, dynamic> json) => VoiceAlarmModel(
-    status: json["status"],
-    year: json["year"],
-    month: json["month"],
-    day: json["day"],
-    hour: json["hour"],
-    minute: json["minute"],
-    alarmId: json["alarm_id"],
-    repeat: json["repeat"],
-  );
+  factory VoiceAlarmModel.fromJson(Map<String, dynamic> json) =>
+      _$VoiceAlarmModelFromJson(json);
 
-  Map<String, dynamic> toJson() => {
-    "status": status,
-    "year": year,
-    "month": month,
-    "day": day,
-    "hour": hour,
-    "minute": minute,
-    "alarm_id": alarmId,
-    "repeat": repeat,
-  };
+  Map<String, dynamic> toJson() => _$VoiceAlarmModelToJson(this);
 }
 
-class AlexaAlarmModel{
-  int? alarmId;
-  String? token;
+@JsonSerializable()
+class AlexaAlarmModel {
+   int? alarmId;
+   String? token;
+
+   AlexaAlarmModel({
+    this.alarmId,
+    this.token,
+  });
+
+  factory AlexaAlarmModel.fromJson(Map<String, dynamic> json) =>
+      _$AlexaAlarmModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$AlexaAlarmModelToJson(this);
 }

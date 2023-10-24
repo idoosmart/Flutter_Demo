@@ -12,7 +12,9 @@ class _AlexaReminder implements AlexaReminder {
     reminder.scheduledTime = scheduledTime;
     reminder.token = token;
 
-    int curTimestamp = DateTime.now().toUtc().millisecondsSinceEpoch;
+    DateTime utcDateTime = DateTime.parse(scheduledTime);
+    DateTime localDateTime = utcDateTime.toLocal();
+    int curTimestamp = localDateTime.millisecondsSinceEpoch;
     reminder.timestamp = curTimestamp;
 
     AlexaClient().reminderArr.insert(0, reminder);
@@ -53,7 +55,7 @@ class _AlexaReminder implements AlexaReminder {
 
       int status = 0x55;
       if(model.isOpen==false)status = 0xaa;
-      if(model.reminderStr!.isEmpty)model.reminderStr="";
+      if(model.reminderStr == null)model.reminderStr="";
       Map voiceReminderModelMap = {
         "reminder_id":model.remindId,
         "status":status,
@@ -75,7 +77,7 @@ class _AlexaReminder implements AlexaReminder {
         evt: CmdEvtType.setVoiceAlarmReminderV3,
         json: jsonEncode(remindersModel))
         .listen((event) {
-      logger?.v('添加提醒 -- setVoiceAlarmReminderV3 = ${event.toString()}');
+      logger?.v('添加提醒 -- setVoiceAlarmReminderV3 = ${event.toString()} remindersModel = ${remindersModel.toString()}');
     });
 
   }
@@ -108,29 +110,31 @@ class _AlexaReminder implements AlexaReminder {
   /**< 删除过期REMINDER */
   void deleteOverdueReminder() {
     int curTimestamp = DateTime.now().toUtc().millisecondsSinceEpoch;
-    for (AlexaReminderModel obj in AlexaClient().reminderArr) {
-      /**<  过滤相同timer */
-      if (obj.timestamp! <= curTimestamp) {
-        AlexaClient().reminderArr.remove(obj);
-      }
+    if (AlexaClient().reminderArr.length > 0){
+      AlexaClient().reminderArr.removeWhere((element) => element.timestamp! <= curTimestamp);
     }
   }
 
   String subStringByByteAtIndex({required int index, required String content}) {
-    int sum = 0;
-    String subStr = "";
-    int ContentLength = content.length;
-    for (int i = 0; i < ContentLength; i++) {
-      String aStr = content.substring(i, 1);
-      sum = sum + utf8.encode(aStr).length;
-      if (sum < index) {
-        subStr = subStr + aStr;
-        ;
-      } else {
-        break;
+    if (content.length <= index) {
+      return content;
+    }
+
+    int numOfBytes = 0;
+    List<int> codeUnits = content.codeUnits;
+
+    for (int i = 0; i < codeUnits.length; i++) {
+      String character = String.fromCharCodes([codeUnits[i]]);
+      List<int> bytes = utf8.encode(character);
+      numOfBytes += bytes.length;
+
+      if (numOfBytes > index) {
+        return content.substring(0, i);
       }
     }
-    return subStr;
+
+    return content;
+
   }
   int convertToInt({required String strtemp}) {
     if(strtemp.isEmpty)return 0;

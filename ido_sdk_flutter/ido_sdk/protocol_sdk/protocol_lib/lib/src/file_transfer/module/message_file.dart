@@ -22,6 +22,7 @@ class MsgFile extends BaseFile {
 
   @override
   Future<bool> configParamIfNeed() async {
+    logger?.d("call configParamIfNeed ${fileItem.fileType}");
     final sport = fileItem as MessageFileModel;
     final map = {
       "type": 0,

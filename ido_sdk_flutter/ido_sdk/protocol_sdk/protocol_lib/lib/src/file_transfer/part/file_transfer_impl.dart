@@ -35,6 +35,8 @@ class _IDOFileTransfer implements IDOFileTransfer {
   late final tranFileItems = <BaseFile>[];
   Completer<List<bool>>? _completer;
 
+  Timer? _timerCloseFastMode;
+
   // 当前传输的文件类型
   FileTransType? __fileTransType;
   set _fileTransType(FileTransType? state) {
@@ -175,7 +177,8 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
     _cleanFileTransType();
     _completer?.complete(_resultList);
     _completer = null;
-    _closeFastMode();
+    // _closeFastMode();
+    _restartCloseFastModeTimer();
   }
 
   /// 执行传输任务
@@ -188,6 +191,7 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
     // 校验类型 & 记录文件大小
     for (int i = 0; i < fileItems.length; i++) {
       final fileItem = fileItems[i];
+      logger?.v("file $i = ${fileItem.toString()}");
       final tranFile = _createTranFile(fileItem);
       if (tranFile == null) {
         // 创建tranFile失败
@@ -264,12 +268,13 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
 
         // 所有任务执行完毕
         if (i == tranFileList.length - 1) {
-          try {
-            // 关闭快速模式
-            _closeFastMode(); // 去除同步任务（业务反馈文件进度走完 但不会及时上报完成状态）
-          } catch (e) {
-            logger?.e(e.toString());
-          }
+          // try {
+          //   // 关闭快速模式
+          //   _closeFastMode(); // 去除同步任务（业务反馈文件进度走完 但不会及时上报完成状态）
+          // } catch (e) {
+          //   logger?.e(e.toString());
+          // }
+          _restartCloseFastModeTimer();
 
           // 完成回调
           if (_completer != null && !_completer!.isCompleted) {
@@ -283,8 +288,9 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
       }
     } catch (e) {
       logger?.e(e.toString());
-      // 关闭快速模式
-      _closeFastMode();
+      // // 关闭快速模式
+      // _closeFastMode();
+      _restartCloseFastModeTimer();
       if (_completer != null && !_completer!.isCompleted) {
         _completer?.complete(_resultList);
         _cleanFileTransType();
@@ -365,19 +371,29 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
 
   /// 开启快速模式
   Future<bool> _openFastMode() async {
+    if (_libMgr.funTable.getDeviceControlFastModeAlone) {
+      logger?.v("开启快速模式 由设备控制，无需app处理");
+      return true;
+    }
+
     const mode = 0x01; // 快速模式
     // 0 失败 1 模式切换成功 2 需要执行查模式
     final rs = await _switchMode(mode: mode);
     if (rs == 2) {
       // 刚切换模式没那么快生效，此处延迟1秒查询成功率比较高
       return Future.delayed(const Duration(seconds: 1),
-          () => _checkFastMode(mode: mode, retryCount: 3));
+          () => _checkFastMode(mode: mode, retryCount: 1));
     }
     return Future(() => rs == 1);
   }
 
+  // 废弃（统一由固件管理）
   /// 关闭快速模式
   Future<bool> _closeFastMode() async {
+    if (_libMgr.funTable.getDeviceControlFastModeAlone) {
+      logger?.v("关闭快速模式 由设备控制，无需app处理");
+      return true;
+    }
     const mode = 0x02; // 慢速模式
     // 0 失败 1 模式切换成功 2 需要执行查模式
     final rs = await _switchMode(mode: mode, retryCount: 1);
@@ -452,7 +468,7 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
   /// 查模式
   ///
   /// mode: 0x01 快速模式 , 0x02 慢速模式
-  Future<bool> _checkFastMode({required int mode, int retryCount = 5}) {
+  Future<bool> _checkFastMode({required int mode, int retryCount = 1}) {
     // 重试x次 间隔1秒
     var count = 0;
     return Rx.retryWhen(() {
@@ -473,7 +489,7 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
     }, (e, s) {
       count++;
       logger?.e(e);
-      return Rx.timer(null, const Duration(seconds: 1)); // 重试间隔
+      return Rx.timer(null, const Duration(seconds: 2)); // 重试间隔
     }).map((res) => _isSuccessful(res, mode)).last;
   }
 
@@ -504,6 +520,7 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
   /// 进度回调
   void _progressCallback(int progress, index) {
     logger?.d('progress: $progress index:$index');
+    _stopCloseFastModeTimer();
     if (!_isCanceled) {
       final p = max(0.0, min(1.0, progress / 100.0));
       _funcProgress!(index, tranFileItems.length, p, _progressTotal(p, index));
@@ -531,10 +548,27 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
 
   void _cleanFileTransType() {
     _fileTransType = null;
+    _isBusy = false;
   }
 
   // /// 忽略等待关闭快速模式（用于文件上传后设备会重启的情况）
   // bool _hasWaitCloseFastMode(BaseFile tranFile) {
   //   return !{FileTransType.fw}.contains(tranFile.type);
   // }
+
+  /// 重启关闭快速模式倒计时
+  void _restartCloseFastModeTimer() {
+    _stopCloseFastModeTimer();
+    _timerCloseFastMode = Timer.periodic(const Duration(seconds: 2 * 60), (timer) {
+      _closeFastMode();
+      _timerCloseFastMode?.cancel();
+      _timerCloseFastMode = null;
+    });
+  }
+  void _stopCloseFastModeTimer() {
+    if (_timerCloseFastMode != null && _timerCloseFastMode!.isActive) {
+      _timerCloseFastMode?.cancel();
+    }
+    _timerCloseFastMode = null;
+  }
 }

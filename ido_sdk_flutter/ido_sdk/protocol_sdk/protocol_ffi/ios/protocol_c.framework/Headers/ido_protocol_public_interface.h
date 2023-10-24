@@ -1031,6 +1031,12 @@ extern int ProtocolV2MissedCallEvt(void);
 extern int ProtocolGetFlashLogStart(int type, const char *file_name);
 
 /**
+ * @brief 设置flash获取时间，单位秒，默认一分钟
+ * @return int SUCCESS(0)成功
+ * */
+extern int ProtocolGetFlashLogSetTime(int time);
+
+/**
  * @brief 获取flash日志停止
  * @return int SUCCESS(0)成功
  * */

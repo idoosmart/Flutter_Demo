@@ -4,6 +4,7 @@ class _LocalStorage implements LocalStorage {
   static const _keyAuth = 'auth-info';
   static const _keyLanType = 'language-type';
   static const _keyProductId = 'product-id';
+  static const _DeviceKey = 'devices';
 
   GetStorage? _getStorage;
 
@@ -13,6 +14,15 @@ class _LocalStorage implements LocalStorage {
 
   @override
   late LocalStorageConfig config;
+
+  @override
+  Future<String> pathAlexaDeviceRoot({required String macAddr}) async {
+    final path = await libManager.cache.alexaPath();
+    final cachePath =
+        '$path/${_DeviceKey}/${macAddr.toLowerCase()}';
+    return _createDir(cachePath);
+  }
+
 
   @override
   Future<String?> getString({required String key}) async {
@@ -153,8 +163,34 @@ class _LocalStorage implements LocalStorage {
   @override
   Future<bool> saveProductId(String productId) async {
     final rs = await setString(key: _keyProductId, value: productId);
-    logger?.d('saveProductId productId:$productId rs:$rs');
+    //logger?.d('saveProductId productId:$productId rs:$rs');
     return rs;
+  }
+
+  @override
+  Future<List?> loadAlarmDataByDisk(String mac) async {
+    String key = _DeviceKey+"_"+mac.toLowerCase();
+    final json = await getString(key: key);
+    logger?.d('loadAlarmDataByDisk mac = ${mac}, json = ${json?.length}');
+    if (json != null) {
+      List<dynamic> jsonList = jsonDecode(json);
+      List<AlexaAlarmModel> userList = jsonList.map((json) => AlexaAlarmModel.fromJson(json)).toList();
+      return Future(() => userList);
+    }
+    return Future(() => null);
+  }
+
+  @override
+  Future<bool> saveAlarmDataToDisk(String mac, List alexaAlarmList) async {
+    if (mac != null){
+      String key = _DeviceKey+"_"+mac.toLowerCase();
+      String json = jsonEncode(alexaAlarmList.map((user) => user.toJson()).toList());
+      final rs = await setString(key: key, value: json);
+      logger?.d('saveAlarmDataToDisk mac = ${mac} json = ${json.length} rs:$rs');
+      return rs;
+    }
+    logger?.d('saveAlarmDataToDisk mac = null');
+    return false;
   }
 }
 
@@ -162,7 +198,7 @@ extension _LocalStorageExt on _LocalStorage {
   Future<GetStorage> getStorage() async {
     final path = await libManager.cache.alexaPath();
     _getStorage ??= GetStorage('alexa_storage', '$path/alexa_storage');
-    logger?.v('_getStorage hashCode:${_getStorage.hashCode} path:$path/alexa_storage');
+    //logger?.v('_getStorage hashCode:${_getStorage.hashCode} path:$path/alexa_storage');
     return _getStorage!;
   }
 

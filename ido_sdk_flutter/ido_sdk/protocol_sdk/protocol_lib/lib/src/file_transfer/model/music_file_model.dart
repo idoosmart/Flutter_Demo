@@ -1,3 +1,5 @@
+import 'package:protocol_lib/src/private/logger/logger.dart';
+
 import 'base_file_model.dart';
 
 import '../type_define/type_define.dart';
@@ -21,4 +23,11 @@ class MusicFileModel extends BaseFileModel {
         this.useSpp = false,
         super.fileSize})
       : super(fileType: FileTransType.mp3);
+
+  @override
+  String toString() {
+    return 'MusicFileModel{musicId: $musicId, singerName: $singerName, useSpp: $useSpp '
+        ', fileType: $fileType, filePath: $filePath, fileName: $fileName, '
+        'fileSize: $fileSize, originalFileSize: $originalFileSize}';
+  }
 }

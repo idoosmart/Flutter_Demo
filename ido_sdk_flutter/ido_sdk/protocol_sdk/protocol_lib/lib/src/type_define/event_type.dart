@@ -9,11 +9,6 @@ enum CmdEvtType {
       evtBase: _VBusEvtBase.base_app_get,
       evtType: _VBusEvtType.app_app_get_mac),
 
-  /// 获取设备信息 (绑定前专用)
-  getDeviceInfoOnly(
-      evtBase: _VBusEvtBase.base_app_get,
-      evtType: _VBusEvtType.intapp_get_device_info_only),
-
   /// 获取设备信息
   getDeviceInfo(
       evtBase: _VBusEvtBase.base_app_get,
@@ -28,6 +23,16 @@ enum CmdEvtType {
   getFuncTableEx(
       evtBase: _VBusEvtBase.base_app_get,
       evtType: _VBusEvtType.app_get_func_table_ex),
+
+  /// 获取sn
+  getSnInfo(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.app_get_sn_info),
+
+  /// 获取bt蓝牙名称
+  getBtName(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.app_get_bt_name),
 
   /// 获得实时数据
   getLiveData(
@@ -491,7 +496,7 @@ enum CmdEvtType {
       evtBase: _VBusEvtBase.base_app_set,
       evtType: _VBusEvtType.app_set_v3_noise),
 
-  // 设置心率模式
+  /// 设置心率模式
   setHeartMode(
       evtBase: _VBusEvtBase.base_app_set,
       evtType: _VBusEvtType.func_v3_set_hr_mode),
@@ -1243,16 +1248,15 @@ enum CmdEvtType {
       evtBase: _VBusEvtBase.base_app_set,
       evtType: _VBusEvtType.func_v3_notice_message),
 
-  // /// app下发BLE结束命令 语音传输过程中
-  // setVoiceFileTranStop(
-  //     evtBase: _VBusEvtBase.base_app_set,
-  //     evtType: _VBusEvtType.tran_json_voice_tran_app_set_ble_end),
-
   /// 内部测试
   innerTestCmd1(
   evtBase: _VBusEvtBase.base_app_set,
-  evtType: _VBusEvtType.app_protocol_test_cmd_1);
+  evtType: _VBusEvtType.app_protocol_test_cmd_1),
 
+  /// 设置手机语音助手开关
+  setVoiceAssistantOnOff(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.app_set_voice_assistant_on_off);
 
   const CmdEvtType({required this.evtBase, required this.evtType});
 
@@ -1564,6 +1568,9 @@ abstract class _VBusEvtType {
   /// 手机app通过这个命令开关，设置身体电量开关  struct protocol_set_body_power_on_off
   static const int app_set_body_power_on_off = 192;
 
+  /// 设置手机语音助手开关 struct protocol_set_voice_assistant_on_off
+  static const int app_set_voice_assistant_on_off = 193;
+
   /// 绑定	struct protocol_start_bind,struct protocol_start_bind_reply
   static const int app_bind_start = 200;
 
@@ -1710,6 +1717,9 @@ abstract class _VBusEvtType {
 
   /// 获取固件不可删除的快捷应用列表
   static const app_get_undeleteable_meun_list = 340;
+
+  /// 获取sn
+  static const app_get_sn_info = 341;
 
   /// 检查重启状态,非协议,用于内部状态处理
   static const int check_reboot = 350;

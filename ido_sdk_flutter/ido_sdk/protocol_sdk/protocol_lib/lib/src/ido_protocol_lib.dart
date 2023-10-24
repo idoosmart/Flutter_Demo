@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:rxdart/rxdart.dart';
@@ -14,8 +13,8 @@ import 'device_info/model/device_info_ext_model.dart';
 import 'private/logger/logger.dart';
 import 'private/local_storage/local_storage.dart';
 import 'private/notification/notification.dart';
-
 part 'private/protocol_lib_impl.dart';
+part 'private/extension/event_type_ext.dart';
 
 final libManager = IDOProtocolLibManager();
 
@@ -23,28 +22,24 @@ final libManager = IDOProtocolLibManager();
 abstract class IDOProtocolLibManager {
   factory IDOProtocolLibManager() => _IDOProtocolLibManager();
 
-  /// 初始化c库
-  Future<bool> initClib();
-
-  /// 设置c库运行模式
-  void setClibRunMode({required bool isDebug});
-
-  /// 标记设备已连接 （蓝牙连接时调用）
-  ///
-  /// ```dart
-  /// macAddress 当前连接设备的mac地址
-  /// otaMode 设置ota模式
-  /// isBinded 绑定状态
-  /// deviceName 设备名称
-  /// uuid (iOS专用)
+  /// 注册协议库（需在使用libManager前注册）
   /// ```
-  @Deprecated('Use markConnectedDeviceSafe(...)')
-  Future<bool> markConnectedDevice(
-      {required String macAddress,
-      required IDOOtaType otaType,
-      required bool isBinded,
-      String? deviceName = '',
-      String? uuid = ''});
+  /// outputToConsole sdk log打印到控制台
+  /// outputToConsoleClib c库log打印到控制台
+  /// isReleaseClib c库运行模式(release只打印重要log)
+  /// ```
+  static Future<bool> register(
+      {bool outputToConsole = false,
+      bool outputToConsoleClib = false,
+      bool isReleaseClib = true}) async {
+    await _IDOProtocolLibManager.initLog(
+        writeToFile: true,
+        outputToConsole: outputToConsole,
+        outputToConsoleClib: outputToConsoleClib,
+        isReleaseClib: isReleaseClib,
+        logLevel: LoggerLevel.verbose);
+    return _IDOProtocolLibManager.doInitClib();
+  }
 
   /// 标记设备已连接 （蓝牙连接时调用）
   ///
@@ -164,19 +159,4 @@ abstract class IDOProtocolLibManager {
 
   /// 关联alexa（内部使用）
   AlexaOperator joinAlexa(AlexaDelegate delegate);
-
-  /// Log初始化
-  ///
-  /// ```dart
-  /// writeToFile 写log文件
-  /// outputToConsole 打印到控制台
-  /// logLevel 日志级别（该值只会在debug模式下有效）
-  /// ```
-  static Future<bool> initLog(
-      {bool outputToConsole = true}) async {
-    return _IDOProtocolLibManager.initLog(
-        writeToFile: true,
-        outputToConsole: outputToConsole,
-        logLevel: LoggerLevel.verbose);
-  }
 }

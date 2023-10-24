@@ -2,7 +2,7 @@ part of '../service_manager.dart';
 
 class _ServiceManager implements ServiceManager {
   late final _http1 = ServiceHttp1.instance;
-  late final _http2 = ServiceHttp2.instance;
+  late ServiceHttp2 _http2 = ServiceHttp2(HttpClient.getInstance().dioV2);
 
   _ServiceManager._internal() {
     _initClient();
@@ -219,7 +219,7 @@ class _ServiceManager implements ServiceManager {
     final token = 'Bearer $accessToken';
     if (dataBody.length < 2000) {
       logger?.v('发送 \'$label\' 请求 - httpBody: ${utf8.decode(dataBody)}');
-    }else {
+    } else {
       logger?.v('发送 \'$label\' 请求 - httpBody: 内容过长忽略显示');
     }
     final headers = <String, dynamic>{
@@ -254,8 +254,8 @@ class _ServiceManager implements ServiceManager {
         .catchError((e) {
       if (e is DioError) {
         return Response<String>(
-                statusCode: e.response?.statusCode ?? -1,
-                requestOptions: e.requestOptions);
+            statusCode: e.response?.statusCode ?? -1,
+            requestOptions: e.requestOptions);
       }
       return Response<String>(statusCode: -1, requestOptions: RequestOptions());
     });
@@ -301,6 +301,17 @@ class _ServiceManager implements ServiceManager {
   }
 
   @override
+  Future<BaseEntity<String>> getAlarms(
+      {required String accessToken,
+        required String id,
+        CancelToken? cancelToken}) {
+    return _http2
+        .getAlarms(AlexaAppUrlType.alexaRESTAPI.name, accessToken, id,
+        cancelToken)
+        .cast((map) => jsonEncode(map));
+  }
+
+  @override
   Future<BaseEntity<String>> reminders(
       {required String accessToken,
       required Map<String, dynamic> mapBody,
@@ -311,6 +322,7 @@ class _ServiceManager implements ServiceManager {
         .cast((map) => jsonEncode(map));
   }
 
+
   @override
   Future<BaseEntity<ResponseBody>> uploadAudioStream(
       {required String accessToken,
@@ -320,6 +332,7 @@ class _ServiceManager implements ServiceManager {
       CancelToken? cancelToken}) async {
     // throw '';
     final token = 'Bearer $accessToken';
+
     final headers = <String, dynamic>{
       r'urlType': AlexaAppUrlType.alexaGateway.name,
       r'Authorization': token,
@@ -355,10 +368,11 @@ class _ServiceManager implements ServiceManager {
             )
             .copyWith(baseUrl: dio.options.baseUrl)))
         .catchError((e) {
-      if (e is DioError) {
+      if (e is DioException) {
         return e.response ??
             Response(
                 statusCode: e.response?.statusCode ?? -1,
+                statusMessage: e.response?.statusMessage,
                 requestOptions: e.requestOptions);
       }
       return Response(statusCode: -1, requestOptions: RequestOptions());
@@ -380,6 +394,12 @@ extension _ServiceManagerExt on _ServiceManager {
   /// 初始化网络请求
   void _initClient() {
     HttpClient.init(needPrintLog: true, netLog: _AlexaNetLog());
+
+    // 监听dio重新实例化
+    HttpClient.getInstance().listenDioV2InstanceChanged((p0) {
+      logger?.d('reset _http2');
+      _http2 = ServiceHttp2(HttpClient.getInstance().dioV2);
+    });
   }
 
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {
@@ -411,12 +431,12 @@ class _NetManager {
     }).catchError((e) {
       int? statusCode;
       String? msg;
-      if (e is DioError) {
+      if (e is DioException) {
         statusCode = e.response?.statusCode;
         msg = e.response?.statusMessage;
       }
       int code = statusCode ?? -1;
-      return BaseEntity<T>(status: code, result: null, message: msg ?? 'error');
+      return BaseEntity<T>(status: code, result: null, message: msg ?? 'error', httpCode: statusCode);
     });
     return resultData;
   }

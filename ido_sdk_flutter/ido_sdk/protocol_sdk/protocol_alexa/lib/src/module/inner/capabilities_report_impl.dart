@@ -58,6 +58,10 @@ class _CapabilitiesReport implements CapabilitiesReport {
     if(libManager.funTable.setSet100SportSort || libManager.deviceInfo.deviceId == 7553 || libManager.funTable.alexaGetUIControllSports){
       final rs_toggle100SportSkills = await updateToggle100SportCapabilities();
       logger?.v('技能上传 - 100种自定义运动 = ${rs_toggle100SportSkills.toString()}');
+
+      final rs_toggle100SportSkills2 = await updateToggle100Sport2Capabilities();
+      logger?.v('技能上传 - 100种自定义运动2 = ${rs_toggle100SportSkills2.toString()}');
+
     }else{
       logger?.v('技能上传 - 不支持100种自定义运动');
     }
@@ -158,13 +162,54 @@ class _CapabilitiesReport implements CapabilitiesReport {
     final toggle100MapEndpointId = await getSingleEndpoint(
         productId: productIdKey, capList: toggle100List, instance: "Sport");
 
-    Uint8List oggleRange100Capabilities =
+    Uint8List toggleRange100Capabilities =
         addOrUpdateReportBase(endPoints: [toggle100MapEndpointId]);
 
     final rs = await _service.sendEventPart(
         accessToken: _auth.accessToken!,
-        dataBody: oggleRange100Capabilities,
-        label: 'oggleRange100Capabilities');
+        dataBody: toggleRange100Capabilities,
+        label: 'toggleRange100Capabilities');
+    return rs;
+  }
+
+  /// 上传toggleControllerSkill_sport，100种运动技能上传（分开传，技能太多了）
+  Future<dynamic> updateToggle100Sport2Capabilities() async {
+    if (_auth.isLogin == false) {
+      logger?.v('AddOrUpdateReportSport2 KCapabilities rs  = login is false');
+      return null;
+    }
+    String productIdKey = _auth.productId;
+
+    ///**< 100 sport ToggleController */
+    List toggle100List = [];
+    if(libManager.funTable.alexaSetJumpUiV3) {
+      final Map toggle100JsonResult =
+      ToggleControllerSkillSport2.getToggleControllerSkillSport2();
+
+      final toggle100SkillList = toggle100JsonResult["skill"];
+
+      for (Map capability in toggle100SkillList) {
+        List capabilityArr = capability["capability"];
+        for (Map item in capabilityArr) {
+          Map toggleitem = getToggleControllerSkillItem(item: item);
+          toggle100List.add(toggleitem);
+        }
+      }
+    }else{
+      logger?.v('功能表 上传toggleControllerSkill_100sport2技能---> not support alexaJumpUi');
+    }
+
+
+    final toggle100MapEndpointId = await getSingleEndpoint(
+        productId: productIdKey, capList: toggle100List, instance: "Sport2");
+
+    Uint8List toggleRange100Capabilities =
+    addOrUpdateReportBase(endPoints: [toggle100MapEndpointId]);
+
+    final rs = await _service.sendEventPart(
+        accessToken: _auth.accessToken!,
+        dataBody: toggleRange100Capabilities,
+        label: 'toggleRange100Capabilities2');
     return rs;
   }
 
@@ -506,7 +551,7 @@ class _CapabilitiesReport implements CapabilitiesReport {
   }
 
   Uint8List addOrUpdateReportBase({required List endPoints}) {
-    String identifierUUID = DataBox.kUUID.toUpperCase();
+    String identifierUUID = DataBox.kUUID;
     final map = {
       "event": {
         "header": {
@@ -523,7 +568,7 @@ class _CapabilitiesReport implements CapabilitiesReport {
       }
     };
 
-    final json = jsonEncode(map);
+    // final json = jsonEncode(map);
     // logger?.v("json=====:$json");
 
     return map.toData();

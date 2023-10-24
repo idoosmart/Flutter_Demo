@@ -5,6 +5,7 @@ import 'package:alexa_net/alexa_net.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:alexa_channel/alexa_channel.dart';
 
 import '../private/logger/logger.dart';
 import '../private/tools/map_extension.dart';
@@ -75,6 +76,12 @@ abstract class ServiceManager {
       {required String accessToken,
       required Map<String, dynamic> mapBody,
       CancelToken? cancelToken});
+
+  /// 获取闹钟
+  Future<BaseEntity<String>> getAlarms(
+      {required String accessToken,
+        required String id,
+        CancelToken? cancelToken});
 
   /// 提醒
   Future<BaseEntity<String>> reminders(

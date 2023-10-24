@@ -5,8 +5,10 @@ typedef CallbackCRequestCmd = void Function(int evtType, int error, int val);
 typedef CallbackFastSyncComplete = void Function(int errorCode);
 
 class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
-  late final _queue = Executor();
+  late final _queueCmd = Executor();
   late final _queueSync = Executor();
+  late final _queueLog = Executor();
+  late final _queueTrans = Executor();
   // //数据响应接口
   late final _cLibManager = IDOProtocolClibManager();
   late final _subjectDeviceState = StreamController<int>.broadcast();
@@ -35,7 +37,7 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
   }
 
   @override
-  bool get isPaused => _queue.isPaused;
+  bool get isPaused => _queueCmd.isPaused;
 
   @override
   StreamController<Tuple3<int, int, String>> get streamListenReceiveData =>
@@ -49,19 +51,26 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
       int? val1,
       int? val2,
       bool useQueue = true,
-      CmdPriority cmdPriority = CmdPriority.normal}) {
+      CmdPriority cmdPriority = CmdPriority.normal,
+      Map<String, String>? cmdMap}) {
     if (!useQueue) {
+      if (cmdMap != null) {
+        logger?.v('发送：${cmdMap["cmd"]} - "${cmdMap["desc"]}"');
+      }
       logger?.d('request evtType:$evtType json:$json');
       final rs = _cLibManager.cLib.writeJsonData(
           json: json ?? '{}', evtType: evtType, evtBase: evtBase);
       logger?.d('response evtType:$evtType rs:$rs');
+      if (cmdMap != null) {
+        logger?.v('收到：${cmdMap["cmd"]} - "${cmdMap["desc"]}"');
+      }
       return CancelableOperation<CmdResponse>.fromFuture(
           Future(() => CmdResponse(code: ErrorCode.success)),
           onCancel: () {});
     }
 
     // 过滤重复指令不超过3个
-    if (_queue.findTaskCount(evtBase: evtBase, evtType: evtType, json: json) >=
+    if (_queueCmd.findTaskCount(evtBase: evtBase, evtType: evtType, json: json) >=
         _maxSameCmdTaskCount) {
       return CancelableOperation<CmdResponse>.fromFuture(
           Future(() => CmdResponse(code: ErrorCode.task_already_exists)),
@@ -70,25 +79,30 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
 
     // 部分指令优先级略高，此处打印log
     if (cmdPriority != CmdPriority.normal) {
-      logger?.v(
-          'evtType:$evtType cmdPriority: ${cmdPriority.name}');
+      logger?.v('evtType:$evtType cmdPriority: ${cmdPriority.name}');
     }
 
     // 基础命令的优先级要高于数据同步
     // 命令执行间隔 20毫秒
-    Cancelable<CmdResponse>? rs;
-    return CancelableOperation<CmdResponse>.fromFuture(
-        (rs = _queue.execute(
-          arg1: evtBase,
-          arg2: evtType,
-          arg3: json ?? '{}',
-          fun3: _execCmd,
-          priority: _mapCmdPriority(cmdPriority),
-          interval: const Duration(milliseconds: 20),
-          onDispose: _onDispose,
-        )), onCancel: () {
+    Cancelable<CmdResponse> cmdTask = _queueCmd.execute(
+      arg1: evtBase,
+      arg2: evtType,
+      arg3: json ?? '{}',
+      fun3: _execCmd,
+      priority: _mapCmdPriority(cmdPriority),
+      interval: const Duration(milliseconds: 20),
+      onDispose: _onDispose,
+    );
+    if (cmdMap != null) {
+      logger?.v('cmd - ${cmdMap["cmd"]} "${cmdMap["desc"]}"');
+    }
+    logger?.v("cmd - add $evtType, "
+        "active ${_queueCmd.getCurrentWorkTask() ?? "-"}, "
+        "queue: ${_queueCmd.getQueueList()}");
+    return CancelableOperation<CmdResponse>.fromFuture(cmdTask, onCancel: () {
       logger?.d('CancelableOperation cancel, evtType:$evtType');
-      rs?.cancel();
+      cmdTask.cancel();
+      logger?.v("cmd - cancel $evtType, queue: ${_queueCmd.getQueueList()}");
     });
   }
 
@@ -123,7 +137,7 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
     // 文件传输优先级需要高于基础指令
     Cancelable<CmdResponse>? rs;
     return CancelableOperation<CmdResponse>.fromFuture(
-        (rs = _queue.execute(
+        (rs = _queueTrans.execute(
           arg1: fileTranItem,
           arg2: statusCallback,
           arg3: progressCallback,
@@ -142,7 +156,7 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
       {required LogType type, required String dirPath}) {
     Cancelable<CmdResponse>? rs;
     return CancelableOperation<CmdResponse>.fromFuture(
-        (rs = _queue.execute(
+        (rs = _queueLog.execute(
           arg1: type,
           arg2: dirPath,
           fun2: _execLogs,
@@ -167,20 +181,26 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
 
   @override
   void dispose() {
-    _queue.dispose();
+    _queueCmd.dispose();
     _queueSync.dispose();
+    _queueLog.dispose();
+    _queueTrans.dispose();
   }
 
   @override
   void pause() {
-    _queue.pause();
+    _queueCmd.pause();
     _queueSync.pause();
+    _queueLog.pause();
+    _queueTrans.pause();
   }
 
   @override
   void resume() {
-    _queue.resume();
+    _queueCmd.resume();
     _queueSync.resume();
+    _queueLog.resume();
+    _queueTrans.resume();
   }
 
   @override
@@ -216,7 +236,7 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
   @override
   StreamSubscription<int> fastSyncComplete(void Function(int errorCode) func) {
     logger?.d('register fastSyncComplete func');
-    logger?.d('core 快速配置完成回调 3');
+    //logger?.d('core 快速配置完成回调 3');
     return _subjectFastSyncComplete.stream.listen(func);
     // _callbackFastSyncComplete = func;
   }
@@ -238,15 +258,20 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
   }
 
   @override
-  initLogs() {
+  initLogs({bool outputToConsoleClib = false}) {
     Executor.showLog = false;
     final log = LoggerSingle();
     assert(
         log.config != null, 'You need to call LoggerSingle.configLogger(...)');
     if (log.config != null) {
       logger = log;
-      IDOProtocolAPI().initLogs();
+      IDOProtocolAPI().initLogs(outputToConsoleClib: outputToConsoleClib);
     }
+  }
+
+  @override
+  int setProtocolGetFlashLogSetTime(int time) {
+    return _cLibManager.cLib.setProtocolGetFlashLogSetTime(time);
   }
 }
 
@@ -261,7 +286,9 @@ extension _IDOProtocolCoreManagerExt on _IDOProtocolCoreManager {
         task.cancel();
       }
     });
-    return await task.call();
+    final rs = await task.call();
+    logger?.v("cmd - done $evtType, queue: ${_queueCmd.getQueueList()}");
+    return rs;
   }
 
   /// 执行数据同步task
@@ -364,9 +391,9 @@ extension _IDOProtocolCoreManagerExt on _IDOProtocolCoreManager {
     _cLibManager.streamFastSyncComplete.stream.listen((errCode) {
       logger?.d('core streamFastSyncComplete listen data:$errCode');
       if (_subjectFastSyncComplete.hasListener) {
-        logger?.d('core 快速配置完成回调 4');
+        //logger?.d('core 快速配置完成回调 4');
         _subjectFastSyncComplete.add(errCode);
-      }else {
+      } else {
         logger?.e('core 快速配置完成回调 4 失败');
         logger?.e('core _callbackFastSyncComplete is null');
       }

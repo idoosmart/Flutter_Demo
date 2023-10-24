@@ -1,4 +1,5 @@
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:math';
@@ -23,4 +24,7 @@ abstract class UploadDirectivesAnalysis {
   /**< 解析上行流语音文本数据 */
   void parsingTextDirectivesAnalysis(
       {required VoiceReceivedData directives});
+
+  /// 取消音频上传至设备
+  void cancelMp3Upload();
 }

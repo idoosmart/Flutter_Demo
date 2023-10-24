@@ -45,15 +45,19 @@ class _DeviceDetailContentState extends State<DeviceDetailContent> {
         final otaType = device.isTlwOta
             ? IDOOtaType.telink
             : device.isOta
-                ? IDOOtaType.nordic
-                : IDOOtaType.none;
+            ? IDOOtaType.nordic
+            : IDOOtaType.none;
         final isBinded = await libManager.cache
             .loadBindStatus(macAddress: event.macAddress!);
-        await libManager.markConnectedDevice(
-            macAddress: event.macAddress!,
+        var uniqueId = event.macAddress!;
+        // 获取设备uuid(只有ios)
+        if (Platform.isIOS && bluetoothManager.currentDevice?.uuid != null) {
+          uniqueId = bluetoothManager.currentDevice!.uuid!;
+        }
+        await libManager.markConnectedDeviceSafe(
+            uniqueId: uniqueId,
             isBinded: isBinded,
-            otaType: otaType,
-            uuid: device.uuid);
+            otaType: otaType);
         // debugPrint('end markConnectedDevice');
       } else if (event.state == IDOBluetoothDeviceStateType.disconnected) {
         // debugPrint('begin markDisconnectedDevice');
@@ -185,15 +189,15 @@ class _DeviceDetailContentState extends State<DeviceDetailContent> {
     // final model6 = IDOAppIconItemModel(evtType: 6, packName: 'pinterest', appName: '', iconLocalPath: '');
     // libManager.messageIcon.test([model1,model2,model3,model4,model5,model6]);
 
-    final item = IDOAppInfo(
-        evtType: 1,
-        packName: 'com.weaver.emobile7',
-        appName: 'Emobile7',
-        iconLocalPath: '');
+    // final item = IDOAppInfo(
+    //     evtType: 1,
+    //     packName: 'com.weaver.emobile7',
+    //     appName: 'Emobile7',
+    //     iconLocalPath: '');
 
-    libManager.messageIcon.android_transferAppIcon([item]).listen((event) {
-      debugPrint('android_transferAppIcon: $event');
-    });
+    // libManager.messageIcon.android_transferAppIcon([item]).listen((event) {
+    //   debugPrint('android_transferAppIcon: $event');
+    // });
 
     // libManager.syncData.startSync(funcProgress: (progress) {
     //   debugPrint(

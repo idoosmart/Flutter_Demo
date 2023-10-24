@@ -49,3 +49,6 @@ const RX_UPDATE_UUID_0XFE59_IOS = "fe59";
 const RX_UPDATE_UUID_0X0203 = "00010203-0405-0607-0809-0a0b0c0d1912";
 //泰凌微设备升级时的名称
 const RX_UPDATE_NAME_TLW = "tlwota";
+
+///channel
+// const String sendStateChannel = "sendState";

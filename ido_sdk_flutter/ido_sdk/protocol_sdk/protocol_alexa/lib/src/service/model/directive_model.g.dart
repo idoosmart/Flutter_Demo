@@ -76,6 +76,9 @@ Payload _$PayloadFromJson(Map<String, dynamic> json) => Payload(
       scheduledTime: json['scheduledTime'] as String?,
       rangeValue: json['rangeValue'],
       rangeValueDelta: json['rangeValueDelta'],
+      label: json['label'] as String?,
+      dialogRequestId: json['dialogRequestId'],
+      tokens: json['tokens'] as String?,
     );
 
 Map<String, dynamic> _$PayloadToJson(Payload instance) => <String, dynamic>{
@@ -88,8 +91,10 @@ Map<String, dynamic> _$PayloadToJson(Payload instance) => <String, dynamic>{
       'clearBehavior': instance.clearBehavior,
       'url': instance.url,
       'scheduledTime': instance.scheduledTime,
+      'label': instance.label,
       'rangeValue': instance.rangeValue,
       'rangeValueDelta': instance.rangeValueDelta,
+      'dialogRequestId': instance.dialogRequestId,
       'caption': instance.caption,
       'audioItem': instance.audioItem,
       'listItems': instance.listItems,
@@ -98,6 +103,7 @@ Map<String, dynamic> _$PayloadToJson(Payload instance) => <String, dynamic>{
       'highTemperature': instance.highTemperature,
       'lowTemperature': instance.lowTemperature,
       'weatherForecast': instance.weatherForecast,
+      'tokens': instance.tokens,
     };
 
 Endpoint _$EndpointFromJson(Map<String, dynamic> json) => Endpoint(

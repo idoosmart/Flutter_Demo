@@ -6,6 +6,8 @@ import '../scheduling/task.dart';
 abstract class Worker {
   int? get runnableNumber;
 
+  int? get evtType;
+
   Future<O> work<A, B, C, D, O, T>(Task<A, B, C, D, O, T> task);
 
   void kill();
@@ -64,5 +66,8 @@ class _Worker implements Worker {
     }
     _cleanOnNewMessage();
   }
+
+  @override
+  int? get evtType => _task?.runnable.arg2;
 
 }

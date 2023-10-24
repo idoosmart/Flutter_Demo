@@ -254,9 +254,9 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
     this.second = second;
     this.sportType = sportType;
     this.version = version;
-    this.hrCount = length;
+    this.hrCount = (this.hrCount ?? 0) + length;
     this.interval = interval;
-    this.hrValues = heartRates;
+    this.hrValues?.addAll(heartRates);
   }
 
   /// 获取最后运动数据

@@ -34,4 +34,10 @@ extension IDOProtocolAPIExtFlashLog on IDOProtocolAPI {
   int getHeatLogInfo() {
     return bindings.ProtocolGetHeatLogInfo();
   }
+
+  /// 设置flash获取时间，单位秒，默认一分钟
+  /// return int SUCCESS(0)成功
+  int setProtocolGetFlashLogSetTime(int time) {
+    return bindings.ProtocolGetFlashLogSetTime(time);
+  }
 }

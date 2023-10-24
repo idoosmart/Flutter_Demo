@@ -75,7 +75,7 @@ extension _ContactFileExt on ContactFile {
     }
 
     // rename
-    await newFile.rename(mlFilePath);
+    await newFile.copy(mlFilePath);
     if (await File(mlFilePath).exists()) {
       return Future(() => true);
     } else {

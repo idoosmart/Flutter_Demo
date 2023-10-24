@@ -5,13 +5,17 @@ import 'dart:io' as io;
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:alexa_channel/alexa_channel.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:alexa_net/alexa_net.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:dio/dio.dart';
+import 'package:protocol_alexa/src/module/client.dart';
 import 'package:protocol_lib/protocol_lib.dart';
 
 import '../../protocol_alexa.dart';
+import '../private/reachability/alexa_reachability.dart';
 import '../service/model/directive_model.dart';
 import '../private/tools/data_box.dart';
 import '../private/tools/uint8list_extension.dart';
@@ -31,6 +35,8 @@ abstract class Voice {
   AlexaDelegate get alexaDelegate;
 
   AlexaOperator? alexaOperator;
+
+  bool get isOnListening;
 
   /// 监听Alexa语言上传后的反馈数据
   StreamSubscription listenUploadVoiceData(

@@ -260,6 +260,39 @@ class _ServiceHttp2 implements ServiceHttp2 {
   }
 
   @override
+  Future<String> getAlarms(
+    String header,
+    String accessToken,
+    String id,
+    CancelToken? cancelToken,
+  ) async {
+    const _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{
+      r'urlType': header,
+      r'Authorization': accessToken,
+    };
+    _headers.removeWhere((k, v) => v == null);
+    final Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<String>(_setStreamType<String>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+        .compose(
+          _dio.options,
+          '/v1/alerts/alarms/${id}',
+          queryParameters: queryParameters,
+          data: _data,
+          cancelToken: cancelToken,
+        )
+        .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
+    final value = _result.data!;
+    return value;
+  }
+
+  @override
   Future<String> reminders(
     String header,
     String accessToken,

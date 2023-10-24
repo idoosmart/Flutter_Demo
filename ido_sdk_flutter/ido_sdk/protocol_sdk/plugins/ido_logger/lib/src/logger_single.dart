@@ -77,7 +77,7 @@ extension _LoggerSingleExt on LoggerSingle {
       }
 
       if (_config!.writeToFile) {
-        final file = _getFile(); //File('${config.dirPath}/${_fileName()}');
+        final file = _getFile();
         if (!file.existsSync()) {
           file.createSync(recursive: true);
         }
@@ -105,11 +105,58 @@ extension _LoggerSingleExt on LoggerSingle {
     final date = DateTime.now();
     final hm =
         '${date.hour.toString().padLeft(2, '0')}${date.minute.toString().padLeft(2, '0')}';
-    final name = '${date.year}-${date.month}-${date.day}_$hm.log';
+    final name = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}_$hm.log';
     return name;
   }
 
-  /// 获取需要的文件
+  /// 获取需要的文件（按天分）
+  File _getFileToday() {
+    final dir = Directory(_config!.dirPath);
+    if (!dir.existsSync()) {
+      dir.createSync(recursive: true);
+    }
+    final date = DateTime.now();
+    final fileName = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}.log';
+
+    try {
+      final list = dir
+          .listSync(recursive: false, followLinks: false)
+          .where((e) => e.path.endsWith('.log'))
+          .toList();
+
+      // 删除历史数据yyyy-MM-dd_HHmm.log
+      list.removeWhere((e) => e.uri.pathSegments.last.length > "yyyy-MM-dd.log".length);
+
+      final fileCount = list.length;
+      if (list.length < _config!.maximumNumberOfLogFiles) {
+        return File('${_config!.dirPath}/$fileName');
+      }
+      //print('按文件名降序前：\n${list.map((e) => e.uri.pathSegments.last).toList()}');
+      list.sort((a, b) {
+        return b.uri.pathSegments.last.compareTo(a.uri.pathSegments.last); // 按文件名降序
+      });
+      //print('按文件名降序后：\n${list.map((e) => e.uri.pathSegments.last).toList()}');
+      // 控制文件数量
+      if (fileCount > _config!.maximumNumberOfLogFiles) {
+        final start = fileCount - _config!.maximumNumberOfLogFiles + 1;
+        final end = fileCount;
+        // 删除对应文件
+        list.getRange(start, end).forEach((e) {
+          //print('删除: ${e.path}');
+          File(e.path).deleteSync();
+        });
+        list.removeRange(start, end);
+        //print('删除后：\n${list.map((e) => e.path).toList()}');
+      }
+      // 返回新文件
+      return File('${_config!.dirPath}/$fileName');
+    } catch (e) {
+      // 返回新文件
+      return File('${_config!.dirPath}/$fileName');
+    }
+  }
+
+  /// 获取需要的文件（按文件大小分）
   File _getFile() {
     final dir = Directory(_config!.dirPath);
     if (!dir.existsSync()) {
@@ -125,15 +172,11 @@ extension _LoggerSingleExt on LoggerSingle {
         return File('${_config!.dirPath}/${_fileName()}');
       }
 
-      //print('按时间降序前：\n${list.map((e) => e.path).toList()}');
-      // 按文件修改时间降序
+      // print('按文件名降序前：\n${list.map((e) => e.uri.pathSegments.last).toList()}');
       list.sort((a, b) {
-        final aStat = a.statSync();
-        final bStat = b.statSync();
-        return bStat.modified.millisecondsSinceEpoch -
-            aStat.modified.millisecondsSinceEpoch;
+        return b.uri.pathSegments.last.compareTo(a.uri.pathSegments.last); // 按文件名降序
       });
-      //print('按时间降序后：\n${list.map((e) => e.path).toList()}');
+      // print('按文件名降序后：\n${list.map((e) => e.uri.pathSegments.last).toList()}');
       // 控制文件数量
       if (fileCount > _config!.maximumNumberOfLogFiles) {
         final start = fileCount - _config!.maximumNumberOfLogFiles + 1;

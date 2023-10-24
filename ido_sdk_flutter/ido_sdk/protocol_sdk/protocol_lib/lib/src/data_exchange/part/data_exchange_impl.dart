@@ -2,7 +2,9 @@ part of '../ido_data_exchange.dart';
 
 class _IDOExchangeData implements IDOExchangeData {
   static final _instance = _IDOExchangeData._internal();
-  _IDOExchangeData._internal();
+  _IDOExchangeData._internal(){
+    _init();
+  }
   factory _IDOExchangeData() => _instance;
   late final _libMgr = IDOProtocolLibManager();
   late final _funTable = _libMgr.funTable;
@@ -15,6 +17,19 @@ class _IDOExchangeData implements IDOExchangeData {
   IDOV2ExchangeModel? _v2Model;
   IDOV3ExchangeModel? _v3Model;
   ExchangeStatus? _status;
+
+  void _init() {
+    _streamV3Exchange.stream.listen((event) {
+       if (kDebugMode) {
+         logger?.d("_v3Model == ${event.toJson()}");
+       }
+    });
+    _streamV2Exchange.stream.listen((event) {
+       if (kDebugMode) {
+         logger?.d("_v2Model == ${event.toJson()}");
+       }
+    });
+  }
 
   @override
   void appExec({required IDOBaseExchangeModel model}) {
@@ -183,11 +198,23 @@ extension _IDOExchangeExt on _IDOExchangeData {
             _baseModel?.sportType = model.sportType;
             data.model = model;
             if (this.supportV3ActivityExchange) {
-              _v3Model = IDOV3ExchangeModel();
+              final date = DateTime.now();
+              final year = date.year;
+              final month = date.month;
+              _v3Model = IDOV3ExchangeModel(year: year, month: month);
+              _v3Model?.hrValues = [];
+              _v3Model?.kmSpeeds = [];
+              _v3Model?.mileSpeeds = [];
+              _v3Model?.stepsFrequencys = [];
+              _v3Model?.actionData = [];
+              _v3Model?.paceSpeeds = [];
+              _v3Model?.realSpeeds = [];
+              _v3Model?.gpsData = [];
               _v3Model?.bleStart2AppData(model.day ?? 0, model.hour ?? 0, model.minute ?? 0,
                   model.second ?? 0, model.sportType ?? 0, model.operate ?? 0);
             }else {
               _v2Model = IDOV2ExchangeModel();
+              _v2Model?.hrValues = [];
               _v2Model?.bleStart2AppData(model.day ?? 0, model.hour ?? 0, model.minute ?? 0,
                   model.second ?? 0, model.sportType ?? 0, model.operate ?? 0);
             }
@@ -279,7 +306,18 @@ extension _IDOExchangeExt on _IDOExchangeData {
               _baseModel?.minute = model.minute;
               _baseModel?.second = model.second;
               _baseModel?.sportType = model.sportType;
-              _v3Model = IDOV3ExchangeModel();
+              final date = DateTime.now();
+              final year = date.year;
+              final month = date.month;
+              _v3Model = IDOV3ExchangeModel(year: year, month: month);
+              _v3Model?.hrValues = [];
+              _v3Model?.kmSpeeds = [];
+              _v3Model?.mileSpeeds = [];
+              _v3Model?.stepsFrequencys = [];
+              _v3Model?.actionData = [];
+              _v3Model?.paceSpeeds = [];
+              _v3Model?.realSpeeds = [];
+              _v3Model?.gpsData = [];
             }else if (model.operate == 2) {
               if (_status == ExchangeStatus.blePausePlan) {
                 return;
@@ -337,7 +375,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
         ///防止相同指令多次回调
         return;
       }
-      logger?.d('exchange get activity heart rate data == ${response.json} error code == ${response.code}');
+      logger?.d('exchange get activity heart rate data error code == ${response.code}');
       _status = ExchangeStatus.getHrReply;
       final data = ExchangeResponse();
       data.code = response.code;
@@ -375,7 +413,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
          ///防止相同指令多次回调
          return;
       }
-      logger?.d('exchange get activity data == ${response.json} error code == ${response.code}');
+      logger?.d('exchange get activity data error code == ${response.code}');
       _status = ExchangeStatus.getActivityReply;
       final data = ExchangeResponse();
       data.code = response.code;
@@ -419,7 +457,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
         ///防止相同指令多次回调
         return;
       }
-      logger?.d('exchange get activity gps data == ${response.json} error code == ${response.code}');
+       logger?.d('exchange get activity gps data error code == ${response.code}');
       _status = ExchangeStatus.getActivityGpsReply;
       final data = ExchangeResponse();
       data.code = response.code;
@@ -458,7 +496,18 @@ extension _IDOExchangeExt on _IDOExchangeData {
       _baseModel?.second = model.second;
       _baseModel?.sportType = model.sportType;
       if (this.supportV3ActivityExchange) {
-        _v3Model = IDOV3ExchangeModel();
+        final date = DateTime.now();
+        final year = date.year;
+        final month = date.month;
+        _v3Model = IDOV3ExchangeModel(year: year, month: month);
+        _v3Model?.hrValues = [];
+        _v3Model?.kmSpeeds = [];
+        _v3Model?.mileSpeeds = [];
+        _v3Model?.stepsFrequencys = [];
+        _v3Model?.actionData = [];
+        _v3Model?.paceSpeeds = [];
+        _v3Model?.realSpeeds = [];
+        _v3Model?.gpsData = [];
         _v3Model?.appStart2BleData(model.day ?? 0, model.hour ?? 0, model.minute ?? 0,
             model.second ?? 0, model.sportType ?? 0,model.targetType??0,
             model.targetValue??0,model.forceStart?? 0,model.vo2max??0,model.recoverTime??0,
@@ -466,6 +515,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
         _streamV3Exchange.sink.add(_v3Model ?? IDOV3ExchangeModel());
       }else {
         _v2Model = IDOV2ExchangeModel();
+        _v2Model?.hrValues = [];
         _v2Model?.appStart2BleData(model.day ?? 0, model.hour ?? 0, model.minute ?? 0,
             model.second ?? 0, model.sportType ?? 0,model.targetType??0,
             model.targetValue??0,model.forceStart?? 0);
@@ -731,8 +781,23 @@ extension _IDOExchangeExt on _IDOExchangeData {
       //app操作运动计划
       final jsonStr = jsonEncode((model).toJson());
        if (model.operate == 1) { // 开始运动
-         /// 恢复流
-         // _onResume();
+         final date = DateTime.now();
+         final year = date.year;
+         final month = date.month;
+         _v3Model = IDOV3ExchangeModel(year: year, month: month);
+         _v3Model?.hrValues = [];
+         _v3Model?.kmSpeeds = [];
+         _v3Model?.mileSpeeds = [];
+         _v3Model?.stepsFrequencys = [];
+         _v3Model?.actionData = [];
+         _v3Model?.paceSpeeds = [];
+         _v3Model?.realSpeeds = [];
+         _v3Model?.gpsData = [];
+         _v3Model?.appPlan2BleData(model.day ?? 0, model.hour ?? 0, model.minute ?? 0,
+             model.second ?? 0, model.sportType ?? 0,model.operate ?? 0,
+             model.trainingOffset ?? 0, model.planType?? 0);
+         _streamV3Exchange.sink.add(_v3Model ?? IDOV3ExchangeModel());
+
          _baseModel = IDOAppStartExchangeModel();
          _baseModel?.day = model.day;
          _baseModel?.hour = model.hour;

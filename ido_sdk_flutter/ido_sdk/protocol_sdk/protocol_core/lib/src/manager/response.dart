@@ -44,6 +44,7 @@ class CmdResponse {
   /// -3 指令已存在队列中
   /// -4 设备断线
   /// -5 ota模式
+  /// -6 未连接设备
   /// ```
   final int code;
 
@@ -56,8 +57,8 @@ class CmdResponse {
   /// 对应json数据，
   final String? json;
   
-  @Deprecated('请使用json属性，下个版本将删除该data属性')
-  dynamic get data => json;
+  // @Deprecated('请使用json属性，下个版本将删除该data属性')
+  // dynamic get data => json;
 
   /// 设备Mac地址
   final String? macAddress;

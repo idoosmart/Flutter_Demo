@@ -13,6 +13,9 @@ import 'generated/l10n.dart';
 const clientId =
     'amzn1.application-oa2-client.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
 
+// const clientId =
+//     'amzn1.application-oa2-client.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+
 void main() async {
   runApp(const MyApp());
 
@@ -44,14 +47,10 @@ class MyApp extends StatelessWidget {
 
 /// 注册协议库
 registerProtocolSDK() async {
-  // outputToConsole : 控制台输出日志
-  await IDOProtocolLibManager.initLog(outputToConsole: true);
-  // 初始化协议库
-  await libManager.initClib();
-  // 设置c库运行模式, debug 则输出详细日志
-  libManager.setClibRunMode(isDebug: true);
+  // 注册协议库
+  await IDOProtocolLibManager.register(outputToConsole: true);
   // ios注册监听更新消息图标
-  libManager.messageIcon.ios_registerListenUpdate();
+  libManager.messageIcon.registerListenUpdate();
   // 监听设备状态
   libManager.listenDeviceNotification((event) {
     print('listenDeviceNotification: ${event.toMap().toString()}');
@@ -72,7 +71,7 @@ registerBluetoothSDK() async {
 }
 
 registerProtocolAlexa() async {
-  await IDOProtocolAlexa.registerAlexa(clientId: clientId);
+  await IDOProtocolAlexa.register(clientId: clientId);
 }
 
 /// 蓝牙与协议库桥接

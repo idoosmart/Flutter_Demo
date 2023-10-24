@@ -5,7 +5,7 @@ class _IdentityLogReport implements IdentityLogReport {
 
   //每小时上传一次
   void userInactivityReport({required int inactiveTimeInSeconds}) async {
-    String uuid = DataBox.kUUID.toUpperCase();
+    String uuid = DataBox.kUUID;
     final map = {
       "event": {
         "header": {
@@ -38,7 +38,7 @@ class _IdentityLogReport implements IdentityLogReport {
     String firmwareVersionStrV = firmwareVersionStr.replaceAll(".", ""); // 去除小数点
 
     if (firmwareVersionStrV != null && int.parse(firmwareVersionStrV) > 0){
-      String uuid = DataBox.kUUID.toUpperCase();
+      String uuid = DataBox.kUUID;
 
       final map = {
         "event": {
@@ -90,7 +90,7 @@ class _IdentityLogReport implements IdentityLogReport {
   //固件音量变化上报
   void volumeChangedInfoReportToAlexa({required int volume}) async {
 
-    String uuid = DataBox.kUUID.toUpperCase();
+    String uuid = DataBox.kUUID;
     final map = {
       "event": {
         "header": {

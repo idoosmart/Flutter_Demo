@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:protocol_lib/protocol_lib.dart';
 import 'package:get_storage/get_storage.dart';
 
+import '../../service/model/voicealarm_model.dart';
 import '../logger/logger.dart';
 import '../../service/model/auth_model.dart';
 import '../../type_define/alexa_type.dart';
@@ -70,4 +71,8 @@ abstract class LocalStorage {
   /// 加载ProductId
   Future<String?> loadProductId();
   Future<bool> saveProductId(String productId);
+
+  /// 加载闹钟缓存信息
+  Future<List?> loadAlarmDataByDisk(String mac);
+  Future<bool> saveAlarmDataToDisk(String mac, List alexaAlarmList);
 }

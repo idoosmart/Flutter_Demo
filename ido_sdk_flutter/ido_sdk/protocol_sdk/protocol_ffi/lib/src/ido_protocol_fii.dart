@@ -59,7 +59,7 @@ class IDOProtocolAPI {
 
   IDOProtocolFfiBindings get bindings => _bindings;
 
-  Future<void> initLogs() async {
+  Future<void> initLogs({bool outputToConsoleClib = false}) async {
     final log = LoggerSingle();
     assert(log.config != null, 'You need to call LoggerSingle.configLogger(...)');
     if (log.config != null) {
@@ -68,7 +68,7 @@ class IDOProtocolAPI {
       await dirClibLog.create(recursive: true);
       // 配置c库log
       enableLog(
-          isPrintConsole: config.outputToConsole,
+          isPrintConsole: outputToConsoleClib,
           isWriteFile: config.writeToFile,
           filePath: dirClibLog.path);
       logger = log;

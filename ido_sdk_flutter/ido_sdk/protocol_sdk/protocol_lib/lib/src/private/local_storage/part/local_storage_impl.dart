@@ -238,16 +238,25 @@ class _LocalStorage implements LocalStorage {
   }
 
   @override
-  Future<bool> cleanIconInfoData() {
-    logger?.d('清除消息图标信息数据');
-    return remove(key: _keyIconInfo);
+  Future<bool> cleanIconInfoData(String macAddress) {
+    // logger?.d('清除消息图标信息数据');
+    return remove(key: _keyIconInfo,macAddress: macAddress);
+  }
+  
+  @override
+  Future<bool> removeIconDir(String dirPath) async{
+    final del = await storage?.removeDir(absoluteDirPath: dirPath) ?? false;
+    if (del) {
+      _pathMsgIcon = null;
+    }  
+    return del;
   }
 
   @override
   Future<IDOAppIconInfoModel?> loadIconInfoDataByDisk() async {
     final json = await getString(key: _keyIconInfo);
     if (json != null) {
-      logger?.d(' load icon info data : $json');
+      // logger?.d(' load icon info data : $json');
       return Future(() => IDOAppIconInfoModel.fromJson(jsonDecode(json)));
     }
     return Future(() => null);
@@ -257,7 +266,7 @@ class _LocalStorage implements LocalStorage {
   Future<bool> saveIconInfoDataToDisk(IDOAppIconInfoModel model) {
     final map = model.toJson();
     final json = jsonEncode(map);
-    logger?.d(' save icon info data: $json');
+    // logger?.d(' save icon info data: $json');
     return setString(key: _keyIconInfo, value: json);
   }
 

@@ -210,6 +210,7 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+        Logger.p("onDetachedFromEngine")
         tearDown()
     }
 
@@ -228,17 +229,19 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
             mBluetoothManager = application.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager?
             mBluetoothAdapter = mBluetoothManager?.adapter
             LogTransfer.instance.init(channel)
+            Logger.p("onAttachedToEngine")
         }
     }
 
     private fun tearDown() {
+        Logger.p("tearDown")
         if (createBondReceiver != null) {
             context?.unregisterReceiver(createBondReceiver)
             createBondReceiver = null
         }
         context = null
         channel?.setMethodCallHandler(null)
-        channel = null
+//        channel = null
         stateChannel?.setStreamHandler(null)
         stateChannel = null
         mBluetoothAdapter = null
@@ -288,15 +291,13 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
                     result.error(BluetoothError.BLUETOOTH_INVALID_PARAMS)
                     return
                 }
-                if (checkIfHasBluetoothPermissions(call, result)) {
 //                    val device = mBluetoothAdapter?.getRemoteDevice(deviceAddress)
 //                    val state = mBluetoothManager?.getConnectionState(device, BluetoothProfile.GATT) ?: 0
-                    val bleDevice = locateBleDevice(deviceAddress)
-                    if (bleDevice != null) {
-                        result.success(ProtoMaker.makeConnectState(deviceAddress, 0, bleDevice.getConnectState()))
-                    } else {
-                        result.success(ProtoMaker.makeConnectState(deviceAddress, 0, Constants.BleConnectState.STATE_DISCONNECTED))
-                    }
+                val bleDevice = locateBleDevice(deviceAddress)
+                if (bleDevice != null) {
+                    result.success(ProtoMaker.makeConnectState(deviceAddress, 0, bleDevice.getConnectState()))
+                } else {
+                    result.success(ProtoMaker.makeConnectState(deviceAddress, 0, Constants.BleConnectState.STATE_DISCONNECTED))
                 }
             }
             CONNECT -> {
@@ -798,12 +799,16 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
      * 在主线程调用上层plugin的方法
      */
     private fun invokeChannelMethod(methodName: String, result: Map<String, Any?>?) {
-        if (Looper.myLooper() != Looper.getMainLooper()) {
-            mHandler.post {
+        if (channel != null) {
+            if (Looper.myLooper() != Looper.getMainLooper()) {
+                mHandler.post {
+                    channel?.invokeMethod(methodName, result)
+                }
+            } else {
                 channel?.invokeMethod(methodName, result)
             }
         } else {
-            channel?.invokeMethod(methodName, result)
+            Logger.p("invokeChannelMethod, channel = null")
         }
     }
 

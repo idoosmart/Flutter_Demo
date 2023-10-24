@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:alexa_channel/alexa_channel.dart';
+import 'package:alexa_channel/pigeon_generate/alexa_channel.g.dart';
 import 'package:alexa_net/alexa_net.dart';
 import 'package:flutter/foundation.dart';
 import 'package:ido_logger/ido_logger.dart';
@@ -37,17 +39,10 @@ abstract class IDOProtocolAlexa {
   set delegate(IDOAlexaDelegate delegate);
 
   /// 注册alexa
-  /// ```dart
+  ///
   /// clientId Alexa后台生成的ID
-  /// writeToFile 写log文件
-  /// outputToConsole 打印到控制台
-  /// logLevel 日志级别（该值只会在debug模式下有效）
-  /// ```
-  static Future<void> registerAlexa(
-      {required String clientId,
-      bool outputToConsole = true}) async {
-    await _IDOProtocolAlexa.initLog(
-        outputToConsole: outputToConsole);
+  static Future<void> register({required String clientId}) async {
+    await _IDOProtocolAlexa.initLog();
     await _IDOProtocolAlexa.registerAlexa(clientId: clientId);
   }
 

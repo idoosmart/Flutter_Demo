@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:alexa_channel/pigeon_generate/alexa_channel.g.dart';
 import 'package:protocol_alexa/protocol_alexa.dart';
 import 'package:protocol_lib/protocol_lib.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:alexa_channel/alexa_channel.dart';
 
 import '../private/logger/logger.dart';
 import '../private/local_storage/local_storage.dart';
@@ -12,6 +14,7 @@ import '../service/model/auth_model.dart';
 import '../service/service_manager.dart';
 import '../type_define/alexa_type.dart';
 import '../private/reachability/alexa_reachability.dart';
+import 'client.dart';
 
 part 'inner/auth_impl.dart';
 

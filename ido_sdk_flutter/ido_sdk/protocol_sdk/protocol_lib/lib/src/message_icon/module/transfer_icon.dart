@@ -3,11 +3,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
+import 'dart:ui' as ui;
 
+import 'package:flutter/material.dart';
 import 'package:image/image.dart' as pkg_img;
 import 'package:protocol_core/protocol_core.dart';
 import 'package:protocol_lib/protocol_lib.dart';
-import 'package:protocol_lib/src/private/local_storage/local_storage.dart';
 
 import '../../private/logger/logger.dart';
 
@@ -15,12 +17,11 @@ abstract class TransferIcon {
 
   factory TransferIcon() => _TransferIcon();
 
-  /// ios 文件传输接口
-  Stream<bool>ios_startTransfer(IDOAppIconInfoModel model);
+  /// 只执行文件传输
+  Stream<bool>onlyStartTransfer(IDOAppIconInfoModel model);
 
-  /// ios android 需要裁剪图片 文件传输接口
-  Stream<bool>tailor_Transfer(List<IDOAppInfo> items);
-
+  /// 裁剪图片和文件传输
+  Stream<bool>tailorAndTransfer(IDOAppIconInfoModel model);
 }
 
 class _TransferIcon implements TransferIcon {
@@ -35,10 +36,10 @@ class _TransferIcon implements TransferIcon {
   int? _iconHeight;
 
   @override
-  Stream<bool> tailor_Transfer(List<IDOAppInfo> items) {
+  Stream<bool> tailorAndTransfer(IDOAppIconInfoModel model) {
     _completer = Completer();
     final stream = CancelableOperation.fromFuture(
-        _tailorTransferExec(items),
+        _tailorTransferExec(model),
         onCancel: () {
           _completer?.complete(false);
           _completer = null;
@@ -47,74 +48,163 @@ class _TransferIcon implements TransferIcon {
   }
 
   @override
-  Stream<bool> ios_startTransfer(IDOAppIconInfoModel model) {
+  Stream<bool> onlyStartTransfer(IDOAppIconInfoModel model) {
     _completer = Completer();
     final stream = CancelableOperation.fromFuture(
-        _iosExec(model),
+        _onlyTransferExec(model),
         onCancel: () {
           _completer?.complete(false);
           _completer = null;
         }).asStream();
     return stream;
   }
+
 }
 
 extension _TransferIconExt on _TransferIcon {
 
-  //********** android *****************
-
   /// 图片裁剪并压缩
-  Future<bool>_tailorPicture(List<IDOAppInfo> items) async {
-    final dirPath = await _libMgr.messageIcon.ios_getIconDirPath();
+  Future<bool>_tailorPicture(List<IDOAppIconItemModel> items) async {
+    logger?.d('android start tailor picture');
+    final dirPath = await _libMgr.messageIcon.getIconDirPath();
     if (dirPath == '') {
-      logger?.d('icon dir path is empty');
+      logger?.d('icon dir path is empty 1');
       return Future(()=> false);
     }
-    /* 测试代码
-    final rootPath = await storage!.pathRoot();
-    final item = items[0];
-    item.iconLocalPath = rootPath + '/com.weaver.emobile7_100.png';
-    */
+    logger?.d('icon dir path == $dirPath');
     List<Future> futures = <Future>[];
     items.forEach((element) {
-      if ((element.iconLocalPath??'').length > 0) {
-        var image = pkg_img.decodeImage(File(element.iconLocalPath??'').readAsBytesSync());
-        if (image == null) {
-          logger?.d('icon file does not exist => ${element.packName}');
-          futures.add(Future(()=> false));
+      if ((element.iconLocalPath??'').isNotEmpty) {
+        final filePath = "$dirPath/${element.packName}${'_46'}.png";
+        final filePng = File(filePath);
+        if (filePng.existsSync()) { /// 图片文件存在不再处理
+          logger?.d('file presence no longer needs to be clipped => ${element.packName}');
+          element.iconLocalPath = filePath;
+          futures.add(Future(()=> true));
         }else {
-          logger?.d('icon file start corp circle => ${element.packName}');
-          var newImage = pkg_img.copyResize(image!, width:_iconWidth?? 46, height:_iconHeight?? 46);
-          newImage = pkg_img.copyCropCircle(newImage!);
-          final filePath = "${dirPath}/${element.packName}${'_46'}.png";
-          final future = File(filePath).writeAsBytes(pkg_img.encodePng(newImage)).then((file){
-            logger?.d('icon file start compress => ${element.packName}');
-            ///图片压缩
-            _coreMgr.compressToPNG(inputFilePath: file.path, outputFilePath: file.path);
-            ///赋值裁剪后地址
-            element.iconLocalPath = file.path;
-            return _one_transfer(element);
-          });
-          futures.add(future);
-        }
+          var image = pkg_img.decodeImage(File(element.iconLocalPath).readAsBytesSync());
+          if (image == null) {
+            logger?.d('icon file does not exist => ${element.packName}');
+            futures.add(Future(()=> false));
+          }else {
+            logger?.d('icon file start corp circle => ${element.packName}');
+            final radius  = (_iconWidth?? 46) ~/2;
+            logger?.d("android icon radius == $radius");
+            /// 转图片格式
+            final future = _libMgr.tools.imageCompressToPng(element.iconLocalPath).then((pngImage) {
+              /// 计算非透明图标宽度
+              final noTranWidth = _getNoTransparentWidth(pngImage ?? image!);
+              logger?.d("noTranWidth == $noTranWidth pack name == ${element.packName}");
+              /// 图片裁圆
+              var circleImage =  pkg_img.copyCropCircle(pngImage ?? image!,radius: noTranWidth~/2);
+              logger?.d("android crop circle icon == ${circleImage.isNotEmpty}");
+              /// 写入文件
+              return File(filePath).writeAsBytes(pkg_img.encodePng(circleImage)).then((file1){
+                logger?.d("android picture redrawing");
+               return canvasImage(file1).then((file2){
+                 /// 画圆裁剪图标
+                 var canvasImage = pkg_img.decodeImage(file2.readAsBytesSync());
+                 var resizeImage = pkg_img.copyResize(canvasImage!, width:_iconWidth ?? 46, height:_iconHeight ?? 46,interpolation: pkg_img.Interpolation.cubic);
+                 logger?.d("android resize icon == ${resizeImage.isNotEmpty}");
+                 return File(filePath).writeAsBytes(pkg_img.encodePng(resizeImage)).then((file3){
+                   ///图片压缩
+                   logger?.d('icon file start compress => ${element.packName}');
+                   _coreMgr.compressToPNG(inputFilePath: file3.path, outputFilePath: file3.path);
+                   ///赋值裁剪后地址
+                   element.iconLocalPath = file3.path;
+                   return Future(() => true);
+                 });
+                }).onError((error, stackTrace) {
+                 logger?.d("android picture redrawing failed error == ${error.toString()} file path == $filePath");
+                  return Future(() => false);
+                });
+              }).onError((error, stackTrace) {
+                logger?.d("android write icon file failed error == ${error.toString()} file path == $filePath");
+                return Future(() => false);
+              });
+            }).onError((error, stackTrace) {
+              logger?.d("android compress to png failed error == ${error.toString()} file path == $filePath");
+              return Future(() => false);
+            });
+            futures.add(future);
+          }
+         }
       }else {
         logger?.d('icon file path is empty => ${element.packName}');
         futures.add(Future(() => false));
       }
     });
+    if (futures.isEmpty) {
+      logger?.d('icon dir path is empty 2');
+      return Future(()=> false);
+    }
     Future allTasks = Future.wait(futures);
     return allTasks.then((value) {
-      logger?.d('android transfer message icon complete === ${value}');
+      logger?.d('android copy crop circle complete === ${value}');
       return true;
     });
   }
 
+  /// 计算非透明图片的宽度
+  int _getNoTransparentWidth(pkg_img.Image pngImage) {
+    // 获取图像的宽度和高度
+    final width = pngImage!.width;
+    final height = pngImage.height;
+    // 遍历图像的每个像素
+    int notTransparentWidth = 0;
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        // 获取像素的alpha通道值
+        final alpha = pngImage.getPixel(x, y);
+        // 如果alpha通道值为0，表示透明像素
+        if (alpha.a != 0) {
+          notTransparentWidth++;
+        }
+      }
+    }
+    double squareRoot = sqrt(notTransparentWidth);
+    return squareRoot.toInt();
+  }
+
+  /// 画圆裁剪图标
+  Future<File> canvasImage(File file) async{
+    try {
+      var paint = Paint()
+        ..isAntiAlias = true;
+      final recorder = ui.PictureRecorder();
+      final bytes = file.readAsBytesSync();
+      final image = await decodeImageFromList(bytes);
+      final width = image.width;
+      final height = image.height;
+      final canvas = Canvas(recorder,Rect.fromLTWH(0,0,width.toDouble(),height.toDouble()));
+      final radius = min(width,height)~/2;
+      final srcRect = ui.Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
+      final destRect = ui.Rect.fromCircle(center: ui.Offset(radius.toDouble(),radius.toDouble()), radius: radius - 4);
+      canvas.drawImageRect(image,srcRect,destRect,paint);
+      canvas.restore();
+      final newImage = await recorder.endRecording().toImage(width,height);
+      final a = await newImage.toByteData(format: ui.ImageByteFormat.png);
+      file.writeAsBytesSync(a!.buffer.asInt8List());
+      return file;
+    }catch (e) {
+      logger?.e("android canvas image error == ${e.toString()}");
+    }
+    return file;
+  }
+
   /// 图标裁剪传输执行
-  Future<bool> _tailorTransferExec(List<IDOAppInfo> items) async {
-    if(items.length == 0) {
+  Future<bool> _tailorTransferExec(IDOAppIconInfoModel model) async {
+
+    var items = model?.items?.where((element) {
+      var isDownload = element.isUpdateAppIcon ?? false;
+      return !isDownload;
+    }).toList() ?? [];
+
+    if(items.isEmpty) {
       logger?.d('android tailor transfer 0 count');
       return Future(() => false);
     }
+
     logger?.d('android need tailor transfer items length == ${items?.length}');
     /// 获取图标大小
     final config = {
@@ -125,64 +215,55 @@ extension _TransferIconExt on _TransferIcon {
     final response = await _libMgr.send(evt:CmdEvtType.getDataTranConfig,json:jsonEncode(config)).first;
     if (response.code != 0) {
       logger?.d('android get data transfer config failed');
-       return Future(()=> false);
+      return Future(()=> false);
     }
     final dic = jsonDecode(response.json!) as Map<String,dynamic>;
     _iconWidth = dic['icon_width'] as int? ?? 0;
     _iconHeight = dic['icon_height'] as int? ?? 0;
-    logger?.d('icon width == ${_iconWidth} icon height == ${_iconHeight}');
+    logger?.d('icon width == ${_iconWidth!} icon height == ${_iconHeight!}');
     /// 裁剪图标
-    return _tailorPicture(items);
-  }
+    logger?.d("android tailor picture time length == ${items.length}");
 
-  /// 传输单张图标
-  Future<bool> _one_transfer(IDOAppInfo model) async {
-
-    logger?.d('start android one transfer icon == ${model.iconLocalPath}');
-
-    final item = MessageFileModel(filePath: model.iconLocalPath, fileName:'', evtType: model.evtType, packName: model.packName);
-
-    _libMgr.transFile.transferSingle(fileItem: item, funcStatus: (status) {
-
-    }, funcProgress: (progress){
-
-    }).listen((event) {
-      logger?.d('_one_transfer == ${event}');
-      _completer?.complete(event);
-      _completer = null;
-    }).onError((e){
-      logger?.d('_one_transfer error == ${e}');
-      _completer?.complete(false);
-      _completer = null;
+    final isOk = await _tailorPicture(items)
+        .timeout(Duration(seconds: items.length),
+        onTimeout: () {
+       logger?.d('android tailor picture timeout');
+       return false;
     });
-    return _completer!.future;
+
+    if (!isOk) {
+      logger?.d('android tailor picture failed');
+      return Future(() => false);
+    } else {
+      logger?.d('android tailor picture success');
+    }
+
+    return _transfer(items);
   }
 
 
-  //********** ios *****************
 
-  /// ios 图标执行传输
-  Future<bool> _iosExec(IDOAppIconInfoModel model) async {
+  Future<bool> _onlyTransferExec(IDOAppIconInfoModel model) async {
     final items = model?.items?.where((element) {
       var isDownload = element.isUpdateAppIcon ?? false;
       return !isDownload;
     }).toList();
-    return _transfer(items as List<IDOAppInfo>);
+    return _transfer(items ?? []);
   }
 
   /// 传输图标
-  Future<bool> _transfer(List<IDOAppInfo> items) async {
+  Future<bool> _transfer(List<IDOAppIconItemModel> items) async {
     final fileItems = <MessageFileModel>[];
     for (var element in items) {
       var path = element?.iconLocalPath ?? '';
-      var packName = element?.iconLocalPath ?? '';
+      var packName = element?.packName ?? '';
       var evtType = element?.evtType ?? 0;
-      if (path.length > 0) {
+      if (path.isNotEmpty) {
         final item = MessageFileModel(filePath: path, fileName:'', evtType: evtType, packName: packName);
         fileItems.add(item);
       }
     }
-    if (fileItems.length == 0) {
+    if (fileItems.isEmpty) {
       /// 传输文件个数0，不再执行传输
       logger?.d('if the number of transferred files is 0, no transmission is performed');
       Future((){
@@ -194,17 +275,28 @@ extension _TransferIconExt on _TransferIcon {
 
     logger?.d('need transfer icon items length == ${items?.length}');
 
-    _libMgr.transFile.transferMultiple(fileItems: fileItems, funcStatus: (index, status) {
+    return _transferIcon(fileItems);
+  }
 
+  Future<bool> _transferIcon(List<MessageFileModel> fileItems) {
+
+    for (var element in fileItems) {
+      logger?.d('transfer icon file path == ${element.filePath} package name == ${element.packName} event type == ${element.evtType}');
+    }
+
+    _libMgr.transFile.transferMultiple(fileItems: fileItems, funcStatus:
+        (index, status) {
+      if (status == FileTransStatus.busy) {
+        final item = fileItems[index];
+        final packName = item.packName;
+        final path = item.filePath;
+        logger?.d('transfer file busy pack name == $packName file path == $path');
+      }
     }, funcProgress: (currentIndex, totalCount, currentProgress, totalProgress){
 
     }).listen((event) {
-      logger?.d('_transfer == ${event}');
+      logger?.d('_transfer message icon complete == ${event}');
       _completer?.complete(event.last);
-      _completer = null;
-    }).onError((e){
-      logger?.d('_transfer error == ${e}');
-      _completer?.complete(false);
       _completer = null;
     });
     return _completer!.future;

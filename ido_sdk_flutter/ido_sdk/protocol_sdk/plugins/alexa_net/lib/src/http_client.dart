@@ -1,11 +1,9 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
-import 'package:flutter/foundation.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:dio_http2_adapter/dio_http2_adapter.dart';
-// import 'package:native_dio_adapter/native_dio_adapter.dart';
 
 import '../alexa_net.dart';
 
@@ -22,13 +20,18 @@ class HttpClient {
   static bool _init = false;
   static bool _needPrintLog = false;
 
+  static HeaderParams? _headerParams;
+  static UrlParams? _urlParams;
   static late NetLog _netLog;
+  static late Duration _connectTimeout;
+
+  final _dioV2ChangeStreamCtl = StreamController<int>.broadcast();
 
   /// 先初始化init
   static void init(
       {HeaderParams? headers,
       UrlParams? urls,
-      connectTimeout = 30 * 1000,
+      Duration connectTimeout = const Duration(seconds: 30),
       NetLog? netLog,
       bool needPrintLog = false}) {
     if (_init) {
@@ -37,7 +40,11 @@ class HttpClient {
     _init = true;
     _needPrintLog = needPrintLog;
     _netLog = netLog ?? DefaultLog();
-    HttpClient.getInstance()._initDio(headerParams: headers, urlParams: urls);
+    _headerParams = headers;
+    _urlParams = urls;
+    _connectTimeout = connectTimeout;
+    HttpClient.getInstance()._initDio(headerParams: headers,
+        urlParams: urls);
   }
 
   HttpClient._();
@@ -48,24 +55,22 @@ class HttpClient {
   }
 
   final Dio _dio = Dio(BaseOptions());
-  final Dio _dioV2 = Dio(BaseOptions());
+  Dio? _dioV2;
+
+  LogInterceptor? _logInterceptor;
+  PrettyDioLogger? _prettyDioLogger;
 
   void _initDio(
       {HeaderParams? headerParams,
-      UrlParams? urlParams,
-      int connectTimeout = 30 * 1000}) {
+      UrlParams? urlParams}) {
     _dio._setupOptions(
         headerParams: headerParams,
         urlParams: urlParams,
-        connectTimeout: connectTimeout);
-    _dioV2._setupOptions(
-        headerParams: headerParams,
-        urlParams: urlParams,
-        connectTimeout: connectTimeout);
+        connectTimeout: _connectTimeout);
 
     final logInterceptor = LogInterceptor(_netLog);
+    _logInterceptor = logInterceptor;
     _dio.interceptors.add(logInterceptor);
-    _dioV2.interceptors.add(logInterceptor);
 
     if (_needPrintLog) {
       final dioLogger = PrettyDioLogger(
@@ -77,19 +82,8 @@ class HttpClient {
           compact: true,
           maxWidth: 180, logPrint: _curtomPrint);
       _dio.interceptors.add(dioLogger);
-      _dioV2.interceptors.add(dioLogger);
+      _prettyDioLogger = dioLogger;
     }
-
-    dioV2.httpClientAdapter = Http2Adapter(ConnectionManager(
-      idleTimeout: const Duration(seconds: 30),
-      // Ignore bad certificate
-      onClientCreate: (_, config) {
-        config.onBadCertificate = (_) => true;
-        //config.proxy = Uri.parse('http://10.1.2.152:8888');
-      },
-    ));
-
-    // dioV2.httpClientAdapter = NativeAdapter();
 
     // if (kDebugMode) {
     //   // 在调试模式下需要抓包调试，所以我们使用代理，并禁用HTTPS证书校验
@@ -105,6 +99,8 @@ class HttpClient {
     //     return client;
     //   };
     // }
+
+    _createNewDioV2();
   }
 
   HttpClient addAllCustomerInterceptor(List<Interceptor> interceptors) {
@@ -112,20 +108,63 @@ class HttpClient {
     return this;
   }
 
+  doRecreateDioV2() {
+    // 重置 dioV2实例
+    log.e("reset dioV2 instance");
+    HttpClient.getInstance()._createNewDioV2();
+    if (HttpClient.getInstance()._dioV2ChangeStreamCtl.hasListener &&
+        !HttpClient.getInstance()._dioV2ChangeStreamCtl.isClosed) {
+      HttpClient.getInstance()._dioV2ChangeStreamCtl.add(0);
+    }
+  }
+
   Dio get dio => _dio;
-  Dio get dioV2 => _dioV2;
+  Dio get dioV2 => _dioV2!;
 
   NetLog get log => _netLog;
+
+  // !!! 处理flutter http 以下异常问题：
+  // flutter SocketException: Bad file descriptor (OS Error: Bad file descriptor, errno = 9)
+  // 解决思路：出现该问题后，此处重新创建_dioV2实例并通知到外部（alexa收到后需重新创建下行流通道）
+  /// dioV2 实例变更通知
+  StreamSubscription listenDioV2InstanceChanged(void Function(int) func) {
+    return _dioV2ChangeStreamCtl.stream.listen(func);
+  }
 
   void _curtomPrint(Object? object) {
     String line = "$object";
     log.v(line);
+  }
+
+  /// 创建diov2
+  void _createNewDioV2() {
+    _dioV2 = Dio(BaseOptions());
+    _dioV2?._setupOptions(
+        headerParams: _headerParams,
+        urlParams: _urlParams,
+        connectTimeout: _connectTimeout);
+    if (_logInterceptor != null) {
+      _dioV2?.interceptors.add(_logInterceptor!);
+    }
+    if (_prettyDioLogger != null) {
+      _dioV2?.interceptors.add(_prettyDioLogger!);
+    }
+
+    _dioV2?.httpClientAdapter = Http2Adapter(ConnectionManager(
+      idleTimeout: const Duration(seconds: 60),
+      // Ignore bad certificate
+      onClientCreate: (_, config) {
+        config.onBadCertificate = (_) => true;
+        //config.proxy = Uri.parse('http://10.1.2.152:8888');
+      },
+    ));
   }
 }
 
 /// 记录log
 class LogInterceptor extends Interceptor {
   final NetLog log;
+  bool isOnDioCreating = false; // 重新创建dio实例中
 
   LogInterceptor(this.log);
 
@@ -165,7 +204,7 @@ class LogInterceptor extends Interceptor {
   }
 
   @override
-  void onError(DioError err, ErrorInterceptorHandler handler) {
+  void onError(DioException err, ErrorInterceptorHandler handler) {
     super.onError(err, handler);
     if (err.response?.statusCode != 200) {
       log.e(
@@ -175,6 +214,21 @@ class LogInterceptor extends Interceptor {
           "${err.error != null ? 'err:${err.error?.toString()}' : ''}",
           methodName: "onError",
           className: "LogInterceptor");
+
+      // 异常处理 flutter SocketException: Bad file descriptor (OS Error: Bad file descriptor, errno = 9)
+      if (err.error != null && err.error is SocketException) {
+          final exception = err.error as SocketException;
+          if (exception.osError?.errorCode == 9 && !isOnDioCreating) {
+            // 重置 dioV2实例
+            log.e("reset dioV2 instance");
+            isOnDioCreating = true;
+            HttpClient.getInstance()._createNewDioV2();
+            if (HttpClient.getInstance()._dioV2ChangeStreamCtl.hasListener) {
+              HttpClient.getInstance()._dioV2ChangeStreamCtl.add(0);
+            }
+            isOnDioCreating = false;
+          }
+      }
     }
   }
 }
@@ -268,9 +322,9 @@ extension _DioSetupOptions on Dio {
   void _setupOptions(
       {HeaderParams? headerParams,
       UrlParams? urlParams,
-      int connectTimeout = 30 * 1000}) {
-    options.connectTimeout = Duration(milliseconds: connectTimeout);
-    options.receiveTimeout = const Duration(milliseconds: 30 * 1000);
+      required Duration connectTimeout}) {
+    options.connectTimeout = connectTimeout;
+    options.receiveTimeout = const Duration(seconds: 60);
     options.baseUrl = "-";
     interceptors.add(HeaderInterceptor(params: headerParams));
     interceptors.add(BaseInterceptor());

@@ -18,11 +18,12 @@ class _IDODeviceLog implements IDODeviceLog {
   Future<String> get logDirPath  => _getLogDirPath();
 
   @override
-  Stream<bool> startGet(List<IDOLogType> types) {
+  Stream<bool> startGet({required List<IDOLogType> types, int timeOut = 60}) {
     if (!IDOProtocolLibManager().isConnected) {
       return Future(() => false).asStream();
     }
     _getLogIng = true;
+    _coreMgr.setProtocolGetFlashLogSetTime(timeOut);
     _completer = Completer();
     final stream = CancelableOperation.fromFuture(
         _exec(types),
@@ -79,6 +80,7 @@ extension _IDODeviceLogExt on _IDODeviceLog {
       _completer!.completeError(e);
     }
     if (!error) {
+      logger?.d("get device log type == $types");
       final streamList = <Stream<CmdResponse>>[];
       final path = await logDirPath;
       for (var element in supportList) {

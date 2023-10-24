@@ -18,6 +18,7 @@ class _IDOProtocolAlexa implements IDOProtocolAlexa, LocalStorageConfig {
         libManager.joinAlexa(_client.voice.alexaDelegate); // 关联protocol_lib库
     _client.voice.alexaOperator = _alexaOperator;
     _listenProtocolLibDeviceNotification();
+    logger?.d("alexa version: $getSdkVersion");
   }
 
   static Future<void> registerAlexa({required String clientId}) async {
@@ -29,6 +30,8 @@ class _IDOProtocolAlexa implements IDOProtocolAlexa, LocalStorageConfig {
       _instance._uniqueID = null; // 置空标识码
       await Auth().setClientID(clientId);
     }
+
+    ApiAlexaFlutter.setup(AlexaChannelImpl());
 
     // TODO GetStorage存在bug，app刚起动 存在获取不到值的问题，待修改
     Future.delayed(const Duration(seconds: 1), () async {
@@ -92,7 +95,9 @@ class _IDOProtocolAlexa implements IDOProtocolAlexa, LocalStorageConfig {
     if (Auth().isLogin) {
       // TODO: 测试
 
-      _client.voice.test();
+      // HttpClient.getInstance().testRecreateDio(); // 测试创建dio实例
+      // _client.voice.test();
+      AlexaClient().createNewDirectives();
     }
   }
 
@@ -162,13 +167,15 @@ class _IDOProtocolAlexa implements IDOProtocolAlexa, LocalStorageConfig {
     return false;
   }
 
+  // 最后修改时间: 2023-10-11 16:46:54
   @override
-  String get getSdkVersion => '2.0.0';
+  String get getSdkVersion => '2.0.8';
 }
 
 extension _IDOProtocolAlexaExt on _IDOProtocolAlexa {
   /// 设备通知
   _listenProtocolLibDeviceNotification() {
+
     libManager.listenDeviceNotification((m) {
       final type = m.dataType ?? 0;
       switch (type) {
@@ -199,6 +206,13 @@ extension _IDOProtocolAlexaExt on _IDOProtocolAlexa {
           break;
       }
     });
+
+    libManager.listenStatusNotification((status) {
+        if (status == IDOStatusNotification.fastSyncCompleted) {
+
+        }
+    });
+
   }
 
   /// 修改语言

@@ -128,7 +128,7 @@ class _IDOProtocolClibManager implements IDOProtocolClibManager {
            logger?.d('core registerFastComplete evtType:$evtType errro:$error val:$val');
           //快速配置完成
           if (_streamFastSyncComplete.hasListener) {
-            logger?.d('core 快速配置完成回调 3 error:$error');
+            //logger?.d('core 快速配置完成回调 3 error:$error');
             _streamFastSyncComplete.sink.add(error);
           }else {
             logger?.e('core 快速配置完成回调 3 失败');

@@ -79,6 +79,9 @@ class AlexaReachability {
       case ConnectivityResult.mobile:
         ns = NetworkStatus.reachableViaWWAN;
         break;
+      case ConnectivityResult.none:
+        ns = NetworkStatus.notReachable;
+        break;
       default:
         break;
     }

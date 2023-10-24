@@ -121,8 +121,9 @@ open class AutoConnectBleDevice(deviceAddress: String) : AbsIDOBleDevice(deviceA
 
     override fun callOnConnectBreakByGATT(status: Int, newState: Int) {
         if (mIsAutoConnecting) {
-            Logger.p("[AutoConnectBle]  callOnConnectBreakByGATT")
-            if (autoConnectIfBreak) {
+            Logger.p("[AutoConnectBle]  callOnConnectBreakByGATT, autoConnectIfBreak = $autoConnectIfBreak, mIsInitiativeDisConnect = $mIsInitiativeDisConnect")
+            //支持自动断线重连，并且不是主动断开
+            if (autoConnectIfBreak && !mIsInitiativeDisConnect) {
                 tryReconnect()
             } else {
                 Logger.p("[AutoConnectBle]  isAutoConnectIfBreak = false")

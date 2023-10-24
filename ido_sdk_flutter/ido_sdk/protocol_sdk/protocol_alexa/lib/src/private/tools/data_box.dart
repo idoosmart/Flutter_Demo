@@ -16,7 +16,7 @@ import 'string_extension.dart';
 abstract class DataBox {
   static const _uuid = Uuid();
 
-  static final kUUID = _uuid.v4();
+  static final kUUID = _uuid.v4().toUpperCase();
 
   // 缺省设备序列号
   static const kDeviceSerialNumber = 'ID2021SMARTALEXA';
@@ -240,10 +240,7 @@ abstract class DataBox {
         'payload': {
           'format': DataBox.kPCM,
           'initiator': {'type': 'TAP'},
-          'profile':
-              IDOProtocolAlexa().currentLanguage == AlexaLanguageType.japan
-                  ? DataBox.kCloseTalk
-                  : DataBox.kNearField
+          'profile': DataBox.kNearField
         }
       }
     }.toData();

@@ -1,10 +1,11 @@
 import 'dart:async';
+import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:protocol_ffi/protocol_ffi.dart';
 import 'package:protocol_core/protocol_core.dart';
-
+import 'package:native_channel/native_channel.dart';
 
 import '../logger/logger.dart';
 
@@ -17,6 +18,7 @@ class LogTask extends BaseTask {
   Completer<CmdResponse>? _completer;
   Timer? _rebootTimer;
   File? _file;
+  final int _durationDay = 7*24*60*60;
 
   LogTask.create(this.logType,this.dirPath) : super.create();
 
@@ -43,6 +45,45 @@ class LogTask extends BaseTask {
 
 extension _CommandTask on LogTask {
 
+  static int changeType(dynamic num) {
+    if (num is double) {
+      final newNum = num.toInt();
+      return newNum;
+    }else if (num is int){
+      return num;
+    }else {
+      return 0;
+    }
+  }
+
+  /// 删除过期文件
+  Future<bool>_deleteFileExpiration(String path) {
+    final directory = Directory(path);
+    if (directory.existsSync()) {
+       directory.listSync(recursive: true).forEach((fileSystemEntity) {
+        if (fileSystemEntity is File) {
+           if (   fileSystemEntity.existsSync()
+               && FileSystemEntity.isFileSync(fileSystemEntity.path)) {
+              /// 文件存在才操作
+              GetFileInfo().readFileInfo(fileSystemEntity.path).then((value) {
+                 final create = changeType(value?["createSeconds"]);
+                 int timestamp = DateTime.now().millisecondsSinceEpoch~/1000;
+                 logger?.d("device log name create time == $create file path == ${fileSystemEntity.path}");
+                 if (timestamp - create >= _durationDay) {
+                   logger?.d("the log file exceeds 7 days, need to delete it file path == ${fileSystemEntity.path}");
+                   /// 超过7天的文件删除
+                    fileSystemEntity.deleteSync();
+                 }
+              });
+           }
+        }
+      });
+       return Future(() => true);
+    } else {
+       return Future(() => false);
+    }
+  }
+
   Future<String> _logDirInit(String dirName) async {
     final dirLog = Directory('${dirPath}/${dirName}/');
     if (dirLog.existsSync()) {
@@ -55,8 +96,8 @@ extension _CommandTask on LogTask {
 
   Future<File> _flashFileInit(String fileName) async {
     final path = await _logDirInit('flash');
-    final time = DateTime.now().millisecondsSinceEpoch;
-    File file = File('$path${fileName}_${time}.log');
+    await _deleteFileExpiration(path);
+    File file = File('$path${fileName}.log');
     if (await file.exists() == false) {
       file = await file.create();
     }
@@ -65,6 +106,7 @@ extension _CommandTask on LogTask {
 
   Future<File> _batteryFileInit() async {
     final path = await _logDirInit('battery');
+    await _deleteFileExpiration(path);
     final time = DateTime.now().millisecondsSinceEpoch;
     File file = File('$path/$time.log');
     if (await file.exists() == false) {
@@ -75,6 +117,7 @@ extension _CommandTask on LogTask {
 
   Future<File> _heatFileInit() async {
     final path =  await _logDirInit('heat');
+    await _deleteFileExpiration(path);
     final time = DateTime.now().millisecondsSinceEpoch;
     File file = File('$path/$time.log');
     if (await file.exists() == false) {
@@ -85,6 +128,7 @@ extension _CommandTask on LogTask {
 
   Future<File> _rebootFileInit() async {
     final path = await _logDirInit('reboot');
+    await _deleteFileExpiration(path);
     final time = DateTime.now().millisecondsSinceEpoch;
     File file = File('$path/$time.log');
     if (await file.exists() == false) {
@@ -136,128 +180,117 @@ extension _CommandTask on LogTask {
   Future<CmdResponse> _exec() async {
     _status = TaskStatus.running;
     _completer = Completer<CmdResponse>();
-    switch(logType) {
-      case LogType.reboot:
-        {
-          _file = await _rebootFileInit() as File;
-          coreManager.cLib.registerResponseRawData(func: (Uint8List data, int len) {
-            if (_status != TaskStatus.running) {
-              return;
+    if (logType == LogType.reboot) {
+      logger?.d("start get old reboot log");
+      _file = await _rebootFileInit() as File;
+      coreManager.cLib.registerResponseRawData(func: (Uint8List data, int len) {
+        if (_status != TaskStatus.running) {
+          return;
+        }
+        if(data[0] == 0x21 && data[1] == 0x06) {
+          if(data[2] == 0x55) { //开始获取
+            var logStr = '';
+            for (var i = 0; i < len; i++) { ///转16进制的字符
+              logStr = logStr + (i > 0 ?  ' ' : '') + data[i].toRadixString(16);
             }
-            if(data[0] == 0x21 && data[1] == 0x06) {
-              if(data[2] == 0x55) { //开始获取
-                var logStr = '';
-                for (var i = 0; i < len; i++) { ///转16进制的字符
-                  logStr = logStr + (i > 0 ?  ' ' : '') + data[i].toRadixString(16);
-                }
-                _writeFileLog(logStr);
-                _startRebootLog();
-              }else if (data[2] == 0xaa) { //结束获取
-                _clearRebootLog();
-              }
-            }else if (data[0] == 0x21 && data[1] == 0x07) { //清除日志后打开日志记录
-              _openRebootLog();
-            }
-          });
-          _startRebootLog();
+            _writeFileLog(logStr);
+            _startRebootLog();
+          }else if (data[2] == 0xaa) { //结束获取
+            _clearRebootLog();
+          }
+        }else if (data[0] == 0x21 && data[1] == 0x07) { //清除日志后打开日志记录
+          _openRebootLog();
         }
-        break;
-      case LogType.general:
-        {
-          _file = await _flashFileInit('general') as File;
-          coreManager.cLib.registerFlashLogTranCompleteCbHandle(func:(int errorCode){
-            _status = TaskStatus.finished;
-            final res = LogResponse(code: errorCode, logType: LogType.general, logPath: _file?.path);
-            _completer?.complete(res);
-            _completer = null;
-            logger?.d('get flash general log complete');
-          });
-          coreManager.cLib.startGetFlashLog(type:0, fileName: _file?.path ?? '');
+      });
+      _startRebootLog();
+    }else if (  logType == LogType.general
+             || logType == LogType.restart
+             || logType == LogType.reset
+             || logType == LogType.hardware
+             || logType == LogType.algorithm ) {
+      /// falsh 日志全放在一起
+      logger?.d("start get flash general log");
+      _file = await _flashFileInit('general') as File;
+      coreManager.cLib.registerFlashLogTranCompleteCbHandle(func:(int errorCode){
+        _status = TaskStatus.finished;
+        final res = LogResponse(code: errorCode, logType: LogType.general, logPath: _file?.path);
+        _completer?.complete(res);
+        _completer = null;
+        logger?.d('get flash general log complete');
+      });
+      coreManager.cLib.startGetFlashLog(type:0, fileName: _file?.path ?? '');
+    }
+    /*else if (logType == LogType.reset) {
+      logger?.d("start get flash reset log");
+      _file = await _flashFileInit('reset') as File;
+      coreManager.cLib.registerFlashLogTranCompleteCbHandle(func:(int errorCode){
+        _status = TaskStatus.finished;
+        final res = LogResponse(code: errorCode, logType: LogType.reset, logPath: _file?.path);
+        _completer?.complete(res);
+        _completer = null;
+        logger?.d('get flash reset log complete');
+      });
+      coreManager.cLib.startGetFlashLog(type:1, fileName: _file?.path ?? '');
+    }else if (logType == LogType.hardware) {
+      logger?.d("start get flash hardware log");
+      _file = await _flashFileInit('hardware') as File;
+      coreManager.cLib.registerFlashLogTranCompleteCbHandle(func:(int errorCode){
+        _status = TaskStatus.finished;
+        final res = LogResponse(code: errorCode, logType: LogType.hardware, logPath: _file?.path);
+        _completer?.complete(res);
+        _completer = null;
+        logger?.d('get flash hardware log complete');
+      });
+      coreManager.cLib.startGetFlashLog(type:3, fileName: _file?.path ?? '');
+    }else if (logType == LogType.algorithm) {
+      logger?.d("start get flash algorithm log");
+      _file =  await _flashFileInit('algorithm') as File;
+      coreManager.cLib.registerFlashLogTranCompleteCbHandle(func:(int errorCode){
+        _status = TaskStatus.finished;
+        final res = LogResponse(code: errorCode, logType: LogType.algorithm, logPath: _file?.path);
+        _completer?.complete(res);
+        _completer = null;
+        logger?.d('get flash algorithm log complete');
+      });
+      coreManager.cLib.startGetFlashLog(type:2, fileName: _file?.path ?? '');
+    }else if (logType == LogType.restart) {
+      logger?.d("start get flash restart log");
+      _file = await _flashFileInit('restart') as File;
+      coreManager.cLib.registerFlashLogTranCompleteCbHandle(func:(int errorCode){
+        _status = TaskStatus.finished;
+        final res = LogResponse(code: errorCode, logType: LogType.restart, logPath: _file?.path);
+        _completer?.complete(res);
+        _completer = null;
+        logger?.d('get flash restart log complete');
+      });
+      coreManager.cLib.startGetFlashLog(type:4, fileName: _file?.path ?? '');
+    }*/
+    else if (logType == LogType.battery) {
+      logger?.d("start get device battery log");
+      _file = await _batteryFileInit() as File;
+      coreManager.cLib.registerBatteryLogGetCompletedCallbackReg(func:(String json, int errorCode) {
+        if (errorCode == 0) {
+          _writeFileLog(json);
         }
-        break;
-      case LogType.reset:
-        {
-          _file = await _flashFileInit('reset') as File;
-          coreManager.cLib.registerFlashLogTranCompleteCbHandle(func:(int errorCode){
-            _status = TaskStatus.finished;
-            final res = LogResponse(code: errorCode, logType: LogType.reset, logPath: _file?.path);
-            _completer?.complete(res);
-            _completer = null;
-            logger?.d('get flash reset log complete');
-          });
-          coreManager.cLib.startGetFlashLog(type:1, fileName: _file?.path ?? '');
+        final res = LogResponse(code: errorCode, logType: LogType.battery, logPath: _file?.path, json: json);
+        _completer?.complete(res);
+        _completer = null;
+        logger?.d('get battery log complete error code:$errorCode');
+      });
+      coreManager.cLib.getBatteryLogInfo();
+    }else if (logType == LogType.heat) {
+      logger?.d("start get device heat log");
+      _file = await _heatFileInit() as File;
+      coreManager.cLib.registerHeatLogGetCompletCallbackReg(func: (String json, int errorCode) {
+        if (errorCode == 0) {
+          _writeFileLog(json);
         }
-        break;
-      case LogType.hardware:
-        {
-          _file = await _flashFileInit('hardware') as File;
-          coreManager.cLib.registerFlashLogTranCompleteCbHandle(func:(int errorCode){
-            _status = TaskStatus.finished;
-            final res = LogResponse(code: errorCode, logType: LogType.hardware, logPath: _file?.path);
-            _completer?.complete(res);
-            _completer = null;
-            logger?.d('get flash hardware log complete');
-          });
-          coreManager.cLib.startGetFlashLog(type:3, fileName: _file?.path ?? '');
-        }
-        break;
-      case LogType.algorithm:
-        {
-          _file =  await _flashFileInit('algorithm') as File;
-          coreManager.cLib.registerFlashLogTranCompleteCbHandle(func:(int errorCode){
-            _status = TaskStatus.finished;
-            final res = LogResponse(code: errorCode, logType: LogType.algorithm, logPath: _file?.path);
-            _completer?.complete(res);
-            _completer = null;
-            logger?.d('get flash algorithm log complete');
-          });
-          coreManager.cLib.startGetFlashLog(type:2, fileName: _file?.path ?? '');
-        }
-        break;
-      case LogType.restart:
-        {
-          _file = await _flashFileInit('restart') as File;
-          coreManager.cLib.registerFlashLogTranCompleteCbHandle(func:(int errorCode){
-            _status = TaskStatus.finished;
-            final res = LogResponse(code: errorCode, logType: LogType.restart, logPath: _file?.path);
-            _completer?.complete(res);
-            _completer = null;
-            logger?.d('get flash restart log complete');
-          });
-          coreManager.cLib.startGetFlashLog(type:4, fileName: _file?.path ?? '');
-        }
-        break;
-      case LogType.battery:
-        {
-          _file = await _batteryFileInit() as File;
-          coreManager.cLib.registerBatteryLogGetCompletedCallbackReg(func:(String json, int errorCode) {
-            if (errorCode == 0) {
-              _writeFileLog(json);
-            }
-            final res = LogResponse(code: errorCode, logType: LogType.battery, logPath: _file?.path, json: json);
-            _completer?.complete(res);
-            _completer = null;
-            logger?.d('get battery log complete error code:$errorCode');
-          });
-          coreManager.cLib.getBatteryLogInfo();
-        }
-        break;
-      case LogType.heat:
-        {
-          _file = await _heatFileInit() as File;
-          coreManager.cLib.registerHeatLogGetCompletCallbackReg(func: (String json, int errorCode) {
-            if (errorCode == 0) {
-              _writeFileLog(json);
-            }
-            final res = LogResponse(code: errorCode, logType: LogType.heat, logPath: _file?.path, json: json);
-            _completer?.complete(res);
-            _completer = null;
-            logger?.d('get heat log complete error code:$errorCode');
-          });
-          coreManager.cLib.getHeatLogInfo();
-        }
-        break;
-      default:
+        final res = LogResponse(code: errorCode, logType: LogType.heat, logPath: _file?.path, json: json);
+        _completer?.complete(res);
+        _completer = null;
+        logger?.d('get heat log complete error code:$errorCode');
+      });
+      coreManager.cLib.getHeatLogInfo();
     }
     return _completer!.future;
   }

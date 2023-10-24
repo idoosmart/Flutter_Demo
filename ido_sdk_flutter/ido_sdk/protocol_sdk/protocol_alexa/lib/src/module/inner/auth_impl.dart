@@ -10,6 +10,7 @@ class _Auth implements Auth {
 
   late final _reachability = AlexaReachability();
   late final _service = ServiceManager();
+  late final _alexaChannel = AlexaChannelImpl();
   final _subjectLoginState = StreamController<LoginState>.broadcast();
 
   bool _isLogin = false;
@@ -122,6 +123,11 @@ class _Auth implements Auth {
     logger?.d('alexa - call logout');
     _authModel = null;
     _productId = '';
+
+    //清除闹钟数据
+    storage?.saveAlarmDataToDisk(libManager.deviceInfo.macAddress,[]);
+    AlexaClient().createAlarmArr(false);
+
     storage?.saveProductId(_productId);
     storage?.cleanAuthData();
     _markLogout();
@@ -140,7 +146,11 @@ class _Auth implements Auth {
 
   @override
   Future<void> setClientID(String clientId) async {
-    logger?.d('setClientID $clientId');
+    if (clientId.length > 6) {
+      logger?.d('setClientID *${clientId.substring(clientId.length - 6)}');
+    }else {
+      logger?.d('setClientID $clientId 无效的clientId');
+    }
     _clientId = clientId;
     Future.delayed(const Duration(seconds: 1), () => _loadDataByCache());
   }
@@ -224,6 +234,7 @@ extension _AuthExt on _Auth {
       }
     } else {
       logger?.v('_authModel is null');
+      _alexaChannel.alexaHost.onTokenChanged(null);
     }
     return Future(() => false);
   }
@@ -264,12 +275,16 @@ extension _AuthExt on _Auth {
   void _markLogin() {
     _isLogin = true;
     _loginState = LoginState.logined;
+    logger?.d("Channel通道 - 1发送token");
+    _alexaChannel.alexaHost.onTokenChanged(_authModel?.accessToken);
   }
 
   // 标记退出
   void _markLogout() {
     _isLogin = false;
     _loginState = LoginState.logout;
+    logger?.d("Channel通道 - 2发送token");
+    _alexaChannel.alexaHost.onTokenChanged(null);
   }
 
   void _markLogging() {

@@ -7,7 +7,6 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as path;
 import 'package:protocol_lib/protocol_lib.dart';
-import 'package:rxdart/rxdart.dart';
 import 'package:protocol_core/protocol_core.dart';
 import 'package:image/image.dart' as pkg_img;
 
@@ -16,11 +15,11 @@ import '../../private/logger/logger.dart';
 import '../model/tran_config_reply.dart';
 import '../../private/local_storage/local_storage.dart';
 
-abstract class BaseFile extends AbstractFileOperate {
+class BaseFile extends AbstractFileOperate {
   late final _coreMgr = IDOProtocolCoreManager();
   late final _libMgr = IDOProtocolLibManager();
   bool _isCanceled = false;
-  StreamSubscription? _tranStreamSubscription;
+  CancelableOperation<CmdResponse>? _transCancelOpt;
   Completer<bool>? _completer;
 
   bool get isCanceled => _isCanceled;
@@ -72,6 +71,11 @@ abstract class BaseFile extends AbstractFileOperate {
 
   @override
   Future<bool> configParamIfNeed() {
+    if (fileItem.fileType == FileTransType.msg ||
+        fileItem.fileType == FileTransType.sport ||
+        fileItem.fileType == FileTransType.sports) {
+      logger?.d("call base configParamIfNeed ${fileItem.fileType}");
+    }
     return Future(() => true);
   }
 
@@ -80,56 +84,59 @@ abstract class BaseFile extends AbstractFileOperate {
     _isCanceled = false;
     _completer = Completer();
     try {
+      logger?.v("tranFile - begin makeFileIfNeed");
       // 制作压缩制作
       await makeFileIfNeed();
-
-      // 配置参数
-      final c = configParamIfNeed().asStream();
-
+      logger?.v("tranFile - end makeFileIfNeed");
       if (newFileItem == null) {
         throw 'newFileItem is null, has check makeFileIfNeed() function fileType:$type';
       }
 
-      // 传输任务
+      logger?.v("tranFile - begin configParamIfNeed");
+      // 配置参数
+      if (!await configParamIfNeed()) {
+        logger?.d("configParamIfNeed false");
+        return false;
+      }
+      logger?.v("tranFile - end configParamIfNeed");
+
+      logger?.v("tranFile - begin coreMgr.trans");
+      // 传输
       final fileTranItem = _createTranItem(newFileItem!, index);
-      // TODO 待验证取消时能不能触发t的取消
-      final cancelableOpt = coreMgr.trans(
+      logger?.v("exec tran 原始文件:${fileItem.toString()}");
+      logger?.v("exec tran 转换文件:${newFileItem!.toString()}");
+      _transCancelOpt = coreMgr.trans(
           fileTranItem: fileTranItem,
           statusCallback: (error, errorVal) =>
               _funcStatus!(error, errorVal, index),
           progressCallback: (progress) => _funcProgress!(progress, index));
-      //_cancelableOperation = cancelableOpt;
-
-      // 写入验证
-      final w = writeFileIfNeed().asStream();
-
-      // 返回形如: [<BaseFileModel>, <CmdResponse<dynamic>>, <bool>]
-      _tranStreamSubscription =
-          Rx.combineLatestList([c, cancelableOpt.asStream(), w])
-              //.map((event) => event.last)
-              .listen((list) {
-        var rs =
-            list.length == 3 && list.last is bool && list.last as bool; // 判断任务值
-        rs = rs &&
-            (list[1] is CmdResponse &&
-                (list[1] as CmdResponse).isOK); // 判断传输返回值
+      _transCancelOpt?.then((res) async {
+        logger?.v("tranFile - end coreMgr.trans");
+        if (!res.isOK) {
+          if (_completer != null && !_completer!.isCompleted) {
+            logger?.d('res = false');
+            _completer?.complete(false);
+            _completer = null;
+          } else {
+            logger?.d('tranFile _completer not work1');
+          }
+          return;
+        }
+        final rs = await writeFileIfNeed();
         if (_completer != null && !_completer!.isCompleted) {
-          logger?.d('w = ${list.last} rs: $rs');
+          logger?.d('res = true, w = $rs');
           _completer?.complete(rs);
           _completer = null;
-        }else {
-          logger?.d('w = ${list.last} rs: $rs');
+        } else {
+          logger?.d('tranFile _completer not work2');
         }
-        _tranStreamSubscription = null;
+        _transCancelOpt = null;
       });
     } catch (e) {
       logger?.e(e.toString());
-      if (_completer != null && !_completer!.isCompleted) {
-        _completer?.complete(false);
-        return _completer!.future;
-      }
+      return false;
     }
-
+    logger?.v("tranFile - _completer!.future");
     return _completer!.future;
   }
 
@@ -144,11 +151,8 @@ abstract class BaseFile extends AbstractFileOperate {
     if (!_isCanceled) {
       _isCanceled = true;
     }
-
-    // _cancelableOperation?.cancel();
-    // _cancelableOperation = null;
-    _tranStreamSubscription?.cancel();
-    _tranStreamSubscription = null;
+    _transCancelOpt?.cancel();
+    _transCancelOpt = null;
 
     // 取消后，缓存数据清理， 如：压缩的文件等
     //cleanAllDataIfNeed();
@@ -233,24 +237,25 @@ abstract class BaseFile extends AbstractFileOperate {
     extractArchiveToDisk(archive, targetDir);
     final size = dir.statSync().size;
     if (size < 512) {
-      logger?.e('error: The file is too small, and an exception may exist.  size:$size');
+      logger?.e(
+          'error: The file is too small, and an exception may exist.  size:$size');
     }
   }
 
   /// 获取传输配置信息
   Future<TranConfigReply> getTranConfigReply(String jsonString) async {
-    final key =
-        '${_keyTranConfigReply}_${md5.convert(utf8.encode(jsonString)).toString()}';
-    final json = await storage?.getString(key: key);
-    if (json != null && useCache) {
-      logger?.d('getTranConfigReply use cache key:$key json:$json');
-      return Future(() => TranConfigReply.fromJson(jsonDecode(json)));
-    }
+    // final key =
+    //     '${_keyTranConfigReply}_${md5.convert(utf8.encode(jsonString)).toString()}';
+    // final json = await storage?.getString(key: key);
+    // if (json != null && useCache) {
+    //   logger?.d('getTranConfigReply use cache key:$key json:$json');
+    //   return Future(() => TranConfigReply.fromJson(jsonDecode(json)));
+    // }
     final s = await _libMgr
         .send(evt: CmdEvtType.getDataTranConfig, json: jsonString)
         .first;
     if (s.code == 0 && s.json is String) {
-      await storage?.setString(key: key, value: s.json!);
+      // await storage?.setString(key: key, value: s.json!);
       final rs = TranConfigReply.fromJson(jsonDecode(s.json!));
       return Future(() => rs);
     }

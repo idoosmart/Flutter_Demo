@@ -19,6 +19,8 @@ dependencies:
     path: ../plugins/worker_manager_lite/
   ido_logger:
     path: ../plugins/ido_logger/
+  native_channel:
+    path: ../plugins/native_channel/
   
   
 

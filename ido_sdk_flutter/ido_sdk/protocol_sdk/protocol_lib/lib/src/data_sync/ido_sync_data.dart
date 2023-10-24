@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:protocol_core/protocol_core.dart';
 import 'package:protocol_lib/src/private/logger/logger.dart';
@@ -24,37 +25,128 @@ enum SyncStatus {
 }
 
 /// 同步数据类型
-/// 数据类型 1:步数 2:心率 3:睡眠 4:血压 5:血氧 6:压力 7:噪音 8:皮温 9:呼吸率 10:身体电量 11:HRV 12:多运动 13:GPS 14:游泳
-/// 15: V2步数 16: V2睡眠 17: V2心率 18: V2血压 19: V2 GPS 20: V2多运动
 enum SyncDataType {
+  /// 无类型
   nullType,
+  /// 步数
   stepCount,
+  /// 心率
   heartRate,
+  /// 睡眠
   sleep,
+  /// 血压
   bloodPressure,
+  /// 血氧
   bloodOxygen,
+  /// 压力
   pressure,
+  /// 噪音
   noise,
+  /// 皮温
   piven,
+  /// 呼吸率
   respirationRate,
+  /// 身体电量
   bodyPower,
+  /// HRV
   HRV,
+  /// 多运动
   activity,
+  /// GPS
   GPS,
+  /// 游泳
   swim,
+  /// v2 步数
   v2StepCount,
+  /// V2 睡眠
   v2Sleep,
+  /// V2 心率
   v2HeartRate,
+  /// V2 血压
   v2BloodPressure,
+  /// V2 GPS
   v2GPS,
+  /// V2 多运动
   v2Activity
 }
 
 /// 同步整体进度 0-100
 typedef CallbackSyncProgress = void Function(double progress);
 /// 不同类型JSON数据同步回调
+///
+/// ```dart
+///  0 Successful command
+///  1 SVC handler is missing
+///  2 SoftDevice has not been enabled
+///  3 Internal Error
+///  4 No Memory for operation
+///  5 Not found
+///  6 Not supported
+///  7 Invalid Parameter
+///  8 Invalid state, operation disallowed in this state
+///  9 Invalid Length
+///  10 Invalid Flags
+///  11 Invalid Data
+///  12 Invalid Data size
+///  13 Operation timed out
+///  14 Null Pointer
+///  15 Forbidden Operation
+///  16 Bad Memory Address
+///  17 Busy
+///  18 Maximum connection count exceeded.
+///  19 Not enough resources for operation
+///  20 Bt Bluetooth upgrade error
+///  21 Not enough space for operation
+///  22 Low Battery
+///  23 Invalid File Name/Format
+///  24 空间够但需要整理
+///  25 空间整理中
+///
+///  当指令发出前异常时:
+/// -1 取消
+/// -2 失败
+/// -3 指令已存在队列中
+/// -4 设备断线
+/// -5 ota模式
+/// ```
 typedef CallbackSyncData = void Function(SyncDataType type,String jsonStr,int errorCode);
 /// 所有数据同步完成
+///
+/// ```dart
+///  0 Successful command
+///  1 SVC handler is missing
+///  2 SoftDevice has not been enabled
+///  3 Internal Error
+///  4 No Memory for operation
+///  5 Not found
+///  6 Not supported
+///  7 Invalid Parameter
+///  8 Invalid state, operation disallowed in this state
+///  9 Invalid Length
+///  10 Invalid Flags
+///  11 Invalid Data
+///  12 Invalid Data size
+///  13 Operation timed out
+///  14 Null Pointer
+///  15 Forbidden Operation
+///  16 Bad Memory Address
+///  17 Busy
+///  18 Maximum connection count exceeded.
+///  19 Not enough resources for operation
+///  20 Bt Bluetooth upgrade error
+///  21 Not enough space for operation
+///  22 Low Battery
+///  23 Invalid File Name/Format
+///  24 空间够但需要整理
+///  25 空间整理中
+///
+///  当指令发出前异常时:
+/// -1 取消
+/// -2 失败
+/// -3 指令已存在队列中
+/// -4 设备断线
+/// -5 ota模式
+/// ```
 typedef CallbackSyncCompleted = void Function(int errorCode);
 
 abstract class IDOSyncData {

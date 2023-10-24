@@ -8,6 +8,8 @@ class _AlexaTimer implements AlexaTimer {
     String token = func["token"];
     String scheduledTime = func["scheduledTime"];
 
+    logger?.v('添加秒表 -- addTimer = ${scheduledTime}');
+
     if(token!= null && token == AlexaClient().lastTimerToken){
       return;
     }
@@ -36,6 +38,8 @@ class _AlexaTimer implements AlexaTimer {
       timer.delayTime = time;
       timer.isOpen = true;
     }
+
+    logger?.v('添加秒表 -- send setControllAlexaStopwatch time = ${time},timeIndex = ${timer.index}');
 
     //缺少， 有三个秒表
     libManager

@@ -5,7 +5,11 @@ class _IDOProtocolLibManager
   static const _pathStorageC = 'c_files';
   static const _pathStorageLib = 'protocol_lib';
   static const _pathStorageLog = 'logs';
-  static const _sdkVersion = '4.0.0';
+  // 最后修改时间: 2023-10-09 16:41:05
+  static const _sdkVersion = '4.0.11';
+
+  static bool _outputToConsoleClib = false;
+  static bool _isReleaseClib = true;
 
   late final _coreMgr = IDOProtocolCoreManager();
   late final _messageIcon = IDOMessageIcon();
@@ -29,30 +33,6 @@ class _IDOProtocolLibManager
   final int _timerFastSyncDuration = 16; //快速配置等待最长时间 单位 秒
   String? _macAddress; // SDK内统一为去除冒号后的转大写字符串
   String? _uuid; // ios专用
-
-  _initClib() async {
-    logger?.d('begin _initClib hasCode:$hashCode');
-    statusNotification = PublishSubject<IDOStatusNotification>();
-    await _initClibFilePath();
-    await _coreMgr.initClib();
-    _cRequestHandle();
-    _fastSyncComplete();
-    _listenDeviceState();
-    _registerMessageIcon();
-    _registerAlexaReceive();
-    _registerUpdateSetModeChanged();
-    storage = LocalStorage.config(config: this);
-    // 非debug模式，强制开启log写文件
-    if (!kDebugMode) {
-      await IDOProtocolLibManager.initLog();
-    }
-    // // 设置c库运行模式
-    // setClibRunMode(isDebug: kDebugMode);
-    _isInitClib = true;
-    _clibVersion = _coreMgr.getClibVersion() ?? 'unknown';
-    logger?.d('end _initClib hasCode:$hashCode');
-    logger?.v('clib version: $_clibVersion  sdk ver:$_sdkVersion os:${Platform.isIOS ? "iOS" : "Android"}');
-  }
 
   _IDOProtocolLibManager._internal();
   static final _instance = _IDOProtocolLibManager._internal();
@@ -97,26 +77,370 @@ class _IDOProtocolLibManager
     ..addAll({560, 561, 562, 563, 565, 570, 571, 581})
     ..addAll({572, 574, 575, 576, 578, 579, 580, 591});
 
+  _initClib() async {
+    logger?.d('begin _initClib hasCode:$hashCode');
+    statusNotification = PublishSubject<IDOStatusNotification>();
+    await _initClibFilePath();
+    await _coreMgr.initClib();
+    _cRequestHandle();
+    _fastSyncComplete();
+    _listenDeviceState();
+    _registerMessageIcon();
+    _registerAlexaReceive();
+    _registerUpdateSetModeChanged();
+    storage = LocalStorage.config(config: this);
+    // 设置c库运行模式
+    _setClibRunMode(isDebug: !_isReleaseClib);
+    // 设置c库流数据记录到log开关公开 0不写入 1写入 默认不写入流数据
+    _coreMgr.setWriteStreamByte(_isReleaseClib ? 0 : 1);
+    logger?.d('end _initClib hasCode:$hashCode');
+  }
+
   @override
   String get macAddress => _macAddress ?? 'UNKNOWN';
 
   @override
-  Future<bool> initClib() async {
-    print('!!!!!!!!!!!!!!!!initClib _isInitClib: $_isInitClib');
+  Future<bool> markConnectedDeviceSafe(
+      {required String uniqueId,
+      required IDOOtaType otaType,
+      required bool isBinded,
+      String? deviceName = ''}) async {
+    assert(uniqueId.isNotEmpty, 'macAddress cannot be empty');
+    // iOS平台且传入的uniqueId为uuid时，添加获取mac地址流程
+    if (Platform.isIOS && uniqueId.length > 17) {
+      logger?.d('call markConnectedDeviceSafe, uniqueId:$uniqueId');
+      // dispose();
+      final macAddr = await _requestMacAddress();
+      if (macAddr != null) {
+        return _markConnectedDevice(
+            macAddress: macAddr,
+            otaType: otaType,
+            isBinded: isBinded,
+            deviceName: deviceName);
+      }
+      logger?.e('_requestMacAddress fail, macStr: $macAddr');
+      return false;
+    }
+
+    // 其它情况走原逻辑
+    return _markConnectedDevice(
+        macAddress: uniqueId,
+        otaType: otaType,
+        isBinded: isBinded,
+        deviceName: deviceName);
+  }
+
+  @override
+  Future<bool> markDisconnectedDevice(
+      {String? macAddress, String? uuid}) async {
+    // 忽略非必要调用
+    if (!_isConnected && _macAddress == null) {
+      logger?.d(
+          'ignore mark disconnected $macAddress _isConnected:$_isConnected _macAddress:$_macAddress');
+      return Future(() => true);
+    }
+
+    // 非当前设备不执行断开操作
+    if (macAddress != null) {
+      final tmpMacAddress = macAddress.replaceAll(':', '').toUpperCase();
+      if (tmpMacAddress != _macAddress) {
+        logger?.d(
+            'not the current device, do not perform disconnection macAddress:$tmpMacAddress');
+        return Future(() => false);
+      }
+    } else if (Platform.isIOS && uuid != null) {
+      if (uuid != _uuid) {
+        logger?.d(
+            'not the current device, do not perform disconnection uuid:$uuid');
+        return Future(() => false);
+      }
+    }
+
+    logger?.d('mark disconnected macAddress:$macAddress uuid:$uuid');
+    _isConnected = false;
+    _isConnecting = false;
+    _isFastSynchronizing = false;
+    _macAddress = null;
+    _uuid = null;
+    _otaType = IDOOtaType.none;
+
+    _stopTimerFastSync();
+    _coreMgr.dispose();
+    _coreMgr.cleanProtocolQueue();
+    _coreMgr.stopSyncConfig(); // 停止快速配置
+
+    deviceInfo.cleanDataOnMemory();
+    funTable.cleanDataOnMemory();
+
+    // 断开连接
+    await send(evt: CmdEvtType.disconnect).first;
+
+    return Future(() => true);
+  }
+
+  @override
+  Stream<CmdResponse> send({required CmdEvtType evt, String? json = '{}'}) {
+    assert(_isInitClib, 'has call await libManager.initClib() in main.dart');
+    if (json == null || json.isEmpty || json.trim().isEmpty) {
+      json = '{}';
+    }
+
+    if (!_isConnected &&
+        !{CmdEvtType.connected, CmdEvtType.disconnect}.contains(evt)) {
+      logger?.v('no connected device，evtType:${evt.evtType} ignore');
+      return Future(() => CmdResponse(
+          code: ErrorCode.no_connected_device,
+          evtType: evt.evtType)).asStream();
+    }
+
+    if (!_canSend(evt.evtType)) {
+      final msg = 'on fast synchronizing, evtType:${evt.evtType} ignores';
+      logger?.d(msg);
+      return Future(() => CmdResponse(
+          code: ErrorCode.onFastSynchronizing,
+          evtType: evt.evtType,
+          msg: msg)).asStream();
+    }
+
+    final useQueue = !_excludeCmd.contains(evt);
+
+    final priority =
+        _exchangeCmd.contains(evt) ? CmdPriority.high : CmdPriority.normal;
+    /*
+    if (evt == CmdEvtType.setFastMsgV3) {
+        if (Platform.isAndroid) { /// Android监听通知消息下发
+          logger?.d("listen android send notification message");
+          int code = 0;
+          int evt = 577;
+          final map = {
+            "data_type":13,
+            "notify_type":0,
+            "msg_ID":0,
+            "msg_notice":0,
+            "error_index":0
+          };
+          String jsonStr = jsonEncode(map);
+          _coreMgr.streamListenReceiveData.add(Tuple3(code,evt,jsonStr));
+        }
+    }
+    */
+    // if (evt == CmdEvtType.setNoticeMessageState) {
+    //   debugPrint('捕捉到发送事件 evt = $evt');
+    // }
+    return _coreMgr
+        .writeJson(
+            evtBase: evt.evtBase,
+            evtType: evt.evtType,
+            json: json,
+            useQueue: useQueue,
+            cmdPriority: priority,
+            cmdMap: evt._cmdInfo())
+        .asStream();
+  }
+
+  @override
+  StreamSubscription listenStatusNotification(
+      void Function(IDOStatusNotification status) func) {
+    assert(_isInitClib, 'has call await libManager.initClib() in main.dart');
+    return statusNotification!.listen(func);
+  }
+
+  @override
+  IDODeviceInfo get deviceInfo => IDODeviceInfo();
+
+  @override
+  IDOFunctionTable get funTable => IDOFunctionTable();
+
+  @override
+  IDOSyncData get syncData => IDOSyncData();
+
+  @override
+  IDOFileTransfer get transFile => IDOFileTransfer();
+
+  @override
+  IDODeviceBind get deviceBind => IDODeviceBind();
+
+  @override
+  IDOMessageIcon get messageIcon => IDOMessageIcon();
+
+  @override
+  IDOExchangeData get exchangeData => IDOExchangeData();
+
+  @override
+  bool get isConnected => _isConnected;
+
+  @override
+  bool get isConnecting => _isConnecting;
+
+  @override
+  IDOOtaType get otaType => _otaType;
+
+  @override
+  bool get isBinding => deviceBind.isBinding;
+
+  @override
+  bool get isFastSynchronizing => _isFastSynchronizing;
+
+  @override
+  IDODeviceLog get deviceLog => IDODeviceLog();
+
+  @override
+  void receiveDataFromBle(Uint8List data, String? macAddress, int type) {
+    _coreMgr.receiveDataFromBle(data, macAddress, type);
+  }
+
+  @override
+  void registerWriteDataToBle(void Function(CmdRequest data) func) {
+    _coreMgr.writeDataToBle(func);
+  }
+
+  @override
+  void writeDataComplete() {
+    _coreMgr.writeDataComplete();
+  }
+
+  @override
+  void dispose() {
+    _coreMgr.dispose();
+    _coreMgr.cleanProtocolQueue();
+  }
+
+  @override
+  void stopSyncConfig() {
+    _coreMgr.stopSyncConfig();
+    _stopTimerFastSync();
+    _isFastSynchronizing = false;
+  }
+
+  @override
+  AlexaOperator joinAlexa(AlexaDelegate delegate) {
+    _alexaDelegate = delegate;
+    return _alexaOpt;
+  }
+
+  @override
+  StreamSubscription listenDeviceNotification(
+      void Function(IDODeviceNotificationModel model) func) {
+    return _coreMgr.listenControlEvent((tuple) {
+      //logger?.v('listenControlEvent ${[tuple.item1, tuple.item2]}'); // 多个监听 会打印多次
+      if (tuple.item2 == 577) {
+        final json = tuple.item3;
+        final map = jsonDecode(json) as Map<String, dynamic>;
+        final dataType = map['data_type'] as int?;
+        final notifyType = map['notify_type'] as int?;
+        final msgID = map['msg_ID'] as int?;
+        final msgNotice = map['msg_notice'] as int?;
+        final errorIndex = map['error_index'] as int?;
+        final model = IDODeviceNotificationModel(
+            dataType: dataType,
+            notifyType: notifyType,
+            msgId: msgID,
+            msgNotice: msgNotice,
+            errorIndex: errorIndex);
+        func(model);
+      } else if (_controlEventTypeSet.contains(tuple.item2)) {
+        logger?.v(
+            'listenControlEvent ${[tuple.item1, tuple.item2, tuple.item3]}');
+        final model = IDODeviceNotificationModel(
+            controlEvt: tuple.item2, controlJson: tuple.item3);
+        func(model);
+      } else {
+        //logger?.v('listenControlEvent controlEvent ${tuple.item2} invalid');
+      }
+    });
+  }
+
+  @override
+  IDOCallNotice get callNotice => _callNotice;
+
+  @override
+  IDOTool get tools => _tools;
+
+  @override
+  IDOCache get cache => _cache;
+
+  @override
+  String get getClibVersion => _clibVersion;
+
+  @override
+  String get getSdkVersion => _sdkVersion;
+
+  static Future<bool> doInitClib() async {
+    return await _IDOProtocolLibManager()._doInitClib();
+  }
+
+  static Future<bool> initLog(
+      {bool writeToFile = true,
+      bool outputToConsole = true,
+      bool outputToConsoleClib = false,
+      bool isReleaseClib = true,
+      LoggerLevel logLevel = LoggerLevel.verbose}) async {
+    // TODO 测试阶段 isReleaseClib 强制为false
+    isReleaseClib = false;
+    return register(
+        writeToFile: writeToFile,
+        outputToConsole: outputToConsole,
+        outputToConsoleClib: outputToConsoleClib,
+        isReleaseClib: isReleaseClib,
+        logLevel: logLevel);
+  }
+
+  static Future<bool> register(
+      {bool writeToFile = true,
+      bool outputToConsole = true,
+      bool outputToConsoleClib = false,
+      bool isReleaseClib = true,
+      LoggerLevel logLevel = LoggerLevel.verbose}) async {
+    if (!kDebugMode) {
+      // release模式下日志由sdk内部控制
+      logLevel = LoggerLevel.verbose;
+    }
+    _outputToConsoleClib = outputToConsoleClib;
+    _isReleaseClib = isReleaseClib;
+    String dirPath = '';
+    if (writeToFile || outputToConsole) {
+      final pathSDK = await LocalStorage.pathSDKStatic();
+      dirPath = '$pathSDK/$_pathStorageLog';
+      final config = LoggerConfig(
+          dirPath: '$dirPath/$_pathStorageLib',
+          writeToFile: writeToFile,
+          outputToConsole: outputToConsole,
+          level: logLevel);
+      LoggerSingle.configLogger(config: config);
+      // logger = LoggerManager(config: config);
+      // IDOProtocolCoreManager.setLogger(logger);
+      IDOProtocolCoreManager()
+          .initLogs(outputToConsoleClib: _outputToConsoleClib);
+      logger = LoggerSingle();
+    } else {
+      logger = null;
+      // IDOProtocolCoreManager.setLogger(logger);
+    }
+
+    return true;
+  }
+}
+
+extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
+  Future<bool> _doInitClib() async {
+    logger?.d("initClib _isInitClib = $_isInitClib");
     if (!_isInitClib) {
+      _isInitClib = true;
       await _initClib();
+      _clibVersion = _coreMgr.getClibVersion() ?? 'unknown';
+      logger?.v("clib: v$_clibVersion");
+      logger?.v("sdk: v$getSdkVersion");
+      logger?.v("os: ${Platform.isIOS ? "iOS" : "Android"}");
     }
     return true;
   }
 
-  @override
-  void setClibRunMode({required bool isDebug}) {
+  void _setClibRunMode({required bool isDebug}) {
     logger?.v('setClibRunMode isDebug:$isDebug');
     _coreMgr.setRunMode(isDebug ? 0 : 1);
   }
 
-  @override
-  Future<bool> markConnectedDevice(
+  Future<bool> _markConnectedDevice(
       {required String macAddress,
       required IDOOtaType otaType,
       required bool isBinded,
@@ -236,289 +560,11 @@ class _IDOProtocolLibManager
     }
   }
 
-  @override
-  Future<bool> markConnectedDeviceSafe(
-      {required String uniqueId,
-      required IDOOtaType otaType,
-      required bool isBinded,
-      String? deviceName = ''}) async {
-    assert(uniqueId.isNotEmpty, 'macAddress cannot be empty');
-    // iOS平台且传入的uniqueId为uuid时，添加获取mac地址流程
-    if (Platform.isIOS && uniqueId.length > 17) {
-      logger?.d('call markConnectedDeviceSafe, uniqueId:$uniqueId');
-      // dispose();
-      final macAddr = await _requestMacAddress();
-      if (macAddr != null) {
-        return markConnectedDevice(
-            macAddress: macAddr,
-            otaType: otaType,
-            isBinded: isBinded,
-            deviceName: deviceName);
-      }
-      logger?.e('_requestMacAddress fail, macStr: $macAddr');
-      return false;
-    }
-
-    // 其它情况走原逻辑
-    return markConnectedDevice(
-        macAddress: uniqueId,
-        otaType: otaType,
-        isBinded: isBinded,
-        deviceName: deviceName);
-  }
-
-  @override
-  Future<bool> markDisconnectedDevice(
-      {String? macAddress, String? uuid}) async {
-    // 忽略非必要调用
-    if (!_isConnected && _macAddress == null) {
-      logger?.d(
-          'ignore mark disconnected $macAddress _isConnected:$_isConnected _macAddress:$_macAddress');
-      return Future(() => true);
-    }
-
-    // 非当前设备不执行断开操作
-    if (macAddress != null) {
-      final tmpMacAddress = macAddress.replaceAll(':', '').toUpperCase();
-      if (tmpMacAddress != _macAddress) {
-        logger?.d(
-            'not the current device, do not perform disconnection macAddress:$tmpMacAddress');
-        return Future(() => false);
-      }
-    } else if (Platform.isIOS && uuid != null) {
-      if (uuid != _uuid) {
-        logger?.d(
-            'not the current device, do not perform disconnection uuid:$uuid');
-        return Future(() => false);
-      }
-    }
-
-    logger?.d('mark disconnected macAddress:$macAddress uuid:$uuid');
-    _isConnected = false;
-    _isConnecting = false;
-    _isFastSynchronizing = false;
-    _macAddress = null;
-    _uuid = null;
-    _otaType = IDOOtaType.none;
-
-    _stopTimerFastSync();
-    _coreMgr.dispose();
-    _coreMgr.cleanProtocolQueue();
-    _coreMgr.stopSyncConfig(); // 停止快速配置
-
-    deviceInfo.cleanDataOnMemory();
-    funTable.cleanDataOnMemory();
-
-    // 断开连接
-    await send(evt: CmdEvtType.disconnect).first;
-
-    return Future(() => true);
-  }
-
-  @override
-  Stream<CmdResponse> send({required CmdEvtType evt, String? json = '{}'}) {
-    assert(_isInitClib, 'has call await libManager.initClib() in main.dart');
-    if (json == null || json.isEmpty || json.trim().isEmpty) {
-      json = '{}';
-    }
-
-    if (!_isConnected &&
-        !{CmdEvtType.connected, CmdEvtType.disconnect}.contains(evt)) {
-      logger?.v('no connected device，evtType:${evt.evtType} ignore');
-      return Future(() => CmdResponse(
-          code: ErrorCode.no_connected_device,
-          evtType: evt.evtType)).asStream();
-    }
-
-    if (!_canSend(evt.evtType)) {
-      final msg = 'on fast synchronizing, evtType:${evt.evtType} ignores';
-      logger?.d(msg);
-      return Future(() => CmdResponse(
-          code: ErrorCode.onFastSynchronizing,
-          evtType: evt.evtType,
-          msg: msg)).asStream();
-    }
-
-    final useQueue = !_excludeCmd.contains(evt);
-
-    final priority =
-        _exchangeCmd.contains(evt) ? CmdPriority.high : CmdPriority.normal;
-
-    return _coreMgr
-        .writeJson(
-            evtBase: evt.evtBase,
-            evtType: evt.evtType,
-            json: json,
-            useQueue: useQueue,
-            cmdPriority: priority)
-        .asStream();
-  }
-
-  @override
-  StreamSubscription listenStatusNotification(
-      void Function(IDOStatusNotification status) func) {
-    assert(_isInitClib, 'has call await libManager.initClib() in main.dart');
-    return statusNotification!.listen(func);
-  }
-
-  @override
-  IDODeviceInfo get deviceInfo => IDODeviceInfo();
-
-  @override
-  IDOFunctionTable get funTable => IDOFunctionTable();
-
-  @override
-  IDOSyncData get syncData => IDOSyncData();
-
-  @override
-  IDOFileTransfer get transFile => IDOFileTransfer();
-
-  @override
-  IDODeviceBind get deviceBind => IDODeviceBind();
-
-  @override
-  IDOMessageIcon get messageIcon => IDOMessageIcon();
-
-  @override
-  IDOExchangeData get exchangeData => IDOExchangeData();
-
-  @override
-  bool get isConnected => _isConnected;
-
-  @override
-  bool get isConnecting => _isConnecting;
-
-  @override
-  IDOOtaType get otaType => _otaType;
-
-  @override
-  bool get isBinding => deviceBind.isBinding;
-
-  @override
-  bool get isFastSynchronizing => _isFastSynchronizing;
-
-  @override
-  IDODeviceLog get deviceLog => IDODeviceLog();
-
-  @override
-  void receiveDataFromBle(Uint8List data, String? macAddress, int type) {
-    _coreMgr.receiveDataFromBle(data, macAddress, type);
-  }
-
-  @override
-  void registerWriteDataToBle(void Function(CmdRequest data) func) {
-    _coreMgr.writeDataToBle(func);
-  }
-
-  @override
-  void writeDataComplete() {
-    _coreMgr.writeDataComplete();
-  }
-
-  @override
-  void dispose() {
-    _coreMgr.dispose();
-    _coreMgr.cleanProtocolQueue();
-  }
-
-  @override
-  void stopSyncConfig() {
-    _coreMgr.stopSyncConfig();
-    _stopTimerFastSync();
-    _isFastSynchronizing = false;
-  }
-
-  @override
-  AlexaOperator joinAlexa(AlexaDelegate delegate) {
-    _alexaDelegate = delegate;
-    return _alexaOpt;
-  }
-
-  @override
-  StreamSubscription listenDeviceNotification(
-      void Function(IDODeviceNotificationModel model) func) {
-    return _coreMgr.listenControlEvent((tuple) {
-      //logger?.v('listenControlEvent ${[tuple.item1, tuple.item2]}'); // 多个监听 会打印多次
-      if (tuple.item2 == 577) {
-        final json = tuple.item3;
-        final map = jsonDecode(json) as Map<String, dynamic>;
-        final dataType = map['data_type'] as int?;
-        final notifyType = map['notify_type'] as int?;
-        final msgID = map['msg_ID'] as int?;
-        final msgNotice = map['msg_notice'] as int?;
-        final errorIndex = map['error_index'] as int?;
-        final model = IDODeviceNotificationModel(
-            dataType: dataType,
-            notifyType: notifyType,
-            msgId: msgID,
-            msgNotice: msgNotice,
-            errorIndex: errorIndex);
-        func(model);
-      } else if (_controlEventTypeSet.contains(tuple.item2)) {
-        logger?.v(
-            'listenControlEvent ${[tuple.item1, tuple.item2, tuple.item3]}');
-        final model = IDODeviceNotificationModel(
-            controlEvt: tuple.item2, controlJson: tuple.item3);
-        func(model);
-      } else {
-        //logger?.v('listenControlEvent controlEvent ${tuple.item2} invalid');
-      }
-    });
-  }
-
-  static Future<bool> initLog(
-      {bool writeToFile = true,
-      bool outputToConsole = true,
-      LoggerLevel logLevel = LoggerLevel.verbose}) async {
-    if (!kDebugMode) {
-      // release模式下日志由sdk内部控制
-      logLevel = LoggerLevel.verbose;
-    }
-    String dirPath = '';
-    if (writeToFile || outputToConsole) {
-      final pathSDK = await LocalStorage.pathSDKStatic();
-      dirPath = '$pathSDK/$_pathStorageLog';
-      final config = LoggerConfig(
-          dirPath: '$dirPath/$_pathStorageLib',
-          writeToFile: writeToFile,
-          outputToConsole: outputToConsole,
-          maximumFileSize: 5 * 1024 * 1024,
-          maximumNumberOfLogFiles: 5,
-          level: logLevel);
-      LoggerSingle.configLogger(config: config);
-      // logger = LoggerManager(config: config);
-      // IDOProtocolCoreManager.setLogger(logger);
-      IDOProtocolCoreManager().initLogs();
-      logger = LoggerSingle();
-    } else {
-      logger = null;
-      // IDOProtocolCoreManager.setLogger(logger);
-    }
-
-    return Future(() => true);
-  }
-
-  @override
-  IDOCallNotice get callNotice => _callNotice;
-
-  @override
-  IDOTool get tools => _tools;
-
-  @override
-  IDOCache get cache => _cache;
-
-  @override
-  String get getClibVersion => _clibVersion;
-
-  @override
-  String get getSdkVersion => _sdkVersion;
-}
-
-extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
   /// 快速配置中不允许其他指令调用
   bool _canSend(int evt) {
     if (_isFastSynchronizing) {
-      return {1, 2, 104, 202, 204, 300, 301, 303, 336, 352, 506}.contains(evt);
+      return {1, 2, 104, 110, 202, 204, 300, 301, 303, 341, 336, 352, 354, 506}
+          .contains(evt);
     }
     return true;
   }
@@ -527,13 +573,16 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
   _cRequestHandle() {
     // evt_type 获取Mac地址 =>300 , 获取设备信息 => 301 ,
     // 获取功能表 => 303 , 获取BT连接状态 => 352 , 获取固件三级版本号 => 336 ,
-    // 开启ancs => 506 , 设置授权码 => 202 , 设置时间 => 104
-    // 发送计算好的授权数据 => 204
+    // 开启ancs => 506 , 设置授权码 => 202 , 设置时间 => 104 , 获取sn => 341, 获取Bt名称 => 354
+    // 发送计算好的授权数据 => 204, 设置手机系统 => 110
     _coreMgr.cRequestCmd((evtType, error, val) {
       logger?.d('fast config:$evtType');
       switch (evtType) {
         case 104:
           _setDateTime();
+          break;
+        case 110:
+          _setSystemVersion();
           break;
         case 202:
           _tryBindWithAuthData();
@@ -551,8 +600,14 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
           dispose(); // 快速配置功能获取前，清空队列
           funTable.refreshFuncTable();
           break;
+        case 341:
+          deviceInfo.refreshDeviceSn();
+          break;
         case 352:
           send(evt: CmdEvtType.getBtNotice).listen((event) {});
+          break;
+        case 354:
+          deviceInfo.refreshDeviceBtName();
           break;
         case 336:
           deviceInfo.refreshFirmwareVersion();
@@ -566,7 +621,7 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
 
   /// 快速配置完成回调
   _fastSyncComplete() {
-    logger?.d('快速配置完成回调 2');
+    //logger?.d('快速配置完成回调 2');
     _subscriptFastSyncComplete?.cancel();
     _subscriptFastSyncComplete = _coreMgr.fastSyncComplete((errorCode) {
       logger?.d('快速配置完成回调 5 完成');
@@ -593,7 +648,7 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
 
   /// 注册消息图标更新
   _registerMessageIcon() {
-    _messageIcon.ios_registerListenUpdate();
+    _messageIcon.registerListenUpdate();
   }
 
   /// setMode变更监听
@@ -751,7 +806,8 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
             evtType: evtType.evtType,
             json: '{}',
             useQueue: true,
-            cmdPriority: CmdPriority.normal)
+            cmdPriority: CmdPriority.normal,
+            cmdMap: evtType._cmdInfo())
         .value;
     if (rs.isOK && rs.json != null) {
       final map = jsonDecode(rs.json!);
@@ -780,6 +836,13 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
       logger?.d(
           'bind state - ${devInfo == null ? 'devInfo = null' : devInfo.bindState}');
     }
+  }
+
+  void _setSystemVersion() async {
+    final param = {
+      "system": Platform.isIOS ? 1 : 2
+    };
+    await send(evt: CmdEvtType.setAppOS, json: jsonEncode(param)).first;
   }
 
   /// 启用快速配置执行倒计时 ，指定时间内无响应将重置同步状态

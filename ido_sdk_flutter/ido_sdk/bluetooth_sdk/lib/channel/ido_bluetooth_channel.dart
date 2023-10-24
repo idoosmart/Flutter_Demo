@@ -3,6 +3,7 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:flutter_bluetooth/Tool/logger/ido_bluetooth_logger.dart';
 import 'package:flutter_bluetooth/model/ido_bluetooth_dfu_state.dart';
 
 import 'package:rxdart/rxdart.dart';
@@ -35,54 +36,31 @@ class IDOBluetoothChannel {
   final isPairList = <Completer<IDOBluetoothPairType>>[];
 
   callHandle() {
-    try{
+    try {
       _channel.setMethodCallHandler((call) {
+        final arguments = call.arguments;
+        final method = call.method;
+        if (["deviceState"].contains(method)) {
+          bluetoothManager.addLog(
+              {
+                '通道消息callHandle': method,
+                'arguments': arguments.toString(),
+              }.toString(),
+              method: method);
+        }
         if (call.method == "sendState") {
           //发送数据状态
-          final sendState = call.arguments;
-          final model = IDOBluetoothWriteState.fromMap(sendState);
+          final model = IDOBluetoothWriteState.fromMap(arguments);
           sendStateSubject.add(model);
         } else if (call.method == "receiveData") {
-          final data = call.arguments;
-          final receiveData = IDOBluetoothReceiveData.fromMap(data);
+          final receiveData = IDOBluetoothReceiveData.fromMap(arguments);
           receiveDataSubject.add(receiveData);
         } else if (call.method == "scanResult") {
-          Map json = call.arguments;
-          final device = IDOBluetoothDeviceModel.fromJson(json);
-          final key = json[deviceMapKey];
-          final storeDevice = allDeviceMap[key];
-          if (Platform.isIOS &&
-              (device.macAddress == null || device.macAddress!.isEmpty) &&
-              storeDevice != null) {
-            //收缩到Mac地址可能为空，会覆盖有Mac地址的设备，这时候不进行覆盖
-            device.macAddress = storeDevice.macAddress;
-          } else {
-            allDeviceMap[key] = device;
-          }
-          deviceMap[key] = device;
-          scanSubject.add(deviceMap.values.toList());
+          _scanResult(arguments);
         } else if (call.method == "deviceState") {
-          Map value = call.arguments;
-          final model = IDOBluetoothDeviceStateModel.fromJson(value);
-          if (Platform.isIOS) {
-            final device = allDeviceMap[model.uuid];
-            //搜索后没有Mac地址的
-            if (device != null &&
-                device.macAddress != null &&
-                device.macAddress!.isNotEmpty) {
-              model.macAddress = device.macAddress;
-            }
-            //  如果没有搜索直接连
-            if (model.macAddress == null &&
-                model.uuid == bluetoothManager.currentDevice?.uuid) {
-              model.macAddress = bluetoothManager.currentDevice?.macAddress;
-            }
-          }
-          deviceStateSubject.add(model);
+          _deviceState(arguments);
         } else if (call.method == "isOtaWithServices") {
-          final value = call.arguments;
-          final key = value[deviceMapKey];
-          final uuids = value["servicesUUID"];
+          final uuids = arguments["servicesUUID"];
           bool isOta = isOtaWithServices(uuids);
           bluetoothManager.currentDevice?.isOta = isOta;
         } else if (call.method == "pairState") {
@@ -94,33 +72,64 @@ class IDOBluetoothChannel {
           isPairList.forEach((element) => element.complete(isPair));
           isPairList.clear();
         } else if (call.method == "SPPState") {
-          final value = call.arguments;
-          sppStateSubject.add(IDOBluetoothSPPStateType.values[value['state']]);
+          sppStateSubject
+              .add(IDOBluetoothSPPStateType.values[arguments['state']]);
         } else if (call.method == "writeSPPCompleteState") {
-          final value = call.arguments;
-          writeSPPCompleteSubject.add(value['btMacAddress']);
+          writeSPPCompleteSubject.add(arguments['btMacAddress']);
         } else if (call.method == "writeLog") {
-          final value = call.arguments;
-          logStateSubject.add(value);
+          logStateSubject.add(arguments);
         } else if (call.method == "dfuState") {
-          final value = call.arguments;
-          final dfuState = IDOBluetoothDfuState.fromJson(value);
+          final dfuState = IDOBluetoothDfuState.fromJson(arguments);
           dfuStateSubject.add(dfuState);
         } else if (call.method == "dfuProgress") {
-          final data = call.arguments;
-          dfuProgressSubject.add(data);
+          dfuProgressSubject.add(arguments);
         }
         return Future.value(Null);
       });
-    }catch(e){
+    } catch (e) {
       final json = {
         'platform': 3, //1 ios  2 android 3 flutter;
         'className': 'IDOBluetoothChannel',
-        'method': 'callHandle',
+        'method': 'callHandle_error',
         'detail': e.toString(), //日志内容
       };
       logStateSubject.add(json);
     }
+  }
+
+  bluetoothState() {
+    _stateChannel.receiveBroadcastStream().listen((event) {
+      final value = event as Map;
+      stateSubject.add(IDOBluetoothStateModel.fromMap(value));
+    }, onError: (dynamic error) {}, cancelOnError: true);
+  }
+
+  bool isOtaWithServices(List<String> uuids) {
+    bool isOta = false;
+    for (String element in uuids) {
+      if (isOtaUUID.contains(element)) {
+        isOta = true;
+        break;
+      }
+    }
+    return isOta;
+  }
+}
+
+extension InvokeChannel on IDOBluetoothChannel {
+  IDOBluetoothDeviceModel? findDevice(String macAddress) {
+    IDOBluetoothDeviceModel? device;
+    if (Platform.isAndroid) {
+      device = allDeviceMap[macAddress];
+    } else {
+      final i = allDeviceMap.values
+          .where((element) => element.macAddress == macAddress)
+          .toList();
+      if (i.isNotEmpty) {
+        device = i.first;
+      }
+    }
+    return device;
   }
 
   //开始搜索，
@@ -152,8 +161,8 @@ class IDOBluetoothChannel {
       final deviceMap = findDevice(macAddress)?.toMap();
       if (deviceMap == null) {
         //找不到设备直接返回断链状态
-        deviceStateSubject.add(IDOBluetoothDeviceStateModel(
-          macAddress: macAddress,
+        bluetoothManager.addDeviceState(IDOBluetoothDeviceStateModel(
+            macAddress: macAddress,
             state: IDOBluetoothDeviceStateType.disconnected,
             errorState: IDOBluetoothDeviceConnectErrorType.none));
         return;
@@ -180,26 +189,6 @@ class IDOBluetoothChannel {
     _channel.invokeMethod("sendData", data);
   }
 
-  bluetoothState() {
-    _stateChannel.receiveBroadcastStream().listen((event) {
-      final value = event as Map;
-      stateSubject.add(IDOBluetoothStateModel.fromMap(value));
-    }, onError: (dynamic error) {
-      print('received error: ${error.message}');
-    }, cancelOnError: true);
-  }
-
-  bool isOtaWithServices(List<String> uuids) {
-    bool isOta = false;
-    for (String element in uuids) {
-      if (isOtaUUID.contains(element)) {
-        isOta = true;
-        break;
-      }
-    }
-    return isOta;
-  }
-
   setPair(IDOBluetoothDeviceModel device) {
     // print('startPair btMacAddress = ${device.btMacAddress}');
     _channel.invokeMethod("startPair", {
@@ -217,13 +206,13 @@ class IDOBluetoothChannel {
     });
   }
 
-  autoConnect(IDOBluetoothDeviceModel device,{bool
-  isDueToPhoneBluetoothSwitch = false}) {
+  autoConnect(IDOBluetoothDeviceModel device,
+      {bool isDueToPhoneBluetoothSwitch = false}) {
     _channel.invokeMethod("autoConnect", {
       "uuid": device.uuid,
       "macAddress": device.macAddress,
       "btMacAddress": device.btMacAddress,
-      "isDueToPhoneBluetoothSwitch":isDueToPhoneBluetoothSwitch
+      "isDueToPhoneBluetoothSwitch": isDueToPhoneBluetoothSwitch
     });
   }
 
@@ -238,19 +227,44 @@ class IDOBluetoothChannel {
   startNordicDFU(IDOBluetoothDfuConfig config) {
     _channel.invokeMethod("startNordicDFU", config.toJson());
   }
+}
 
-  IDOBluetoothDeviceModel? findDevice(String macAddress) {
-    IDOBluetoothDeviceModel? device;
-    if (Platform.isAndroid) {
-      device = allDeviceMap[macAddress];
-    } else {
-      final i = allDeviceMap.values
-          .where((element) => element.macAddress == macAddress)
-          .toList();
-      if (i.isNotEmpty) {
-        device = i.first;
+extension DeviceStateChannel on IDOBluetoothChannel {
+  _deviceState(Map arguments) {
+    final model = IDOBluetoothDeviceStateModel.fromJson(arguments);
+    if (Platform.isIOS) {
+      final device = allDeviceMap[model.uuid];
+      //搜索后没有Mac地址的
+      if (device != null &&
+          device.macAddress != null &&
+          device.macAddress!.isNotEmpty) {
+        model.macAddress = device.macAddress;
+      }
+      //  如果没有搜索直接连
+      if (model.macAddress == null &&
+          model.uuid == bluetoothManager.currentDevice?.uuid) {
+        model.macAddress = bluetoothManager.currentDevice?.macAddress;
       }
     }
-    return device;
+    deviceStateSubject.add(model);
+  }
+}
+
+extension ScanResultChannel on IDOBluetoothChannel {
+  _scanResult(Map json) {
+    // print('_scanResult = $json');
+    final device = IDOBluetoothDeviceModel.fromJson(json);
+    final key = json[deviceMapKey];
+    final storeDevice = allDeviceMap[key];
+    if (Platform.isIOS &&
+        (device.macAddress == null || device.macAddress!.isEmpty) &&
+        storeDevice != null) {
+      //收缩到Mac地址可能为空，会覆盖有Mac地址的设备，这时候不进行覆盖
+      device.macAddress = storeDevice.macAddress;
+    } else {
+      allDeviceMap[key] = device;
+    }
+    deviceMap[key] = device;
+    scanSubject.add(deviceMap.values.toList());
   }
 }

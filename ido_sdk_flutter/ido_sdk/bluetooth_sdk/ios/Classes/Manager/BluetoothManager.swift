@@ -47,7 +47,7 @@ class BluetoothManager: NSObject {
             let device = Device.init(peripheral: $0, macAdr: localDevices.keychainList?[$0.identifier.uuidString])
             let deviceDic = device.toDict()
             if let _ = device.macAddress,let _ = device.name {
-                writeLog("systemScan " + device.macAddress!, method: "systemScan", className:"BluetoothManager")
+                writeLog("systemScan name = " + device.name! + "macAddress = " + device.macAddress!, method: "systemScan", className:"BluetoothManager")
                 channel?.invokeMethod("scanResult", arguments: deviceDic)
             }
         })
@@ -62,6 +62,7 @@ class BluetoothManager: NSObject {
             writeLog("connect no device find", method: "connect", className:"BluetoothManager")
             return
         }
+        writeLog("connect device name = " + String(describing: device.name) + "macAddress = " + String(describing: device.macAddress), method: "connect", className:"BluetoothManager")
         manager.delegate = self;
         manager.connect(p, options: nil)
     }

@@ -1,10 +1,14 @@
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
-import 'package:ido_logger/ido_logger.dart';
+import 'package:flutter/foundation.dart';
+import 'package:native_channel/native_channel.dart';
 import 'package:protocol_core/protocol_core.dart';
 import 'package:protocol_lib/protocol_lib.dart';
+import 'package:protocol_lib/src/private/notification/notification.dart';
 
 import 'module/download_icon.dart';
 import 'module/get_app_info.dart';
@@ -43,28 +47,34 @@ abstract class IDOMessageIcon {
   /// 未设语言单位，默认为英文
   int? ios_languageUnit;
 
-  /// ios 正在更新图标和名字
-  bool get ios_updating;
+  /// 正在更新图标和名字
+  Future<bool> get updating;
 
-  /// 设备支持默认提醒的app包名集合
-  List<String>? ios_defaultPackNames();
+  /// 注册监听更新消息图标(全局注册一次即可)
+  void registerListenUpdate();
+
+  /// 设备支持默认app信息集合
+  /// ios 只有默认的包名
+  /// android 会包含默认的event_type 如果已经安装的应用则包含图标地址
+  Future<List<IDOAppIconItemModel>> getDefaultAppInfo();
+
+  /// android 已安装所有app信息集合 force: 强制更新Android 消息图标和名字
+  /// ios 需要执行获取默认的APP包名列表信息，因为event_type是固件分配的 force 强制更新应用名称
+  Future<List<IDOAppIconItemModel>> firstGetAllAppInfo({bool force = false});
 
   /// 获取缓存的app信息数据
-  Future<IDOAppIconInfoModel> ios_getInfoModel();
+  /// 如果有动态更新app图标则会缓存数据，获取数据显示到开关控制列表
+  Future<IDOAppIconInfoModel> getCacheAppInfoModel();
 
   /// 获取icon图片存放目录地址
-  Future<String> ios_getIconDirPath();
+  Future<String> getIconDirPath();
 
   /// 重置APP图标信息（删除本地沙盒缓存的图片）
-  Future<bool> ios_resetIconInfoData();
+  /// macAddress 需要清除数据的MAC地址
+  /// deleteIcon 是否删除icon 图片文件，默认删除
+  Future<bool> resetIconInfoData({required String macAddress, bool deleteIcon = true});
 
-  /// ios注册监听更新消息图标(全局注册一次即可)
-  void ios_registerListenUpdate();
-
-  /// ios 主动获取默认APP信息
-  Stream<bool> ios_getDefaultAppInfo();
-
-  /// android 下发应用图标
-  Stream<bool> android_transferAppIcon(List<IDOAppInfo> items);
+  /// android 当有收到通知时下发消息图标到设备
+  Future<bool> androidSendMessageIconToDevice(int eventType);
 
 }

@@ -39,6 +39,7 @@ class _IDOSyncData implements IDOSyncData {
   @override
   void stopSync() {
     _stopSync();
+    _closeFastModeIfNeed();
   }
 
   @override
@@ -66,6 +67,7 @@ extension _IDOSyncDataExt on _IDOSyncData {
         return Future(() => false);
       }
       logger?.d('sync data start');
+      _openFastModeIfNeed();
       _status = SyncStatus.syncing;
       final syncFast = SyncFastOperation();
       await syncFast.listenSyncFastComplete();
@@ -109,6 +111,7 @@ extension _IDOSyncDataExt on _IDOSyncData {
         _status = SyncStatus.finished;
         _completer?.complete(errorCode == 0);
         _completer = null;
+        _closeFastModeIfNeed();
       });
       _syncHandle!.start().timeout(Duration(seconds: calculate.syncTimeout),
           onTimeout: () {
@@ -119,6 +122,7 @@ extension _IDOSyncDataExt on _IDOSyncData {
       _status = SyncStatus.error;
       _completer!.completeError(e);
       _completer = null;
+      _closeFastModeIfNeed();
     }
     return _completer!.future;
   }
@@ -130,6 +134,7 @@ extension _IDOSyncDataExt on _IDOSyncData {
     _completer?.complete(false);
     // return _completer?.future;
     _completer = null;
+    _closeFastModeIfNeed();
     return false;
   }
 
@@ -138,5 +143,37 @@ extension _IDOSyncDataExt on _IDOSyncData {
     logger?.d('sync data stop');
     _status = SyncStatus.stopped;
     _syncHandle?.stop();
+  }
+
+  /// 开启快速模式
+  _openFastModeIfNeed() async {
+    // 支持数据同步时启用快速模式，在结束时需恢复慢速模式
+    if (libManager.funTable.syncSupportSetFastModeWhenSyncConfig) {
+      // 数据同步和文件传输都存在模式切换，存在问题，暂时废弃
+      //await libManager.send(evt: CmdEvtType.setConnParam, json: _jsonChangeMode(0x01)).first;
+    }
+  }
+
+  /// 关闭快速模式
+  _closeFastModeIfNeed() async {
+    // 支持数据同步时启用快速模式，在结束时需恢复慢速模式
+    if (libManager.funTable.syncSupportSetFastModeWhenSyncConfig &&
+        !libManager.transFile.isTransmitting) {
+      // 数据同步和文件传输都存在模式切换，存在问题，暂时废弃
+      //await libManager.send(evt: CmdEvtType.setConnParam, json: _jsonChangeMode(0x02)).first;
+    }
+  }
+
+  /// mode: 0x00 查模式, 0x01 快速模式 , 0x02 慢速模式
+  String _jsonChangeMode(int mode) {
+    final map = {
+      'mode': mode,
+      'modify_conn_param': 0,
+      'max_interval': 5,
+      'min_interval': 0,
+      'slave_latency': 2,
+      'conn_timeout': 5,
+    };
+    return jsonEncode(map);
   }
 }

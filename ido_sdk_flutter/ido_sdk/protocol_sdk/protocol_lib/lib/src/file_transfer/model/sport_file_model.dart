@@ -1,3 +1,5 @@
+import 'package:protocol_lib/src/private/logger/logger.dart';
+
 import 'base_file_model.dart';
 
 import '../type_define/type_define.dart';
@@ -53,5 +55,12 @@ class SportFileModel extends BaseFileModel {
     if (isSports) {
       iconType = 3; // 动图时，强制iconType类型为3
     }
+  }
+
+  @override
+  String toString() {
+    return 'SportFileModel{sportType: $sportType, iconType: $iconType, isSports: $isSports '
+    'fileType: $fileType, filePath: $filePath, fileName: '
+        '$fileName, fileSize: $fileSize, originalFileSize: $originalFileSize}';
   }
 }

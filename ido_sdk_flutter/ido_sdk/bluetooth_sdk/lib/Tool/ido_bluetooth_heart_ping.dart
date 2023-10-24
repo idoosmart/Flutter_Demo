@@ -12,7 +12,7 @@ class IDOBluetoothHeartPing with WidgetsBindingObserver, IDOBluetoothStateMixin 
   Stream? _stream;
   late StreamSubscription _heartPingTimer;
 
-  startHeartPing({int heartPingSecond = 5}) {
+  startHeartPing({int heartPingSecond = 25}) {
     // print('startHeartPing');
     _stream ??= Stream.periodic(Duration(seconds: heartPingSecond));
     WidgetsBinding.instance.addObserver(this);

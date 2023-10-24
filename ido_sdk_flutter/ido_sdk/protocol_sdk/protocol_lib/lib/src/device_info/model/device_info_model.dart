@@ -13,7 +13,7 @@ class DeviceInfoModel {
   @JsonKey(name: 'bootload_version')
   final int? bootloadVersion;
   @JsonKey(name: 'bt_name')
-  final dynamic btName;
+  dynamic btName;
   @JsonKey(name: 'cloud_clock_dial_version')
   final int? cloudClockDialVersion;
   @JsonKey(name: 'deivce_id')
@@ -33,7 +33,7 @@ class DeviceInfoModel {
   final int? showBindChoiceUi;
   @JsonKey(name: 'user_defined_dial_main_version')
   final int? userDefinedDialMainVersion;
-  final dynamic sn;
+  dynamic sn;
 
   DeviceInfoModel({
     this.battStatus,

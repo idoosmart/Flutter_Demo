@@ -1,8 +1,5 @@
 
 import 'dart:convert';
-import 'dart:typed_data';
-
-import 'package:flutter/cupertino.dart';
 import 'package:protocol_alexa/src/module/reminder.dart';
 import 'package:protocol_alexa/src/module/timer.dart';
 import 'package:protocol_alexa/src/private/tools/map_extension.dart';
@@ -12,6 +9,7 @@ import '../../protocol_alexa.dart';
 import '../private/logger/logger.dart';
 import '../private/tools/data_box.dart';
 import '../resource/range_controller_skill.dart';
+import '../resource/toggleControllerSkill_sport2.dart';
 import '../resource/toggle_controller_skill.dart';
 import '../resource/toggle_controller_skillsport.dart';
 import '../service/model/directive_model.dart';

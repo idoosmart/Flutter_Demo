@@ -77,8 +77,10 @@ class Payload {
   final String? clearBehavior;
   final String? url;
   final String? scheduledTime;
+  final String? label;
   final dynamic rangeValue;
   final dynamic rangeValueDelta;
+  final dynamic dialogRequestId;
 
   final Caption? caption;
   final AudioItem? audioItem;
@@ -89,6 +91,7 @@ class Payload {
   final Map? highTemperature;
   final Map? lowTemperature;
   final List? weatherForecast;
+  final String? tokens;//删除闹钟用的到
 
   const Payload({
     this.type,
@@ -110,6 +113,9 @@ class Payload {
     this.scheduledTime,
     this.rangeValue,
     this.rangeValueDelta,
+    this.label,
+    this.dialogRequestId,
+    this.tokens,
   });
 
   factory Payload.fromJson(Map<String, dynamic> json) =>
@@ -123,7 +129,7 @@ class Payload {
            'playBehavior: $playBehavior, clearBehavior: $clearBehavior, url: $url, caption: $caption, '
            'audioItem: $audioItem, listItems: $listItems, currentWeather: $currentWeather, currentWeatherIcon: $currentWeatherIcon, '
         'highTemperature: $highTemperature, lowTemperature: $lowTemperature, weatherForecast: $weatherForecast, scheduledTime: $scheduledTime, '
-        'rangeValue: $rangeValue, rangeValueDelta: $rangeValueDelta}';
+        'rangeValue: $rangeValue, rangeValueDelta: $rangeValueDelta, label: $label, dialogRequestId: $dialogRequestId, tokens: $tokens}';
   }
 }
 

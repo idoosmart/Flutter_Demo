@@ -45,6 +45,7 @@ class _IDODeviceBind implements IDODeviceBind {
   late final _coreMgr = IDOProtocolCoreManager();
   Completer<BindStatus>? _completerBind;
   late final _updateSetModeNotification = PublishSubject<int>();
+  late final _unbindNotification = PublishSubject<String>();
 
   BindValueCallback<IDODeviceInfo>? funDeviceInfo;
   BindValueCallback<IDOFunctionTable>? funFunctionTable;
@@ -146,6 +147,7 @@ class _IDODeviceBind implements IDODeviceBind {
       // 解绑非当前设备
       await storage?.cleanAuthMode(macAddr);
       await storage?.cleanBindStatus(macAddress: macAddr);
+      _unbindNotification.add(macAddress);
       return true;
     }
 
@@ -166,6 +168,7 @@ class _IDODeviceBind implements IDODeviceBind {
         await storage?.cleanAuthMode(macAddr);
         await storage?.cleanBindStatus(macAddress: macAddr);
         //_coreMgr.setBindMode(mode: 0);
+        _unbindNotification.add(macAddress);
       } catch (e) {
         logger?.e('unbind online error：$e');
       }
@@ -178,6 +181,12 @@ class _IDODeviceBind implements IDODeviceBind {
   StreamSubscription listenUpdateSetModeNotification(
       void Function(int mode) func) {
     return _updateSetModeNotification.listen(func);
+  }
+
+  @override
+  StreamSubscription listenUnbindNotification(
+      void Function(String macAddress) func) {
+    return _unbindNotification.listen(func);
   }
 }
 

@@ -1,6 +1,4 @@
 
-import 'package:protocol_lib/src/message_icon/ido_message_icon.dart';
-
 class IDOAppInfo {
   /// 事件类型
   int evtType;
@@ -44,6 +42,9 @@ class IDOAppIconItemModel extends IDOAppInfo {
   /// 国家编码
   String? countryCode;
 
+  /// 应用版本号
+  String? appVersion;
+
   /// 是否已经下载APP信息
   bool? isDownloadAppInfo;
 
@@ -66,7 +67,8 @@ class IDOAppIconItemModel extends IDOAppInfo {
     this.countryCode,
     this.iconCloudPath,
     this.iconLocalPathBig,
-    this.state
+    this.state,
+    this.appVersion
   });
 
   factory IDOAppIconItemModel.fromJson(Map<String, dynamic> json) {
@@ -80,7 +82,8 @@ class IDOAppIconItemModel extends IDOAppInfo {
       countryCode: json['country_code'] as String? ?? '',
       iconCloudPath: json['icon_cloud_path'] as String? ?? '',
       iconLocalPathBig: json['icon_local_path_big'] as String? ?? '',
-      state: json['need_sync_icon'] as int?
+      state: json['need_sync_icon'] as int?,
+      appVersion: json['app_version'] as String? ?? ''
     );
    if (model.packName == 'com.apple.MobileSMS') {
      model.isUpdateAppName = true;
@@ -149,7 +152,6 @@ class IDOAppIconInfoModel {
     List<IDOAppIconItemModel> models = [];
     json_items?.forEach((element) {
       final item = IDOAppIconItemModel.fromJson(element);
-      item.isDefault = IDOMessageIcon().ios_defaultPackNames()?.contains(item.packName);
       final countryCode = item.countryCode ?? '';
       if (countryCode.isEmpty) {
           item.countryCode = json['country_code'] as String?;
@@ -177,7 +179,8 @@ class IDOAppIconInfoModel {
     'app_name': element.appName,'icon_local_path': element.iconLocalPath,
     'item_id': element.itemId ?? 0,'msg_cout': element.msgCount ?? 0,
     'country_code':element.countryCode ?? '','icon_cloud_path':element.iconCloudPath ?? '',
-    'icon_local_path_big': element.iconLocalPathBig ?? '','need_sync_icon' : element.state ?? 0
+    'icon_local_path_big': element.iconLocalPathBig ?? '','need_sync_icon' : element.state ?? 0,
+    'app_version': element.appVersion ?? ''
       };
       items.add(item);
     });
