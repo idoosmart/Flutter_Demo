@@ -16,22 +16,22 @@ dependencies:
   protocol_ffi:
     git:
       url: https://github.com/idoosmart/Flutter_Demo.git
-      ref: master
+      ref: v1.0.0
       path: ido_sdk_flutter/ido_sdk/protocol_sdk/protocol_ffi
   worker_manager_lite:
     git:
       url: https://github.com/idoosmart/Flutter_Demo.git
-      ref: master
+      ref: v1.0.0
       path: ido_sdk_flutter/ido_sdk/protocol_sdk/plugins/worker_manager_lite
   ido_logger:
     git:
       url: https://github.com/idoosmart/Flutter_Demo.git
-      ref: master
+      ref: v1.0.0
       path: ido_sdk_flutter/ido_sdk/protocol_sdk/plugins/ido_logger
   native_channel:
     git:
       url: https://github.com/idoosmart/Flutter_Demo.git
-      ref: master
+      ref: v1.0.0
       path: ido_sdk_flutter/ido_sdk/protocol_sdk/plugins/native_channel
   
   
