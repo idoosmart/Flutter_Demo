@@ -47,11 +47,20 @@ dependencies:
 
   # SDK
   protocol_lib:
-    path: ../ido_sdk/protocol_sdk/protocol_lib/
+    git:
+      url: https://github.com/idoosmart/Flutter_Demo.git
+      ref: master
+      path: ido_sdk_flutter/ido_sdk/protocol_sdk/protocol_lib
   protocol_alexa:
-    path: ../ido_sdk/protocol_sdk/protocol_alexa/
+    git:
+      url: https://github.com/idoosmart/Flutter_Demo.git
+      ref: master
+      path: ido_sdk_flutter/ido_sdk/protocol_sdk/protocol_alexa
   flutter_bluetooth:
-    path: ../ido_sdk/bluetooth_sdk/
+    git:
+      url: https://github.com/idoosmart/Flutter_Demo.git
+      ref: master
+      path: ido_sdk_flutter/ido_sdk/bluetooth_sdk
 
 executables:
   slidy:
