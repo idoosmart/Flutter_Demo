@@ -17,7 +17,7 @@ dependencies:
     git:
       url: https://github.com/idoosmart/Flutter_Demo.git
       ref: master
-      path: ido_sdk_flutter/ido_sdk/plugins/ido_logger
+      path: ido_sdk_flutter/ido_sdk/protocol_sdk/plugins/ido_logger
 
 dev_dependencies:
   flutter_test:
