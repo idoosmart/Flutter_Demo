@@ -14,13 +14,25 @@ dependencies:
   async: ^2.9.0
   tuple: ^2.0.1
   protocol_ffi:
-    path: ../protocol_ffi/
+    git:
+      url: https://github.com/idoosmart/Flutter_Demo.git
+      ref: master
+      path: ido_sdk_flutter/ido_sdk/protocol_sdk/protocol_ffi
   worker_manager_lite:
-    path: ../plugins/worker_manager_lite/
+    git:
+      url: https://github.com/idoosmart/Flutter_Demo.git
+      ref: master
+      path: ido_sdk_flutter/ido_sdk/plugins/worker_manager_lite
   ido_logger:
-    path: ../plugins/ido_logger/
+    git:
+      url: https://github.com/idoosmart/Flutter_Demo.git
+      ref: master
+      path: ido_sdk_flutter/ido_sdk/plugins/ido_logger
   native_channel:
-    path: ../plugins/native_channel/
+    git:
+      url: https://github.com/idoosmart/Flutter_Demo.git
+      ref: master
+      path: ido_sdk_flutter/ido_sdk/plugins/native_channel
   
   
 

@@ -26,13 +26,26 @@ dependencies:
 #  intl: ^0.17.0
 
   protocol_lib:
-    path: ../protocol_lib/
+    git:
+      url: https://github.com/idoosmart/Flutter_Demo.git
+      ref: master
+      path: ido_sdk_flutter/ido_sdk/protocol_sdk/protocol_lib
   alexa_net:
-    path: ../plugins/alexa_net
+    git:
+      url: https://github.com/idoosmart/Flutter_Demo.git
+      ref: master
+      path: ido_sdk_flutter/ido_sdk/plugins/alexa_net
   alexa_channel:
-    path: ../plugins/alexa_channel
+    git:
+      url: https://github.com/idoosmart/Flutter_Demo.git
+      ref: master
+      path: ido_sdk_flutter/ido_sdk/plugins/alexa_channel
   ido_logger:
-    path: ../plugins/ido_logger/
+    git:
+      url: https://github.com/idoosmart/Flutter_Demo.git
+      ref: master
+      path: ido_sdk_flutter/ido_sdk/plugins/ido_logger
+
   json_annotation: 4.8.0
 
 dev_dependencies:
