@@ -155,7 +155,7 @@ class _FunctionContentState extends State<FunctionContent> {
         final isBinded = await libManager.cache
             .loadBindStatus(macAddress: event.macAddress!);
         await libManager.markConnectedDeviceSafe(
-            uniqueId: device.uuid ?? event.macAddress!,
+            uniqueId: event.macAddress!,
             otaType: otaType,
             isBinded: isBinded);
         isConnected = libManager.isConnected;

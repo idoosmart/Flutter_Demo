@@ -325,7 +325,7 @@ extension _DioSetupOptions on Dio {
       required Duration connectTimeout}) {
     options.connectTimeout = connectTimeout;
     options.receiveTimeout = const Duration(seconds: 60);
-    options.baseUrl = "-";
+    options.baseUrl = "https://api.amazonalexa.com";
     interceptors.add(HeaderInterceptor(params: headerParams));
     interceptors.add(BaseInterceptor());
     interceptors.add(RetryInterceptor(
