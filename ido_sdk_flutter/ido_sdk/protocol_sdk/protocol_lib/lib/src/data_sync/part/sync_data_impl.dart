@@ -5,12 +5,16 @@ class _IDOSyncData implements IDOSyncData {
   _IDOSyncData._internal();
   factory _IDOSyncData() => _instance;
 
+  late final _streamStatus = StreamController<SyncStatus>.broadcast();
+
   Completer<bool>? _completer;
   SyncDataHandle? _syncHandle;
   /// 使用 _status = xx 赋值
   SyncStatus __statusPrivate = SyncStatus.init;
+
   set _status(SyncStatus val) {
     __statusPrivate = val;
+    _streamStatus.add(val);
     if (val == SyncStatus.syncing) {
       statusNotification?.add(IDOStatusNotification.syncHealthDataIng);
     }else if (val != SyncStatus.init) {
@@ -44,6 +48,11 @@ class _IDOSyncData implements IDOSyncData {
 
   @override
   SyncStatus get syncStatus => __statusPrivate;
+
+  @override
+  Stream<SyncStatus> listenSyncStatus() {
+    return _streamStatus.stream;
+  }
 
 }
 
@@ -85,28 +94,30 @@ extension _IDOSyncDataExt on _IDOSyncData {
         } else if (type == SyncType.v3Data) {
           calculate.v3DataProgress = progress;
         }
-        if (syncStatus != SyncStatus.syncing) {
-          return;
-        }
+        // if (syncStatus != SyncStatus.syncing) {
+        //   return;
+        // }
         if (funcProgress != null) {
           funcProgress(calculate.getSyncProgress());
         }
       }, (type, jsonStr, errorCode) {
-        if (syncStatus != SyncStatus.syncing) {
-          return;
-        }
+        // if (syncStatus != SyncStatus.syncing) {
+        //   return;
+        // }
         if (funcData != null) {
           logger?.d('sync data ==${jsonStr} data type ==${type} error code ==${errorCode}');
           final dataType = SyncDataType.values[type.index];
           funcData(dataType, jsonStr, errorCode);
         }
       }, (errorCode) {
-        if (syncStatus != SyncStatus.syncing) {
+        if (syncStatus == SyncStatus.finished) {
           return;
         }
-        logger?.d('sync data complete error code ==${errorCode}');
+        logger?.d('sync data complete error code ==$errorCode');
+        logger?.d('sync data complete status ==$syncStatus');
+
         if (funcCompleted != null) {
-          funcCompleted(errorCode);
+            funcCompleted(errorCode);
         }
         _status = SyncStatus.finished;
         _completer?.complete(errorCode == 0);

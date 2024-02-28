@@ -145,8 +145,8 @@ class BaseFunctionTable {
   /// Weixin
   bool get reminderWeixin => ft?.noticeWeixin ?? false;
 
-  /// Calendar
-  bool get reminderCalendar => ft?.v3SupportCalendario ?? false;
+  /// Calendar (Google日历）
+  bool get reminderCalendarGoogle => ft?.v3SupportCalendario ?? false;
 
   /// Instagram
   bool get reminderInstagram => ft?.instagram ?? false;
@@ -159,6 +159,9 @@ class BaseFunctionTable {
 
   /// Skype
   bool get reminderSkype => ft?.skype ?? false;
+
+  /// Calendar
+  bool get reminderCalendar => ft?.calendar ?? false;
 
   /// Whatsapp
   bool get reminderWhatsapp => ft?.whatsapp ?? false;
@@ -448,6 +451,9 @@ class BaseFunctionTable {
   /// 越野跑
   bool get sportTrailRunning => ft?.trailRunning ?? false;
 
+  ///匹克球
+  bool get sportPickleBall => ft?.pickleball ?? false;
+
   // ------------------ 获取 ------------------
 
   /// 获取实时数据
@@ -615,10 +621,10 @@ class BaseFunctionTable {
   /// V3血氧数据 偏移按照分钟偏移
   bool get getSpo2OffChangeV3 => ft?.exTableMain8V3Spo2OffChange ?? false;
 
-  /// 5个心率区间
+  /// 5级心率区间
   bool get getLevel5HrInterval => ft?.level5HrInterval ?? false;
 
-  // TODO 待添加该字段注释说明
+  /// 5个心率区间
   bool get getFiveHRInterval => ft?.FiveHRInterval ?? false;
 
   /// 获得固件三级版本和BT的3级版本
@@ -660,19 +666,22 @@ class BaseFunctionTable {
   /// 新错误码 v3
   bool get getSupportDataTranGetNewErrorCodeV3 => ft?.v3SupportDataTranGetNewErrorCode ?? false;
 
-  // TODO 待添加该字段注释说明
+  /// 运动自识别结束开关不展示，设置开关状态
   bool get getAutoActivityEndSwitchNotDisplay => ft?.autoActivityEndSwitchNotDisplay ?? false;
 
-  // TODO 待添加该字段注释说明
+  /// 运动自识别暂停开关不展示，设置开关状态
   bool get getAutoActivityPauseSwitchNotDisplay => ft?.autoActivityPauseSwitchNotDisplay ?? false;
 
-  // TODO 待添加该字段注释说明
+  /// 运动模式自动识别开关设置获取 新增类型椭圆机 划船机 游泳
+  bool get getV3AutoActivitySwitch => ft?.v3AutoActivitySwitch ?? false;
+
+  /// 运动模式自动识别开关设置获取 新增类型骑行
   bool get getAutoActivitySwitchAddBicycle => ft?.autoActivitySwitchAddBicycle ?? false;
 
-  // TODO 待添加该字段注释说明
+  /// 运动模式自动识别开关设置获取 新增类型智能跳绳
   bool get getAutoActivitySwitchAddSmartRope => ft?.autoActivitySwitchAddSmartRope ?? false;
 
-  // TODO 待添加该字段注释说明
+  /// 运动自识别获取和设置指令使用新的版本与固件交互
   bool get getAutoActivitySetGetUseNewStructExchange => ft?.autoActivitySetGetUseNewStructExchange ?? false;
 
   /// 支持走动提醒设置/获取免提醒时间段
@@ -705,7 +714,49 @@ class BaseFunctionTable {
   /// 语音助手状态
   bool get getSupportSetVoiceAssistantStatus => ft?.supportSetVoiceAssistantStatus ?? false;
 
+  /// 支持获取flash log size
+  bool get getSupportFlashLogSize => ft?.supportGetFlashLogSize ?? false;
+
+  /// 支持获取单位
+  bool get getSupportGetUnit => ft?.supportGetUnit ?? false;
+
+  /// 通知支持Ryze Connect
+  bool get getSupportRyzeConnect => ft?.supportRyzeConnect ?? false;
+
+  /// 通知支持LOOPS FIT
+  bool get getSupportLoopsFit => ft?.supportLoopsFit ?? false;
+
+  /// 通知支持TAS Smart
+  bool get getSupportTasSmart => ft?.supportTasSmart ?? false;
+
+  /// 女性经期不支持设置排卵日提醒
+  bool get getNotSupportSetOvulation => ft?.notSupportSetOvulation ?? false;
+
+  /// 固件支持每小时目标步数设置和获取
+  bool get getSupportWalkGoalSteps => ft?.supportWalkGoalSteps ?? false;
+
+  /// GTX03/05定制，hamaAPP，功能表开启后，运动列表不支持增删，支持排序
+  bool get getNotSupportDeleteAddSportSort => ft?.notSupportDeleteAddSportSort ?? false;
+
+  /// 支持获取用户习惯信息(打点信息)中久坐提醒特性
+  bool get getSupportSedentaryTensileHabitInfo => ft?.supportSedentaryTensileHabitInfo ?? false;
+
+  /// 支持固件快速定位，APP下发GPS权限及经纬度给固件
+  bool get getSupportSendGpsLongitudeAndLatitude => ft?.supportSendGpsLongitudeAndLatitude ?? false;
+
+  /// 支持设备bt连接的手机型号
+  bool get getSupportGetV3DeviceBtConnectPhoneModel => ft?.supportGetV3DeviceBtConnectPhoneModel ?? false;
+
+  /// 支持血压模型文件更新
+  bool get getSupportBloodPressureModelFileUpdate => ft?.supportBloodPressureModelFileUpdate ?? false;
+
+  /// 勿扰支持事件范围开关和重复
+  bool get getSupportDisturbHaveRangRepeat => ft?.disturbHaveRangRepeat ?? false;
+
   // ------------------ 设置 ------------------
+
+  /// 设置获取消息应用状态使用version0x20版本下发
+  bool get setNoticeMessageStateUseVersion0x20 => ft?.supportSetNoticeMessageStateUseVersion0x20 ?? false;
 
   /// 科学睡眠开关
   bool get setScientificSleepSwitch => ft?.v3SupportSetScientificSleepSwitch ?? false;
@@ -976,6 +1027,30 @@ class BaseFunctionTable {
   /// 设置设备音乐音量
   bool get setSetPhoneVoice => ft?.exTableMain10SetPhoneVoice ?? false;
 
+  /// 设置快捷来电回复开关
+  bool get setSupportSetCallQuickReplyOnOff => ft?.supportSetCallQuickReplyOnOff ?? false;
+
+  /// 支持多运动交互中下发GPS坐标
+  bool get setSupportExchangeSetGpsCoordinates => ft?.supportActivityExchangeSetGpsCoordinates ?? false;
+
+  /// 支持v3天气协议下发大气压强
+  bool get setSupportV3WeatherAddAtmosphericPressure => ft?.supportSetV3WeatcherAddAtmosphericPressure ?? false;
+
+  /// 支持v3天气协议下发积雪厚度
+  bool get setSupportSetV3WeatcherAddSnowDepth => ft?.supportSetV3WeatcherAddSnowDepth ?? false;
+
+  /// 支持v3天气协议下发降雪量
+  bool get setSupportSetV3WeatcherAddSnowfall => ft?.supportSetV3WeatcherAddSnowfall ?? false;
+
+  /// 支持v3天气协议下发协议版本0x4版本
+  bool get setSupportSetV3WeatcherSendStructVersion04 => ft?.supportSetV3WeatcherSendStructVersion04 ?? false;
+
+  /// 支持设置压力校准阈
+  bool get setSendCalibrationThreshold => ft?.v2SendCalibrationThreshold ?? false;
+
+  /// 支持屏蔽跑步计划入口
+  bool get getNotSupportAppSendRunPlan => ft?.notSupportAppSendRunPlan ?? false;
+
   // ------------------ 语言 ------------------
 
   /// 中文
@@ -1083,6 +1158,17 @@ class BaseFunctionTable {
   /// 芬兰语
   bool get languageFinland => ft?.langFinland ?? false;
 
+  ///孟加拉语
+  bool get languageBengali => ft?.langBengali ?? false;
+
+  ///高棉语
+  bool get languageKhmer => ft?.langKhmer ?? false;
+
+  ///马来语
+  bool get languageMalay => ft?.langMalay ?? false;
+
+  ///巴西葡语
+  bool get languageBrazilianPortuguese => ft?.langBrazilianPortuguese ?? false;
 // ------------------ 同步 ------------------
 
   /// v3 心率
@@ -1200,6 +1286,15 @@ class BaseFunctionTable {
 
   /// 起床
   bool get alarmWakeUp => ft?.alarmWakeUp ?? false;
+
+  /// 支持设置防丢
+  bool get supportSetAntilost => ft?.antilost ?? false;
+
+  /// 支持设置v2天气数据
+  bool get supportSetWeatherDataV2 => ft?.weather ?? false;
+
+  /// 支持设置一键呼叫
+  bool get supportSetOnetouchCalling => ft?.onetouchCalling ?? false;
 
   // ------------------ Alexa ------------------
 
@@ -1320,309 +1415,5 @@ class IDOFunctionTable extends BaseFunctionTable {
   /// 功能表变更  (SDK内部使用)
   StreamSubscription onFunctionTableChanged(void Function(int) func) {
     return _subjectFtChanged.stream.listen(func);
-  }
-}
-
-extension IDOFunctionTableExt on IDOFunctionTable {
-  /// 内部使用
-  String toJson() {
-    return jsonEncode({
-      'reminderAncs': reminderAncs,
-      'reminderSnapchat': reminderSnapchat,
-      'reminderLine': reminderLine,
-      'reminderOutlook': reminderOutlook,
-      'reminderTelegram': reminderTelegram,
-      'reminderViber': reminderViber,
-      'reminderVkontakte': reminderVkontakte,
-      'reminderChatwork': reminderChatwork,
-      'reminderSlack': reminderSlack,
-      'reminderTumblr': reminderTumblr,
-      'reminderYahooMail': reminderYahooMail,
-      'reminderYahooPinterest': reminderYahooPinterest,
-      'reminderYoutube': reminderYoutube,
-      'reminderGmail': reminderGmail,
-      'reminderKakaoTalk': reminderKakaoTalk,
-      'reminderOnlyGoogleGmail': reminderOnlyGoogleGmail,
-      'reminderOnlyOutlookEmail': reminderOnlyOutlookEmail,
-      'reminderOnlyYahooEmail': reminderOnlyYahooEmail,
-      'reminderTiktok': reminderTiktok,
-      'reminderRedbus': reminderRedbus,
-      'reminderDailyhunt': reminderDailyhunt,
-      'reminderHotstar': reminderHotstar,
-      'reminderInshorts': reminderInshorts,
-      'reminderPaytm': reminderPaytm,
-      'reminderAmazon': reminderAmazon,
-      'reminderFlipkart': reminderFlipkart,
-      'reminderNhnEmail': reminderNhnEmail,
-      'reminderInstantEmail': reminderInstantEmail,
-      'reminderZohoEmail': reminderZohoEmail,
-      'reminderExchangeEmail': reminderExchangeEmail,
-      'reminder189Email': reminder189Email,
-      'reminderVeryFit': reminderVeryFit,
-      'reminderGeneral': reminderGeneral,
-      'reminderMattersRemind': reminderMattersRemind,
-      'reminderMicrosoft': reminderMicrosoft,
-      'reminderMissedCall': reminderMissedCall,
-      'reminderGetAllContact': reminderGetAllContact,
-      'reminderWhatsappBusiness': reminderWhatsappBusiness,
-      'reminderEmail': reminderEmail,
-      'reminderFacebook': reminderFacebook,
-      'reminderMessage': reminderMessage,
-      'reminderQq': reminderQq,
-      'reminderTwitter': reminderTwitter,
-      'reminderWeixin': reminderWeixin,
-      'reminderCalendar': reminderCalendar,
-      'reminderInstagram': reminderInstagram,
-      'reminderLinkedIn': reminderLinkedIn,
-      'reminderMessengre': reminderMessengre,
-      'reminderSkype': reminderSkype,
-      'reminderWhatsapp': reminderWhatsapp,
-      'reminderAlarmClock': reminderAlarmClock,
-      'reminderSinaWeibo': reminderSinaWeibo,
-      'reminderCalling': reminderCalling,
-      'reminderCallContact': reminderCallContact,
-      'reminderCallNum': reminderCallNum,
-      'reminderPrime': reminderPrime,
-      'reminderNetflix': reminderNetflix,
-      'reminderGpay': reminderGpay,
-      'reminderPhonpe': reminderPhonpe,
-      'reminderSwiggy': reminderSwiggy,
-      'reminderZomato': reminderZomato,
-      'reminderMakemytrip': reminderMakemytrip,
-      'reminderJioTv': reminderJioTv,
-      'reminderNiosefit': reminderNiosefit,
-      'reminderYtmusic': reminderYtmusic,
-      'reminderUber': reminderUber,
-      'reminderOla': reminderOla,
-      'reminderGoogleMeet': reminderGoogleMeet,
-      'reminderMormaiiSmartwatch': reminderMormaiiSmartwatch,
-      'reminderTechnosConnect': reminderTechnosConnect,
-      'reminderEnjoei': reminderEnjoei,
-      'reminderAliexpress': reminderAliexpress,
-      'reminderShopee': reminderShopee,
-      'reminderTeams': reminderTeams,
-      'reminder99Taxi': reminder99Taxi,
-      'reminderUberEats': reminderUberEats,
-      'reminderLfood': reminderLfood,
-      'reminderRappi': reminderRappi,
-      'reminderMercadoLivre': reminderMercadoLivre,
-      'reminderMagalu': reminderMagalu,
-      'reminderAmericanas': reminderAmericanas,
-      'reminderYahoo': reminderYahoo,
-      'reminderMessageIcon': reminderMessageIcon,
-      'sportWalk': sportWalk,
-      'sportRun': sportRun,
-      'sportByBike': sportByBike,
-      'sportOnFoot': sportOnFoot,
-      'sportSwim': sportSwim,
-      'sportMountainClimbing': sportMountainClimbing,
-      'sportBadminton': sportBadminton,
-      'sportOther': sportOther,
-      'sportFitness': sportFitness,
-      'sportSpinning': sportSpinning,
-      'sportEllipsoid': sportEllipsoid,
-      'sportTreadmill': sportTreadmill,
-      'sportSitUp': sportSitUp,
-      'sportPushUp': sportPushUp,
-      'sportDumbbell': sportDumbbell,
-      'sportWeightlifting': sportWeightlifting,
-      'sportYoga': sportYoga,
-      'sportRopeSkipping': sportRopeSkipping,
-      'sportTableTennis': sportTableTennis,
-      'sportBasketball': sportBasketball,
-      'sportFootballl': sportFootballl,
-      'sportVolleyball': sportVolleyball,
-      'sportTennis': sportTennis,
-      'sportGolf': sportGolf,
-      'sportBaseball': sportBaseball,
-      'sportSkiing': sportSkiing,
-      'sportRollerSkating': sportRollerSkating,
-      'sportDance': sportDance,
-      'sportStrengthTraining': sportStrengthTraining,
-      'sportCoreTraining': sportCoreTraining,
-      'sportTidyUpRelax': sportTidyUpRelax,
-      'sportTraditionalStrengthTraining': sportTraditionalStrengthTraining,
-      'sportOutdoorRun': sportOutdoorRun,
-      'sportIndoorRun': sportIndoorRun,
-      'sportOutdoorCycle': sportOutdoorCycle,
-      'sportIndoorCycle': sportIndoorCycle,
-      'sportOutdoorWalk': sportOutdoorWalk,
-      'sportIndoorWalk': sportIndoorWalk,
-      'sportPoolSwim': sportPoolSwim,
-      'sportOpenWaterSwim': sportOpenWaterSwim,
-      'sportElliptical': sportElliptical,
-      'sportRower': sportRower,
-      'sportHiit': sportHiit,
-      'sportCricket': sportCricket,
-      'sportPilates': sportPilates,
-      'sportOutdoorFun': sportOutdoorFun,
-      'sportOtherActivity': sportOtherActivity,
-      'sportZumba': sportZumba,
-      'sportSurfing': sportSurfing,
-      'sportFootvolley': sportFootvolley,
-      'sportStandWaterSkiing': sportStandWaterSkiing,
-      'sportBattlingRope': sportBattlingRope,
-      'sportSkateboard': sportSkateboard,
-      'sportNoticeStepper': sportNoticeStepper,
-      'sportShowNum': sportShowNum,
-      'setScientificSleepSwitch': setScientificSleepSwitch,
-      'setTemperatureSwitchHealth': setTemperatureSwitchHealth,
-      'setHeartRateMonitor': setHeartRateMonitor,
-      'setDrinkWaterReminder': setDrinkWaterReminder,
-      'setAgpsOffLine': setAgpsOffLine,
-      'setAgpsOnLine': setAgpsOnLine,
-      'setSetV3HeartInterval': setSetV3HeartInterval,
-      'setWeatherCity': setWeatherCity,
-      'setDoNotDisturb': setDoNotDisturb,
-      'setCalorieGoal': setCalorieGoal,
-      'setMenstruation': setMenstruation,
-      'setPressureData': setPressureData,
-      'setSpo2Data': setSpo2Data,
-      'setSportModeSort': setSportModeSort,
-      'setActivitySwitch': setActivitySwitch,
-      'setNightAutoBrightness': setNightAutoBrightness,
-      'setScreenBrightness5Level': setScreenBrightness5Level,
-      'setWalkReminder': setWalkReminder,
-      'setScreenBrightness3Level': setScreenBrightness3Level,
-      'setHandWashReminder': setHandWashReminder,
-      'setLocalDial': setLocalDial,
-      'setNotSupportHrHighAlarm': setNotSupportHrHighAlarm,
-      'setNotSupportPhotoWallpaper': setNotSupportPhotoWallpaper,
-      'setPressureHighReminder': setPressureHighReminder,
-      'setWallpaperOnlyTimeColor': setWallpaperOnlyTimeColor,
-      'setWallpaperDial': setWallpaperDial,
-      'setSupportBreathRate': setSupportBreathRate,
-      'setSupportCalorieUnit': setSupportCalorieUnit,
-      'setSupportSportPlan': setSupportSportPlan,
-      'setSupportSwimPoolUnit': setSupportSwimPoolUnit,
-      'setSupportV3Bp': setSupportV3Bp,
-      'setWatchDialSort': setWatchDialSort,
-      'setMidHighTimeGoal': setMidHighTimeGoal,
-      'setNewRetainData': setNewRetainData,
-      'setScheduleReminder': setScheduleReminder,
-      'setSet100SportSort': setSet100SportSort,
-      'setSet20SportParamSort': setSet20SportParamSort,
-      'setSetMainUiSort': setSetMainUiSort,
-      'setSetStressCalibration': setSetStressCalibration,
-      'setSmartHeartRate': setSmartHeartRate,
-      'setSpo2AllDayOnOff': setSpo2AllDayOnOff,
-      'setSupportAppSendVoiceToBle': setSupportAppSendVoiceToBle,
-      'setSupportCyclingUnit': setSupportCyclingUnit,
-      'setSupportWalkRunUnit': setSupportWalkRunUnit,
-      'setWalkReminderTimeGoal': setWalkReminderTimeGoal,
-      'setWatchCapacitySizeDisplay': setWatchCapacitySizeDisplay,
-      'setWatchPhotoPositionMove': setWatchPhotoPositionMove,
-      'setMenuListMain7': setMenuListMain7,
-      'setHistoryMenstrual': setHistoryMenstrual,
-      'setMenstrualAddPregnancy': setMenstrualAddPregnancy,
-      'setNotSurportCalling3SDelay': setNotSurportCalling3SDelay,
-      'setSetFitnessGuidance': setSetFitnessGuidance,
-      'setSetNotificationStatus': setSetNotificationStatus,
-      'setSetUnreadAppReminder': setSetUnreadAppReminder,
-      'setSetV3Weather': setSetV3Weather,
-      'setSetV3WeatherSunrise': setSetV3WeatherSunrise,
-      'setSetV3WorldTime': setSetV3WorldTime,
-      'setSyncContact': setSyncContact,
-      'setSyncV3ActivityAddParam': setSyncV3ActivityAddParam,
-      'setTransferMusicFile': setTransferMusicFile,
-      'setWalkReminderAddNotify': setWalkReminderAddNotify,
-      'setSupportFahrenheit': setSupportFahrenheit,
-      'setAirohaGpsChip': setAirohaGpsChip,
-      'setSupportSecondSportIcon': setSupportSecondSportIcon,
-      'setSportMediumIcon': setSportMediumIcon,
-      'setWeatherSunTime': setWeatherSunTime,
-      'setWeatherAirGrade': setWeatherAirGrade,
-      'setRespirationRate': setRespirationRate,
-      'setMaxBloodOxygen': setMaxBloodOxygen,
-      'setBleControlMusic': setBleControlMusic,
-      'setMainPressure': setMainPressure,
-      'setNoDisturbAllDayOnOff': setNoDisturbAllDayOnOff,
-      'setOnlyNoDisturbAllDayOnOff': setOnlyNoDisturbAllDayOnOff,
-      'setOnlyNoDisturbSmartOnOff': setOnlyNoDisturbSmartOnOff,
-      'setTimeZoneFloat': setTimeZoneFloat,
-      'setTemperatureSwitchSupport': setTemperatureSwitchSupport,
-      'setMsgAllSwitch': setMsgAllSwitch,
-      'setNotSupperCall3Delay': setNotSupperCall3Delay,
-      'setNoticeMissedCallV2': setNoticeMissedCallV2,
-      'setOverFindPhone': setOverFindPhone,
-      'setSedentariness': setSedentariness,
-      'setScreenBrightness': setScreenBrightness,
-      'languageCh': languageCh,
-      'languageCzech': languageCzech,
-      'languageEnglish': languageEnglish,
-      'languageFrench': languageFrench,
-      'languageGerman': languageGerman,
-      'languageItalian': languageItalian,
-      'languageJapanese': languageJapanese,
-      'languageSpanish': languageSpanish,
-      'languageArabic': languageArabic,
-      'languageBurmese': languageBurmese,
-      'languageFilipino': languageFilipino,
-      'languageGreek': languageGreek,
-      'languageVietnamese': languageVietnamese,
-      'languageDutch': languageDutch,
-      'languageHungarian': languageHungarian,
-      'languageLithuanian': languageLithuanian,
-      'languagePolish': languagePolish,
-      'languageRomanian': languageRomanian,
-      'languageRussian': languageRussian,
-      'languageSlovenian': languageSlovenian,
-      'languageUkrainian': languageUkrainian,
-      'languageCroatian': languageCroatian,
-      'languageDanish': languageDanish,
-      'languageHindi': languageHindi,
-      'languageIndonesian': languageIndonesian,
-      'languageKorean': languageKorean,
-      'languagePortuguese': languagePortuguese,
-      'languageSlovak': languageSlovak,
-      'languagePersia': languagePersia,
-      'languageSweden': languageSweden,
-      'syncV3Hr': syncV3Hr,
-      'syncV3Swim': syncV3Swim,
-      'syncV3Spo2': syncV3Spo2,
-      'syncV3Pressure': syncV3Pressure,
-      'syncV3Activity': syncV3Activity,
-      'syncV3Sleep': syncV3Sleep,
-      'syncV3Sports': syncV3Sports,
-      'syncV3Gps': syncV3Gps,
-      'syncV3SyncAlarm': syncV3SyncAlarm,
-      'syncV3BodyPower': syncV3BodyPower,
-      'syncV3Noise': syncV3Noise,
-      'syncV3Temperature': syncV3Temperature,
-      'syncGps': syncGps,
-      'syncV3ActivityExchangeData': syncV3ActivityExchangeData,
-      'syncHeartRate': syncHeartRate,
-      'syncHeartRateMonitor': syncHeartRateMonitor,
-      'syncSleepMonitor': syncSleepMonitor,
-      'syncFastSync': syncFastSync,
-      'syncActivityTimeSync': syncActivityTimeSync,
-      'syncTimeLine': syncTimeLine,
-      'syncNeedV2': syncNeedV2,
-      'syncRealTimeV3': syncRealTimeV3,
-      'getFastMsgDataV3': getFastMsgDataV3,
-      'getSupportCallingQuickReply': getSupportCallingQuickReply,
-      'syncExchangeDataReplyAddRealTimeSpeedPaceV3':
-      syncExchangeDataReplyAddRealTimeSpeedPaceV3,
-      'alarmCount': alarmCount,
-      'alarmBrushTeeth': alarmBrushTeeth,
-      'alarmDating': alarmDating,
-      'alarmDinner': alarmDinner,
-      'alarmMedicine': alarmMedicine,
-      'alarmMeeting': alarmMeeting,
-      'alarmParty': alarmParty,
-      'alarmRest': alarmRest,
-      'alarmSleep': alarmSleep,
-      'alarmSport': alarmSport,
-      'alarmWakeUp': alarmWakeUp,
-      'alexaReminderAddSecV3': alexaReminderAddSecV3,
-      'alexaSetEasyOperateV3': alexaSetEasyOperateV3,
-      'alexaSetJumpSportUiV3': alexaSetJumpSportUiV3,
-      'alexaSetJumpUiV3': alexaSetJumpUiV3,
-      'alexaSetSetOnOffTypeV3': alexaSetSetOnOffTypeV3,
-      'alexaSetWeatherV3': alexaSetWeatherV3,
-      'alexaTimeNewV3': alexaTimeNewV3,
-      'getSupportV3BleMusic':getSupportV3BleMusic,
-      'setAlexaControll100brightness': setAlexaControll100brightness,
-    });
   }
 }

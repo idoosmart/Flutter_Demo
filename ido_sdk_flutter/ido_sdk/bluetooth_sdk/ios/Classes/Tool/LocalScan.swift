@@ -39,7 +39,7 @@ class LocalScan{
     func saveDevice(_ device:Dictionary<String,Any>?){
 //        print("saveDevice_KeychainList1 \(String(describing: device))");
         if let data = device?.toData(){
-            print("saveDevice_KeychainList2 \(String(describing: device))");
+//            print("saveDevice_KeychainList2 \(String(describing: device))");
             keychain[data:"UUID"] = data
         }
     }

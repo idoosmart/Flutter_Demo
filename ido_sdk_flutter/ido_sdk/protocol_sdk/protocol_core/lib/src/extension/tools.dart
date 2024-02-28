@@ -1,5 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
+import 'dart:typed_data';
+
 import 'package:protocol_ffi/protocol_ffi.dart';
 
 import '../../protocol_core.dart';
@@ -27,6 +29,14 @@ extension IDOProtocolCoreManagerExtTools on IDOProtocolCoreManager {
   /// mode 0:debug 1:release
   int setRunMode(int mode) {
     return IDOProtocolClibManager().cLib.setRunMode(mode);
+  }
+
+  /// 设置log保存天数
+  ///
+  /// saveDay 保存日志天数 最少两天
+  /// return SUCCESS(0) 成功
+  int setSaveLogDay(int saveDay) {
+    return IDOProtocolClibManager().cLib.setSaveLogDay(saveDay);
   }
 
   /// 图片压缩
@@ -103,6 +113,15 @@ extension IDOProtocolCoreManagerExtTools on IDOProtocolCoreManager {
         .makeEpoFile(filePath: filePath, saveFileName: saveFileName);
   }
 
+  /// 制作思澈表盘文件,会在输入路径下生成(.watch)表盘文件
+  /// ```dart
+  /// filePath 素材文件路径
+  /// 返回 0成功 非0失败 -1: 没有控件 -2: json文件加载失败
+  /// ```
+  int mkSifliDialFile({required String filePath}) {
+    return IDOProtocolClibManager().cLib.mkSifliDialFile(filePath: filePath);
+  }
+
   /// 图片转换格式 png->bmp
   /// ```dart
   /// inPath 用于转换的png路径(包含文件名及后缀)
@@ -125,6 +144,18 @@ extension IDOProtocolCoreManagerExtTools on IDOProtocolCoreManager {
   int compressToPNG(
       {required String inputFilePath, required String outputFilePath}) {
     return IDOProtocolClibManager().cLib.compressToPNG(
+        inputFilePath: inputFilePath, outputFilePath: outputFilePath);
+  }
+
+  /// jpg转png
+  /// ```dart
+  /// inputFilePath   输入文件路径
+  /// outputFilePath 输出文件路径
+  /// int 0 成功, 1 已经是png，其它失败
+  /// ```
+  int jpgToPNG(
+      {required String inputFilePath, required String outputFilePath}) {
+    return IDOProtocolClibManager().cLib.jpgToPNG(
         inputFilePath: inputFilePath, outputFilePath: outputFilePath);
   }
 
@@ -159,6 +190,31 @@ extension IDOProtocolCoreManagerExtTools on IDOProtocolCoreManager {
   /// ```
   String? makeContactFile({required String jsonData}) {
     return IDOProtocolClibManager().cLib.makeContactFile(jsonData: jsonData);
+  }
+
+  /// @brief 模拟器回应数据解释，传入key`replyinfo`，输出对应的字节数据
+  /// @param json_data 素材JSON数据，对应事件号的`replyinfo`
+  /// @param json_data_len 素材JSON数据长度
+  /// @param evt 事件号
+  /// @return JSON字符串，转换后的字节数据用JSON格式返回
+  String? simulatorRespondInfoExec({required String jsonData,required int jsonLen,required int evtType}) {
+    return IDOProtocolClibManager().cLib.simulatorRespondInfoExec(json: jsonData,jsonLen: jsonLen,evtType: evtType);
+  }
+
+  /// @brief 模拟器收到APP的字节数据，解释成对应的json内容输出
+  /// @param data 素材字节数据
+  /// @param data_len 字节数据长度
+  /// @return 输出json数据字符串
+  String? simulatorReceiveBinary2Json({required Uint8List data}) {
+    return IDOProtocolClibManager().cLib.simulatorReceiveBinary2Json(data: data);
+  }
+
+  /// @brief 计算长包指令的校验码
+  /// @param data 素材字节数据
+  /// @param data_len 字节数据长度
+  /// @return 输出2个字节的CRC校验码
+  int getCrc16({required Uint8List data}) {
+    return IDOProtocolClibManager().cLib.getCrc16(data: data);
   }
 
   /// 音频采样率转换完成回

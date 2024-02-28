@@ -34,6 +34,14 @@ extension IDOProtocolAPIExtBase on IDOProtocolAPI {
     return rs;
   }
 
+  /// 设置log保存天数
+  ///
+  /// saveDay 保存日志天数 最少两天
+  /// return SUCCESS(0) 成功
+  int setSaveLogDay(int saveDay) {
+    return bindings.SetSaveLogDay(saveDay);
+  }
+
   /// 设置运行环境 release / debug
   /// mode 0:debug 1:relese
   int setRunMode(int mode) {

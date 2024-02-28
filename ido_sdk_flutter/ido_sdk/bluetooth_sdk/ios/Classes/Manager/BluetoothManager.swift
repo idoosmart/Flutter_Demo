@@ -15,13 +15,13 @@ class BluetoothManager: NSObject {
             CBCentralManagerOptionShowPowerAlertKey : true,
             CBCentralManagerOptionRestoreIdentifierKey : "IDOBluetoothStrapRestoreIdentifier"
         ]
-        let manager = CBCentralManager.init(delegate: self, queue: DispatchQueue.global(), options: options)
+        let manager = CBCentralManager.init(delegate: self, queue: DispatchQueue.main, options: options)
         return manager
     }();
     
     var serviceIndex = 0;
 //    扫描到的设备
-    var peripheralDic = [String:CBPeripheral]()
+    var peripheralDic: [String:CBPeripheral] = [:]
 //    var deviceCurrent : CBPeripheral?;
     let channel = SwiftFlutterBluetoothPlugin.channel
     var characteristic: Characteristic? = Characteristic()
@@ -108,11 +108,11 @@ class BluetoothManager: NSObject {
     
     func setCharacteristics(_ p: CBPeripheral, _ c: CBService) {
         c.characteristics?.forEach{
-            if $0.uuid.isEqual(CBUUID.init(string:(characteristic?.uuid?.command)!)) {
+            if let command = characteristic?.uuid?.command, $0.uuid.isEqual(CBUUID.init(string:command)) {
                 characteristic?.command = $0
-            }else if $0.uuid.isEqual(CBUUID.init(string:(characteristic?.uuid?.health)!)){
+            }else if let health = characteristic?.uuid?.health, $0.uuid.isEqual(CBUUID.init(string:health)){
                 characteristic?.health = $0
-            }else if $0.uuid.isEqual(CBUUID.init(string:(characteristic?.uuid?.read)!)){
+            }else if let read = characteristic?.uuid?.read, $0.uuid.isEqual(CBUUID.init(string:read)){
                 p.readValue(for: $0)
             }else if checkHadCharacteristic($0.uuid){
                 p.setNotifyValue(true, for: $0)
@@ -143,12 +143,13 @@ class BluetoothManager: NSObject {
     }
     
     func getPeripheral(_ device: Device) -> CBPeripheral? {
+        if peripheralDic.isEmpty{
+            return nil;
+        }
         if let uuid = device.uuid, let p = peripheralDic[uuid]{
-//             writeLog("getPeripheral = " + p.identifier.uuidString, method: "getPeripheral", className:"BluetoothManager")
             return p;
         }
         if let macAddress = device.macAddress, let p = peripheralDic[macAddress]{
-//             writeLog("getPeripheral = " + p.identifier.uuidString, method: "getPeripheral", className:"BluetoothManager")
             return p;
         }
         return nil
@@ -194,10 +195,12 @@ extension BluetoothManager : CBCentralManagerDelegate{
     
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         var errorType: ConnectError = .fail
+        if let localizedDescription = error?.localizedDescription{
+            writeLog("didFailToConnect - " + peripheral.identifier.uuidString + " - " + localizedDescription, method: "didFailToConnect", className:"BluetoothManager")
+        }
         if error?.localizedDescription == "Peer removed pairing information" {
             errorType = .pairFail
         }
-        writeLog("didFailToConnect - " + peripheral.identifier.uuidString + " - " + error!.localizedDescription, method: "didFailToConnect", className:"BluetoothManager")
         channel?.invokeMethod(MethodChannel.deviceState.rawValue, arguments: deviceStateData(peripheral,errorType))
     }
     
@@ -253,7 +256,12 @@ extension BluetoothManager : CBPeripheralDelegate{
     //数据接收
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         if let e = error {
-            writeLog("didUpdateValueFor - " + peripheral.identifier.uuidString + " - " + e.localizedDescription, method: "didUpdateValueFor", className: nil)
+            writeLog("didUpdateValueFor error - " + peripheral.identifier.uuidString + " - " + e.localizedDescription, method: "didUpdateValueFor", className: nil)
+            return
+        }
+        if characteristic.value == nil || characteristic.value!.isEmpty{
+            writeLog("didUpdateValueFor empty data", method: "didUpdateValueFor", className: nil);
+            return
         }
         let message = Message.init(data: characteristic.value, uuid: peripheral.identifier.uuidString, macAddress: localDevices.getMacAddress(uuid: peripheral.identifier.uuidString))
         channel?.invokeMethod(MethodChannel.receiveData.rawValue, arguments: message.toDict())
@@ -263,7 +271,7 @@ extension BluetoothManager : CBPeripheralDelegate{
         var isSuccess: Bool = true
         if let e = error {
             isSuccess = false
-            writeLog("didWriteValueFor - " + peripheral.identifier.uuidString + " - " + e.localizedDescription, method: "didWriteValueFor", className: nil);
+            writeLog("didWriteValueFor error - " + peripheral.identifier.uuidString + " - " + e.localizedDescription, method: "didWriteValueFor", className: nil);
         }
         channel?.invokeMethod(MethodChannel.sendState.rawValue, arguments: ["uuid":peripheral.identifier.uuidString, "macAddress":localDevices.getMacAddress(uuid: peripheral.identifier.uuidString), "state":NSNumber.init(value: isSuccess)])
     }

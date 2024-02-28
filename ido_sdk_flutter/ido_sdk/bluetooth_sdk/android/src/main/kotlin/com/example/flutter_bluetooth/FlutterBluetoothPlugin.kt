@@ -1,16 +1,15 @@
 package com.example.flutter_bluetooth
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.Application
 import android.bluetooth.*
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageManager
 import android.os.Handler
 import android.os.Looper
+import android.os.Process
 import android.text.TextUtils
 import androidx.annotation.NonNull
 import com.alibaba.fastjson.JSON
@@ -23,14 +22,16 @@ import com.example.flutter_bluetooth.ble.callback.BluetoothCallback
 import com.example.flutter_bluetooth.ble.protocol.ProtoMaker
 import com.example.flutter_bluetooth.ble.scan.ScanLeCallBack
 import com.example.flutter_bluetooth.ble.scan.ScanManager
+import com.example.flutter_bluetooth.bt.A2dpConnectHelper
+import com.example.flutter_bluetooth.bt.A2dpManager
 import com.example.flutter_bluetooth.bt.IBondStateListener
 import com.example.flutter_bluetooth.bt.spp.ISPPConnectStateListener
 import com.example.flutter_bluetooth.bt.spp.ISPPDataListener
 import com.example.flutter_bluetooth.dfu.BleDFUConfig
-import com.example.flutter_bluetooth.dfu.BleDFUConstants
 import com.example.flutter_bluetooth.dfu.BleDFUState
 import com.example.flutter_bluetooth.logger.LogTransfer
 import com.example.flutter_bluetooth.logger.Logger
+import com.example.flutter_bluetooth.proxy.MyMethodChannel
 import com.example.flutter_bluetooth.utils.*
 import com.example.flutter_bluetooth.utils.Constants.RequestMethod.AUTO_CONNECT
 import com.example.flutter_bluetooth.utils.Constants.RequestMethod.CANCEL_PAIR
@@ -38,6 +39,7 @@ import com.example.flutter_bluetooth.utils.Constants.RequestMethod.CONNECT
 import com.example.flutter_bluetooth.utils.Constants.RequestMethod.CONNECT_SPP
 import com.example.flutter_bluetooth.utils.Constants.RequestMethod.DISCONNECT
 import com.example.flutter_bluetooth.utils.Constants.RequestMethod.DISCONNECT_SPP
+import com.example.flutter_bluetooth.utils.Constants.RequestMethod.GET_A2DP_STATE
 import com.example.flutter_bluetooth.utils.Constants.RequestMethod.GET_DEVICE_STATE
 import com.example.flutter_bluetooth.utils.Constants.RequestMethod.SEND_DATA
 import com.example.flutter_bluetooth.utils.Constants.RequestMethod.START_DFU
@@ -55,7 +57,8 @@ import java.util.*
 /** FlutterBluetoothPlugin */
 @SuppressLint("MissingPermission")
 class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
-    IBondStateListener, ISPPDataListener, ISPPConnectStateListener, ScanLeCallBack, BleDFUState.IListener {
+    IBondStateListener, ISPPDataListener, ISPPConnectStateListener, ScanLeCallBack, BleDFUState.IListener,
+    A2dpConnectHelper.OnA2dpConnectChangedListener {
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
@@ -64,7 +67,9 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
         private const val TAG = "FlutterBluetoothPlugin"
         const val REQUEST_BLUETOOTH_PERMISSIONS = 1520
         const val METHOD_CHANNEL_NAME = "flutter_bluetooth_IDO"
+        const val METHOD_CHANNEL_NAME_DATA = "firmware_data"
         const val EVENT_CHANNEL_NAME = "bluetoothState"
+        const val EVENT_CHANNEL_DEVICE_STATE = "deviceState"
     }
 
 
@@ -77,6 +82,11 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
      * 回调事件给Dart层
      */
     private var stateChannel: EventChannel? = null
+
+    /**
+     * 回调事件给Dart层
+     */
+    private var deviceStateChannel: EventChannel? = null
 
     /**
      * FlutterEngine提供的资源
@@ -96,7 +106,7 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
     private var createBondReceiver: BroadcastReceiver? = null
 
     private var channel: MethodChannel? = null
-
+    private var dataChannel: MethodChannel? = null
 
     private var mBluetoothManager: BluetoothManager? = null
     private var mBluetoothAdapter: BluetoothAdapter? = null
@@ -107,10 +117,11 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
         connectState: Int = Constants.BleConnectState.STATE_DISCONNECTED,
         error: Constants.BleConnectFailedError = Constants.BleConnectFailedError.DEFAULT
     ) {
-        Logger.p("onConnectResult, connectState = ${Constants.BleConnectState.getName(connectState)}, error = $error")
-        invokeChannelMethod(
-            Constants.ResponseMethod.DEVICE_STATE, ProtoMaker.makeConnectState(deviceAddress, 0, connectState, error.ordinal)
-        )
+        Logger.p("onConnectResult, connectState = ${Constants.BleConnectState.getName(connectState)}, error = $error,  sink = ${deviceStateHandler.sink}")
+        sendDeviceState(ProtoMaker.makeConnectState(deviceAddress, 0, connectState, error.ordinal))
+//        invokeChannelMethod(
+//            Constants.ResponseMethod.DEVICE_STATE, ProtoMaker.makeConnectState(deviceAddress, 0, connectState, error.ordinal)
+//        )
     }
 
     private inner class IDOBleDeviceCallback(val deviceAddress: String) : BluetoothCallback {
@@ -175,7 +186,7 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
         override fun callOnCharacteristicWrite(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
             if (gatt != null) {
                 if (characteristic != null) {
-                    invokeChannelMethod(
+                    invokeDataChannelMethod(
                         Constants.ResponseMethod.SEND_STATE, ProtoMaker.makeSendResult(status, gatt.device.address)
                     )
                 } else {
@@ -189,7 +200,7 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
         override fun callOnCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?) {
             if (gatt != null) {
                 if (characteristic != null) {
-                    invokeChannelMethod(
+                    invokeDataChannelMethod(
                         Constants.ResponseMethod.RECEIVE_DATA, ProtoMaker.makeReceiveData(gatt.device, characteristic)
                     )
                 } else {
@@ -214,6 +225,9 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
         tearDown()
     }
 
+    /**
+     * @param messenger [io.flutter.embedding.engine.FlutterEngine.getDartExecutor]
+     */
     private fun setup(
         messenger: BinaryMessenger,
         application: Application,
@@ -222,33 +236,60 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
             this.application = application
             this.context = application
             Config.init(application)
-            channel = MethodChannel(messenger, METHOD_CHANNEL_NAME)
+            channel = MyMethodChannel(messenger, METHOD_CHANNEL_NAME)
             channel?.setMethodCallHandler(this)
+            dataChannel = MethodChannel(messenger, METHOD_CHANNEL_NAME_DATA)
+            dataChannel?.setMethodCallHandler { call, result ->
+                handleDataMethodCall(call, result)
+            }
             stateChannel = EventChannel(messenger, EVENT_CHANNEL_NAME)
             stateChannel?.setStreamHandler(stateHandler)
+            deviceStateChannel = EventChannel(messenger, EVENT_CHANNEL_DEVICE_STATE)
+            deviceStateChannel?.setStreamHandler(deviceStateHandler)
             mBluetoothManager = application.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager?
             mBluetoothAdapter = mBluetoothManager?.adapter
             LogTransfer.instance.init(channel)
-            Logger.p("onAttachedToEngine")
+            registerA2dpListener()
+            val isMagic = OSUtil.isMagicOS()
+            Logger.p("onAttachedToEngine, engin = ${pluginBinding?.flutterEngine}, isMagic = $isMagic, pid = ${Process.myPid()}")
         }
+    }
+
+    private fun registerA2dpListener() {
+        A2dpManager.instance.initA2dpListener()
     }
 
     private fun tearDown() {
         Logger.p("tearDown")
-        if (createBondReceiver != null) {
-            context?.unregisterReceiver(createBondReceiver)
-            createBondReceiver = null
-        }
-        context = null
-        channel?.setMethodCallHandler(null)
+//        if (createBondReceiver != null) {
+//            context?.unregisterReceiver(createBondReceiver)
+//            createBondReceiver = null
+//        }
+//        context = null
+//        channel?.setMethodCallHandler(null)
 //        channel = null
-        stateChannel?.setStreamHandler(null)
-        stateChannel = null
-        mBluetoothAdapter = null
-        mBluetoothManager = null
-        application = null
-        pluginBinding = null
-        LogTransfer.instance.destroy()
+//        stateChannel?.setStreamHandler(null)
+//        stateChannel = null
+//        mBluetoothAdapter = null
+//        mBluetoothManager = null
+//        application = null
+//        pluginBinding = null
+//        LogTransfer.instance.destroy()
+    }
+
+    private fun handleDataMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+        if (mBluetoothAdapter == null) {
+            mBluetoothAdapter = mBluetoothManager?.adapter
+            if (mBluetoothAdapter == null) {
+                Logger.e("bluetooth not support")
+            }
+            return
+        }
+        when (call.method) {
+            SEND_DATA -> {
+                sendData(call, result)
+            }
+        }
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
@@ -263,6 +304,7 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
             STATE -> {
                 result.success(ProtoMaker.makeBleState(mBluetoothAdapter!!.state))
             }
+
             START_SCAN -> {
                 if (checkIfHasBluetoothPermissions(call, result)) {
                     try {
@@ -273,6 +315,7 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
                     result.success(true)
                 }
             }
+
             STOP_SCAN -> {
                 if (checkIfHasBluetoothPermissions(call, result)) {
                     try {
@@ -284,6 +327,7 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
                     result.success(true)
                 }
             }
+
             GET_DEVICE_STATE -> {
                 val params: Map<String, Any?>? = call.arguments()
                 val deviceAddress = params?.get("macAddress") as String?
@@ -300,47 +344,58 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
                     result.success(ProtoMaker.makeConnectState(deviceAddress, 0, Constants.BleConnectState.STATE_DISCONNECTED))
                 }
             }
+
             CONNECT -> {
                 if (checkIfHasBluetoothPermissions(call, result)) {
                     connectDevice(call, result)
                 }
             }
+
             DISCONNECT -> {
                 if (checkIfHasBluetoothPermissions(call, result)) {
                     disconnectDevice(call, result)
                 }
             }
+
             START_PAIR -> {
                 if (checkIfHasBluetoothPermissions(call, result)) {
                     createBond(call, result)
                 }
             }
+
             CANCEL_PAIR -> {
                 if (checkIfHasBluetoothPermissions(call, result)) {
                     removeBond(call, result)
                 }
             }
-            SEND_DATA -> {
-                sendData(call, result)
-            }
+
             CONNECT_SPP -> {
                 if (checkIfHasBluetoothPermissions(call, result)) {
                     connectSPP(call, result)
                 }
             }
+
             DISCONNECT_SPP -> {
                 if (checkIfHasBluetoothPermissions(call, result)) {
                     disconnectSPP(call, result)
                 }
             }
+
             START_DFU -> {
                 if (checkIfHasBluetoothPermissions(call, result)) {
                     startDFU(call, result)
                 }
             }
+
             AUTO_CONNECT -> {
                 if (checkIfHasBluetoothPermissions(call, result)) {
                     autoConnect(call, result)
+                }
+            }
+
+            GET_A2DP_STATE -> {
+                if (checkIfHasBluetoothPermissions(call, result)) {
+                    getA2dpState(call, result)
                 }
             }
         }
@@ -357,9 +412,12 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
         var bleDevice = locateBleDevice(macAddress)
         if (bleDevice == null) {
             bleDevice = createBleDevice(macAddress, IDOBleDeviceCallback(macAddress))
+        } else {
+            Logger.d("autoConnect, device already exist: $bleDevice")
         }
         val isDueToPhoneBluetoothSwitch = params?.get("isDueToPhoneBluetoothSwitch") as Boolean? ?: false
         bleDevice?.autoConnect(isDueToPhoneBluetoothSwitch = isDueToPhoneBluetoothSwitch)
+        registerA2dpListener()
     }
 
     private fun startDFU(call: MethodCall, result: Result) {
@@ -404,7 +462,7 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
     }
 
     private fun checkDfuParams(params: BleDFUConfig): Boolean {
-        return !(params.filePath.isNullOrEmpty() || params.macAddress.isNullOrEmpty()||!BluetoothAdapter.checkBluetoothAddress(params.macAddress))
+        return !(params.filePath.isNullOrEmpty() || params.macAddress.isNullOrEmpty() || !BluetoothAdapter.checkBluetoothAddress(params.macAddress))
     }
 
     private fun disconnectSPP(call: MethodCall, result: Result) {
@@ -462,7 +520,7 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
             val writeType = params?.get("writeType") as Int?
             val sendDataType = params?.get("type") as Int?
             val data: ByteArray? = params?.get("data") as ByteArray?
-            Logger.d("sendData, params = $params, data size = ${data?.size}")
+//            Logger.d("sendData, params = $params, data size = ${data?.size}")
             if (sendDataType == Constants.SendDataType.SPP.ordinal) {
                 //发送spp数据
                 if (btMacAddress.isNullOrEmpty() || (data == null || data.isEmpty())) {
@@ -499,6 +557,29 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
         }
     }
 
+    private fun getA2dpState(call: MethodCall, result: Result) {
+        try {
+            val params: Map<String, Any?>? = call.arguments()
+            Logger.p("getA2dpState start, params = $params")
+            val btMacAddress = params?.get("btMac") as String?
+            if (btMacAddress.isNullOrEmpty() || !BluetoothAdapter.checkBluetoothAddress(btMacAddress)) {
+                result.error(BluetoothError.BLUETOOTH_INVALID_PARAMS)
+                Logger.p("getA2dpState failed!")
+                return
+            }
+            var btDevice = locateBTDevice(btMacAddress)
+            if (btDevice == null) {
+                btDevice = createBTDevice(btMacAddress)
+            }
+            result.success(ProtoMaker.makeA2dpState(btMacAddress, btDevice?.getA2dpState()))
+        } catch (e: Exception) {
+            Logger.e("getA2dpState error: $e")
+            e.printStackTrace()
+            result.error(BluetoothError.BLUETOOTH_ERROR)
+        }
+        registerA2dpListener()
+    }
+
     private fun createBond(call: MethodCall, result: Result) {
         try {
             val params: Map<String, Any?>? = call.arguments()
@@ -514,6 +595,7 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
             if (btDevice == null) {
                 btDevice = createBTDevice(btMacAddress)
             }
+            btDevice?.registerA2dpStateListener(this)
             btDevice?.createPair(this)
             result.success(true)
         } catch (e: Exception) {
@@ -521,6 +603,7 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
             e.printStackTrace()
             result.error(BluetoothError.BLUETOOTH_ERROR)
         }
+        registerA2dpListener()
     }
 
     private fun removeBond(call: MethodCall, result: Result) {
@@ -579,6 +662,7 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
         bleDevice?.toConnectDevice()
         result.success(true)
         Logger.p("connectDevice, connect started")
+        registerA2dpListener()
     }
 
 
@@ -594,6 +678,19 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
      */
     private fun disableBluetooth(): Boolean {
         return mBluetoothAdapter?.disable() ?: false
+    }
+
+    private val deviceStateHandler = object : EventChannel.StreamHandler {
+        var sink: EventChannel.EventSink? = null
+        override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+            Logger.p("deviceStateHandler, onListen: $arguments")
+            sink = events
+        }
+
+        override fun onCancel(arguments: Any?) {
+            Logger.p("deviceStateHandler, onCancel: $arguments")
+            sink = null
+        }
     }
 
 
@@ -717,12 +814,15 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
             BleDFUState.PROGRESS -> {
                 makeDfuState(deviceAddress, null, null, value as Int?)
             }
+
             BleDFUState.SUCCESS -> {
                 makeDfuState(deviceAddress, BleDFUState.DfuStatus.completed, null, null)
             }
+
             BleDFUState.FAILED -> {
                 makeDfuState(deviceAddress, null, value as Int?, null)
             }
+
             else -> {
                 //拦截其他状态
                 return
@@ -735,6 +835,7 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
             BleDFUState.FAILED -> {
                 BleDFUState.getReasonDesc((value as Int?) ?: -1)
             }
+
             else -> "$value"
         }
     }
@@ -772,7 +873,7 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
             return
         }
         Logger.p("spp receive <= ${ByteDataConvertUtil.bytesToHexString(data)}")
-        invokeChannelMethod(
+        invokeDataChannelMethod(
             Constants.ResponseMethod.RECEIVE_DATA, ProtoMaker.makeSPPReceiveData(deviceAddress, data)
         )
     }
@@ -781,6 +882,13 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
         Logger.d("SPP onSPPSendOneDataComplete($deviceAddress)")
         invokeChannelMethod(Constants.ResponseMethod.SPP_WRITE_COMPLETE, hashMapOf(Pair("btMacAddress", deviceAddress)))
     }
+
+
+    override fun onA2dpConnectChanged(deviceAddress: String, previousState: Int, newState: Int) {
+        Logger.d("onA2dpConnectChanged(${deviceAddress}), state = $newState")
+        invokeChannelMethod(Constants.ResponseMethod.A2DP_STATE, ProtoMaker.makeA2dpState(deviceAddress, newState))
+    }
+
 
     /********************/
 
@@ -795,20 +903,107 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
     override fun onScanLeFinished() {
     }
 
+    private fun sendDeviceState(data: Any) {
+        Logger.p("sendDeviceState, result: ${GsonUtil.toJson(data)}, sink is ${if (deviceStateHandler.sink == null) "null" else "not null"}")
+        runOnUiThread {
+            try {
+                deviceStateHandler.sink?.success(data)
+            } catch (e: Exception) {
+                Logger.p("sendDeviceState error: $e")
+            }
+        }
+    }
+
     /**
      * 在主线程调用上层plugin的方法
      */
     private fun invokeChannelMethod(methodName: String, result: Map<String, Any?>?) {
+        Logger.p("invokeChannelMethod [$methodName] result: ${GsonUtil.toJson(result)}, channel is ${if (channel == null) "null" else "not null"}")
         if (channel != null) {
+            runOnUiThread {
+                try {
+                    channel?.invokeMethod(methodName, result, object : Result {
+                        override fun success(result: Any?) {
+                            Logger.p("invokeChannelMethod [$methodName], send ok!")
+                        }
+
+                        override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+                            Logger.p("invokeChannelMethod [$methodName], send error($errorCode, $errorMessage, $errorDetails)")
+                        }
+
+                        override fun notImplemented() {
+                            Logger.p("invokeChannelMethod [$methodName], notImplemented")
+                        }
+
+                    })
+                } catch (e: Exception) {
+                    Logger.p("invokeChannelMethod [$methodName], error: $e")
+                }
+            }
+        }
+    }
+
+
+    /**
+     * 在主线程调用上层plugin的方法
+     */
+    private fun invokeDataChannelMethod(methodName: String, result: Map<String, Any?>?) {
+        if (dataChannel != null) {
             if (Looper.myLooper() != Looper.getMainLooper()) {
                 mHandler.post {
-                    channel?.invokeMethod(methodName, result)
+                    try {
+                        dataChannel?.invokeMethod(methodName, result, object : Result {
+                            override fun success(result: Any?) {
+                            }
+
+                            override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+                                Logger.p("invokeDataChannelMethod [$methodName], send error($errorCode, $errorMessage, $errorDetails)")
+                            }
+
+                            override fun notImplemented() {
+                                Logger.p("invokeDataChannelMethod [$methodName], notImplemented")
+                            }
+
+                        })
+                    } catch (e: Exception) {
+                        Logger.p("invokeDataChannelMethod [$methodName], error: $e")
+                    }
                 }
             } else {
-                channel?.invokeMethod(methodName, result)
+                try {
+                    dataChannel?.invokeMethod(methodName, result, object : Result {
+                        override fun success(result: Any?) {
+                        }
+
+                        override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+                            Logger.p("invokeDataChannelMethod [$methodName], result = $result, send error($errorCode, $errorMessage, $errorDetails)")
+                        }
+
+                        override fun notImplemented() {
+                            Logger.p("invokeDataChannelMethod [$methodName], result = $result, notImplemented")
+                        }
+
+                    })
+                } catch (e: Exception) {
+                    Logger.p("invokeDataChannelMethod [$methodName], error: $e")
+                }
             }
         } else {
             Logger.p("invokeChannelMethod, channel = null")
+        }
+    }
+
+    private fun runOnUiThread(callback: () -> Unit) {
+        val isMainThread = Looper.myLooper() == Looper.getMainLooper()
+        if (isMainThread) {
+            Logger.p("主线程，执行")
+            callback()
+        } else {
+            Logger.p("子线程")
+            mHandler.post {
+                Logger.p("子线程，执行")
+                callback()
+            }
         }
     }
 

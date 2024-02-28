@@ -11,6 +11,7 @@ export 'model/ido_bluetooth_send_state.dart';
 export 'model/ido_bluetooth_state_model.dart';
 export 'model/ido_bluetooth_update_state_model.dart';
 export 'model/ido_bluetooth_filter_model.dart';
+export 'model/ido_bluetooth_media_state.dart';
 
 export 'source/ido_bluetooth_enum.dart';
 export 'source/ido_bluetooth_source.dart';

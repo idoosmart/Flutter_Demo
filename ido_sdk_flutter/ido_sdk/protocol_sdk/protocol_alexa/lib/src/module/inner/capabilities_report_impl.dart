@@ -510,10 +510,7 @@ class _CapabilitiesReport implements CapabilitiesReport {
 
   Future<Map> getSingleEndpoint(
       {String? productId, List<dynamic>? capList, String? instance}) async {
-    if (_appName == null) {
-      PackageInfo packageInfo = await PackageInfo.fromPlatform();
-      _appName = packageInfo.appName;
-    }
+    _appName ??= await ToolsImpl().getAppName();
 
     String description = "$productId on iOS";
     if (Platform.isAndroid) {

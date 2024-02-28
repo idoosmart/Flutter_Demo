@@ -26,6 +26,7 @@ import com.example.flutter_bluetooth.utils.PairedDeviceUtils;
 import com.example.flutter_bluetooth.utils.PhoneInfoUtil;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by zhouzj on 2018/1/16.
@@ -41,7 +42,7 @@ abstract class BaseConnect implements BluetoothCallback {
 
     private final static long DEFAULT_DISCONNECT_TIME_OUT = 3 * 1000;
     private final static long DEFAULT_CONNECT_TIME_OUT = 35 * 1000;
-    private final static long DEFAULT_DISCOVER_SERVICES_TIME_OUT = 10 * 1000;
+    private final static long DEFAULT_DISCOVER_SERVICES_TIME_OUT = 20 * 1000;
 
     private final static int WHAT_ENABLE_NOTIFICATION = 1;
     private final static long ENABLE_NOTIFICATION_TIMEOUT = 2000L;
@@ -60,6 +61,10 @@ abstract class BaseConnect implements BluetoothCallback {
     private BluetoothGatt mBluetoothGatt;
 
     private ITimeOutPresenter mITimeOutPresenter;
+
+
+    //发现服务是否超时
+    private AtomicBoolean mIsDiscoveryServiceTimeout = new AtomicBoolean(false);
 
 
     private final Handler mHandler = new Handler(Looper.getMainLooper());
@@ -97,6 +102,11 @@ abstract class BaseConnect implements BluetoothCallback {
         @Override
         public void onServicesDiscovered(final BluetoothGatt gatt, int status) {
             mITimeOutPresenter.stopDiscoverServicesTimeOutTask();
+            //超时走了discoverServicesFailed()，此处需要拦截
+            if (mIsDiscoveryServiceTimeout.getAndSet(false)) {
+                Logger.p("[BaseConnect:servicesDiscovered()] discoverServices already timeout, should intercept");
+                return;
+            }
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Logger.p("[BaseConnect:servicesDiscovered()] discoverServices ok!");
                 disCoverServicesSuccess(gatt);
@@ -387,9 +397,12 @@ abstract class BaseConnect implements BluetoothCallback {
 
     private void startToDiscoverServices(final BluetoothGatt gatt) {
         Logger.p("[BaseConnect:connectionStateChange()] start to discoverServices...");
+        mIsDiscoveryServiceTimeout.set(false);
         mITimeOutPresenter.startDiscoverServicesTimeOutTask(new Runnable() {
             @Override
             public void run() {
+                Logger.p("[BaseConnect:connectionStateChange()] discoverServices time out");
+                mIsDiscoveryServiceTimeout.set(true);
                 discoverServicesFailed();
             }
         }, DEFAULT_DISCOVER_SERVICES_TIME_OUT);

@@ -12,11 +12,17 @@ class _IDOExchangeData implements IDOExchangeData {
   late final _streamResponse = StreamController<ExchangeResponse>.broadcast();
   late final _streamV2Exchange = StreamController<IDOV2ExchangeModel>.broadcast();
   late final _streamV3Exchange = StreamController<IDOV3ExchangeModel>.broadcast();
+  late final _streamStatus = StreamController<ExchangeStatus>.broadcast();
 
   IDOAppStartExchangeModel? _baseModel;
   IDOV2ExchangeModel? _v2Model;
   IDOV3ExchangeModel? _v3Model;
   ExchangeStatus? _status;
+
+  set setStatus(ExchangeStatus value) {
+    _status = value;
+    _streamStatus.add(value);
+  }
 
   void _init() {
     _streamV3Exchange.stream.listen((event) {
@@ -37,13 +43,8 @@ class _IDOExchangeData implements IDOExchangeData {
   }
 
   @override
-  Stream<ExchangeResponse> appListenBleExec() {
+  Stream<ExchangeResponse> listenBleResponse() {
     _bleExec();
-    return _streamResponse.stream;
-  }
-
-  @override
-  Stream<ExchangeResponse> appListenAppExec() {
     return _streamResponse.stream;
   }
 
@@ -58,21 +59,23 @@ class _IDOExchangeData implements IDOExchangeData {
   }
 
   @override
-  Stream<ExchangeResponse> getActivityHrData() {
-    _getActivityHrData();
-    return _streamResponse.stream;
+  Stream<ExchangeStatus> listenExchangeStatus() {
+    return _streamStatus.stream;
   }
 
   @override
-  Stream<ExchangeResponse> getLastActivityData() {
-    _getActivityData();
-    return _streamResponse.stream;
+  Future<bool> getActivityHrData() {
+    return _getActivityHrData();
   }
 
   @override
-  Stream<ExchangeResponse> getActivityGpsData() {
-    _getActvityGpsData();
-    return _streamResponse.stream;
+  Future<bool> getLastActivityData() {
+    return _getActivityData();
+  }
+
+  @override
+  Future<bool> getActivityGpsData() {
+    return _getActvityGpsData();
   }
 
   @override
@@ -127,7 +130,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
               ///防止相同指令多次回调
               return;
             }
-            _status = ExchangeStatus.appBlePause;
+            setStatus = ExchangeStatus.appBlePause;
             logger?.d('exchange app start ble to app pause == ${json}');
             final map = jsonDecode(json);
             final model = IDOAppBlePauseExchangeModel.fromJson(map);
@@ -145,7 +148,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
               ///防止相同指令多次回调
               return;
             }
-            _status = ExchangeStatus.appBleRestore;
+            setStatus = ExchangeStatus.appBleRestore;
             logger?.d('exchange app start ble to app restore == ${json}');
             final map = jsonDecode(json);
             final model = IDOAppBleRestoreExchangeModel.fromJson(map);
@@ -163,7 +166,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
               ///防止相同指令多次回调
               return;
             }
-            _status = ExchangeStatus.appBleEnd;
+            setStatus = ExchangeStatus.appBleEnd;
             logger?.d('exchange app start ble to app end == ${json}');
             final map = jsonDecode(json);
             final model = IDOAppBleEndExchangeModel.fromJson(map);
@@ -187,7 +190,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
               return;
             }
             logger?.d('exchange ble to app start == ${json}');
-            _status = ExchangeStatus.bleStart;
+            setStatus = ExchangeStatus.bleStart;
             final map = jsonDecode(json);
             final model = IDOBleStartExchangeModel.fromJson(map);
             _baseModel = IDOAppStartExchangeModel();
@@ -224,7 +227,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
               return;
             }
             logger?.d('exchange ble to app end == ${json}');
-            _status = ExchangeStatus.bleEnd;
+            setStatus = ExchangeStatus.bleEnd;
             final map = jsonDecode(json);
             final model = IDOBleEndExchangeModel.fromJson(map);
             model.sportType = _baseModel?.sportType;
@@ -242,7 +245,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
               return;
             }
             logger?.d('exchange ble to app pause == ${json}');
-            _status = ExchangeStatus.blePause;
+            setStatus = ExchangeStatus.blePause;
             final map = jsonDecode(json);
             final model = IDOBlePauseExchangeModel.fromJson(map);
             model.sportType = _baseModel?.sportType;
@@ -260,7 +263,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
               return;
             }
             logger?.d('exchange ble to app restore == ${json}');
-            _status = ExchangeStatus.bleRestore;
+            setStatus = ExchangeStatus.bleRestore;
             final map = jsonDecode(json);
             final model = IDOBleRestoreExchangeModel.fromJson(map);
             model.sportType = _baseModel?.sportType;
@@ -278,7 +281,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
               return;
             }
             logger?.d('exchange ble to app ing == ${json}');
-            _status = ExchangeStatus.bleIng;
+            setStatus = ExchangeStatus.bleIng;
             final map = jsonDecode(json);
             final model = IDOBleIngExchangeModel.fromJson(map);
             model.sportType = _baseModel?.sportType;
@@ -299,7 +302,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
                 return;
               }
               logger?.d('exchange ble to app plan start == ${json}');
-              _status = ExchangeStatus.bleStartPlan;
+              setStatus = ExchangeStatus.bleStartPlan;
               _baseModel = IDOAppStartExchangeModel();
               _baseModel?.day = model.day;
               _baseModel?.hour = model.hour;
@@ -323,25 +326,25 @@ extension _IDOExchangeExt on _IDOExchangeData {
                 return;
               }
               logger?.d('exchange ble to app plan pause == ${json}');
-              _status = ExchangeStatus.blePausePlan;
+              setStatus = ExchangeStatus.blePausePlan;
             }else if (model.operate == 3) {
               if (_status == ExchangeStatus.bleRestorePlan) {
                 return;
               }
               logger?.d('exchange ble to app plan restore == ${json}');
-              _status = ExchangeStatus.bleRestorePlan;
+              setStatus = ExchangeStatus.bleRestorePlan;
             }else if (model.operate == 4) {
               if (_status == ExchangeStatus.bleEndPlan) {
                 return;
               }
               logger?.d('exchange ble to app plan end == ${json}');
-              _status = ExchangeStatus.bleEndPlan;
+              setStatus = ExchangeStatus.bleEndPlan;
             }else if (model.operate == 5) {
               if (_status == ExchangeStatus.bleSwitchAction) {
                 return;
               }
               logger?.d('exchange ble to app plan action == ${json}');
-              _status = ExchangeStatus.bleSwitchAction;
+              setStatus = ExchangeStatus.bleSwitchAction;
             }
             data.model = model;
             _v3Model?.blePlan2AppData(model.day ?? 0, model.hour ?? 0, model.minute ?? 0,
@@ -361,22 +364,23 @@ extension _IDOExchangeExt on _IDOExchangeData {
   }
 
   //获取多运动心率数据
-  void _getActivityHrData() {
+  Future<bool> _getActivityHrData() {
     if (!IDOProtocolLibManager().isConnected) {
       final response = ExchangeResponse();
       response.code = -4;
       _streamResponse.sink.add(response);
-      return;
+      return Future(() => false);
     }
     logger?.d('exchange get activity heart rate cmd');
-    _status = ExchangeStatus.getHr;
+    final completer = Completer<bool>();
+    setStatus = ExchangeStatus.getHr;
     _libMgr.send(evt: CmdEvtType.exchangeAppGetV3HrData).listen((response) {
       if(_status == ExchangeStatus.getHrReply) {
         ///防止相同指令多次回调
         return;
       }
       logger?.d('exchange get activity heart rate data error code == ${response.code}');
-      _status = ExchangeStatus.getHrReply;
+      setStatus = ExchangeStatus.getHrReply;
       final data = ExchangeResponse();
       data.code = response.code;
       if (_isSuccessCallback(response)) {
@@ -393,28 +397,30 @@ extension _IDOExchangeExt on _IDOExchangeData {
         _streamV3Exchange.sink.add(_v3Model ?? IDOV3ExchangeModel());
       }
       _streamResponse.sink.add(data);
-    }
-    );
+      completer.complete(true);
+    });
+    return completer.future;
   }
 
 
   //获取多运动数据
-  void _getActivityData() {
+  Future<bool> _getActivityData() {
     if (!IDOProtocolLibManager().isConnected) {
       final response = ExchangeResponse();
       response.code = -4;
       _streamResponse.sink.add(response);
-      return;
+      return Future(() => false);
     }
     logger?.d('exchange get activity data cmd');
-    _status = ExchangeStatus.getActivity;
+    final completer = Completer<bool>();
+    setStatus = ExchangeStatus.getActivity;
     _libMgr.send(evt: CmdEvtType.exchangeAppGetActivityData).listen((response) {
       if(_status == ExchangeStatus.getActivityReply) {
          ///防止相同指令多次回调
          return;
       }
       logger?.d('exchange get activity data error code == ${response.code}');
-      _status = ExchangeStatus.getActivityReply;
+      setStatus = ExchangeStatus.getActivityReply;
       final data = ExchangeResponse();
       data.code = response.code;
       if (_isSuccessCallback(response)) {
@@ -431,34 +437,38 @@ extension _IDOExchangeExt on _IDOExchangeData {
             reply.distance ?? 0, reply.burnFatMins ?? 0, reply.aerobicMins ?? 0, reply.limitMins ?? 0, reply.warmUp ?? 0, reply.fatBurning ?? 0,
             reply.aerobicExercise ?? 0, reply.anaerobicExercise ?? 0, reply.extremeExercise ?? 0, reply.warmUpTime ?? 0, reply.fatBurningTime ?? 0,
             reply.aerobicExerciseTime ?? 0, reply.anaerobicExerciseTime ?? 0, reply.extremeExerciseTime ?? 0, reply.avgSpeed ?? 0, reply.avgStepStride ?? 0,
-            reply.maxStepStride ?? 0, reply.kmSpeed ?? 0, reply.fastKmSpeed ?? 0, reply.avgStepFrequency ?? 0, reply.maxStepFrequency ?? 0,
+            reply.maxStepStride ?? 0, reply.kmSpeed ?? 0,reply.maxSpeed ?? 0, reply.fastKmSpeed ?? 0, reply.avgStepFrequency ?? 0, reply.maxStepFrequency ?? 0,
             reply.avgHrValue ?? 0, reply.maxHrValue ?? 0, reply.kmSpeedCount ?? 0, reply.actionDataCount ?? 0, reply.stepsFrequencyCount ?? 0,
             reply.miSpeedCount ?? 0, reply.recoverTime ?? 0, reply.vo2max ?? 0, reply.trainingEffect ?? 0, reply.grade ?? 0, reply.realSpeedCount ?? 0,
-            reply.paceSpeedCount ?? 0, reply.kmSpeeds ?? [], reply.stepsFrequency ?? [], reply.itemsMiSpeed ?? [], reply.itemRealSpeed ?? [],
+            reply.paceSpeedCount ?? 0,reply.inClassCalories ?? 0, reply.completionRate ?? 0, reply.hrCompletionRate ?? 0 ,
+            reply.kmSpeeds ?? [], reply.stepsFrequency ?? [], reply.itemsMiSpeed ?? [], reply.itemRealSpeed ?? [],
             reply.paceSpeedItems ?? [], reply.actionData ?? []);
         _streamV3Exchange.sink.add(_v3Model ?? IDOV3ExchangeModel());
         /// 此处v3运动数据结束
       }
       _streamResponse.sink.add(data);
+      completer.complete(true);
     });
+    return completer.future;
   }
 
-  void _getActvityGpsData() {
+  Future<bool> _getActvityGpsData() {
     if (!IDOProtocolLibManager().isConnected) {
       final response = ExchangeResponse();
       response.code = -4;
       _streamResponse.sink.add(response);
-      return;
+      return Future(() => false);
     }
     logger?.d('exchange get activity gps data cmd');
-    _status = ExchangeStatus.getActivityGps;
+    final completer = Completer<bool>();
+    setStatus = ExchangeStatus.getActivityGps;
     _libMgr.send(evt: CmdEvtType.getActivityExchangeGpsData).listen((response) {
       if(_status == ExchangeStatus.getActivityGpsReply) {
         ///防止相同指令多次回调
         return;
       }
        logger?.d('exchange get activity gps data error code == ${response.code}');
-      _status = ExchangeStatus.getActivityGpsReply;
+      setStatus = ExchangeStatus.getActivityGpsReply;
       final data = ExchangeResponse();
       data.code = response.code;
       if (_isSuccessCallback(response)) {
@@ -475,7 +485,9 @@ extension _IDOExchangeExt on _IDOExchangeData {
         _streamV3Exchange.sink.add(_v3Model ?? IDOV3ExchangeModel());
       }
       _streamResponse.sink.add(data);
+      completer.complete(true);
     });
+    return completer.future;
   }
 
   // app执行下发数据交换
@@ -532,7 +544,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
           return;
         }
         logger?.d('exchange app to ble start reply == ${response.json} error code == ${response.code}');
-        _status = ExchangeStatus.appStartReply;
+        setStatus = ExchangeStatus.appStartReply;
         final data = ExchangeResponse();
         data.code = response.code;
         if (_isSuccessCallback(response)) {
@@ -570,7 +582,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
       //app发起运动结束
       final jsonStr = jsonEncode((model).toJson());
       logger?.d('exchange app to ble end == ${jsonStr}');
-      _status = ExchangeStatus.appEnd;
+      setStatus = ExchangeStatus.appEnd;
       _libMgr
           .send(evt: CmdEvtType.exchangeAppEnd, json: jsonStr)
           .listen((response) {
@@ -579,7 +591,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
           return;
         }
         logger?.d('exchange app to ble end reply == ${response.json} error code == ${response.code}');
-        _status = ExchangeStatus.appEndReply;
+        setStatus = ExchangeStatus.appEndReply;
         final data = ExchangeResponse();
         data.code = response.code;
         if (_isSuccessCallback(response)) {
@@ -618,7 +630,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
       //app发起运动恢复
       final jsonStr = jsonEncode((model).toJson());
       logger?.d('exchange app to ble restore == ${jsonStr}');
-      _status = ExchangeStatus.appRestore;
+      setStatus = ExchangeStatus.appRestore;
       _libMgr
           .send(evt: CmdEvtType.exchangeAppRestore, json: jsonStr)
           .listen((response) {
@@ -627,7 +639,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
           return;
         }
         logger?.d('exchange app to ble restore reply == ${response.json} error code == ${response.code}');
-        _status = ExchangeStatus.appRestoreReply;
+        setStatus = ExchangeStatus.appRestoreReply;
         final data = ExchangeResponse();
         data.code = response.code;
         if (_isSuccessCallback(response)) {
@@ -663,7 +675,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
       //app发起运动暂停
       final jsonStr = jsonEncode((model).toJson());
       logger?.d('exchange app to ble pause == ${jsonStr}');
-      _status = ExchangeStatus.appPause;
+      setStatus = ExchangeStatus.appPause;
       _libMgr
           .send(evt: CmdEvtType.exchangeAppPause, json: jsonStr)
           .listen((response) {
@@ -672,7 +684,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
           return;
         }
         logger?.d('exchange app to ble pause reply == ${response.json} error code == ${response.code}');
-        _status = ExchangeStatus.appPauseReply;
+        setStatus = ExchangeStatus.appPauseReply;
         final data = ExchangeResponse();
         data.code = response.code;
         if (_isSuccessCallback(response)) {
@@ -704,7 +716,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
       //app发起运动交换过程
       final jsonStr = jsonEncode((model).toJson());
       logger?.d('exchange app to ble v2 ing == ${jsonStr}');
-      _status = ExchangeStatus.appIng;
+      setStatus = ExchangeStatus.appIng;
       _libMgr
           .send(evt: CmdEvtType.exchangeAppV2Ing, json: jsonStr)
           .listen((response) {
@@ -713,7 +725,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
           return;
         }
         logger?.d('exchange app to ble v2 ing reply == ${response.json} error code == ${response.code}');
-        _status = ExchangeStatus.appIngReply;
+        setStatus = ExchangeStatus.appIngReply;
         final data = ExchangeResponse();
         data.code = response.code;
         if (_isSuccessCallback(response)) {
@@ -741,7 +753,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
       //app发起 v3运动交换过程
       final jsonStr = jsonEncode((model).toJson());
       logger?.d('exchange app to ble v3 ing == ${jsonStr}');
-      _status = ExchangeStatus.appIng;
+      setStatus = ExchangeStatus.appIng;
       _libMgr
           .send(evt: CmdEvtType.exchangeAppV3Ing, json: jsonStr)
           .listen((response) {
@@ -750,7 +762,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
           return;
         }
         logger?.d('exchange app to ble v3 ing reply == ${response.json} error code == ${response.code}');
-        _status = ExchangeStatus.appIngReply;
+        setStatus = ExchangeStatus.appIngReply;
         final data = ExchangeResponse();
         data.code = response.code;
         if (_isSuccessCallback(response)) {
@@ -804,19 +816,19 @@ extension _IDOExchangeExt on _IDOExchangeData {
          _baseModel?.minute = model.minute;
          _baseModel?.second = model.second;
          _baseModel?.sportType = model.sportType;
-         _status = ExchangeStatus.appStartPlan;
+         setStatus = ExchangeStatus.appStartPlan;
          logger?.d('exchange app to ble plan start == ${jsonStr}');
        }else if (model.operate == 2) {
-         _status = ExchangeStatus.appPausePlan;
+         setStatus = ExchangeStatus.appPausePlan;
          logger?.d('exchange app to ble plan pause == ${jsonStr}');
        }else if (model.operate == 3) {
-         _status = ExchangeStatus.appRestorePlan;
+         setStatus = ExchangeStatus.appRestorePlan;
          logger?.d('exchange app to ble plan restore == ${jsonStr}');
        }else if (model.operate == 4) {
-         _status = ExchangeStatus.appEndPlan;
+         setStatus = ExchangeStatus.appEndPlan;
          logger?.d('exchange app to ble plan end == ${jsonStr}');
        }else if (model.operate == 5) {
-         _status = ExchangeStatus.appSwitchAction;
+         setStatus = ExchangeStatus.appSwitchAction;
          logger?.d('exchange app to ble plan action == ${jsonStr}');
        }
        _libMgr.send(evt: CmdEvtType.exchangeAppPlan,json: jsonStr).listen((response) {
@@ -831,35 +843,35 @@ extension _IDOExchangeExt on _IDOExchangeData {
                 return;
              }
              logger?.d('exchange app to ble plan start reply == ${map}');
-             _status = ExchangeStatus.appStartPlanReply;
+             setStatus = ExchangeStatus.appStartPlanReply;
            }else if (reply.operate == 2) {
              if (_status == ExchangeStatus.appPausePlanReply) {
                ///防止相同指令多次回调
                return;
              }
              logger?.d('exchange app to ble plan pause reply == ${map}');
-             _status = ExchangeStatus.appPausePlanReply;
+             setStatus = ExchangeStatus.appPausePlanReply;
            }else if (reply.operate == 3) {
              if (_status == ExchangeStatus.appRestorePlanReply) {
                ///防止相同指令多次回调
                return;
              }
              logger?.d('exchange app to ble plan restore reply == ${map}');
-             _status = ExchangeStatus.appRestorePlanReply;
+             setStatus = ExchangeStatus.appRestorePlanReply;
            }else if (reply.operate == 4) {
              if (_status == ExchangeStatus.appEndPlanReply) {
                ///防止相同指令多次回调
                return;
              }
              logger?.d('exchange app to ble plan end reply == ${map}');
-             _status = ExchangeStatus.appEndPlanReply;
+             setStatus = ExchangeStatus.appEndPlanReply;
            }else if (reply.operate == 5) {
              if (_status == ExchangeStatus.appSwitchActionReply) {
                ///防止相同指令多次回调
                return;
              }
              logger?.d('exchange app to ble plan action reply == ${map}');
-             _status = ExchangeStatus.appSwitchActionReply;
+             setStatus = ExchangeStatus.appSwitchActionReply;
            }
            reply.day = _baseModel?.day;
            reply.hour = _baseModel?.hour;
@@ -884,7 +896,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
       return;
     }
      if (model is IDOBleStartReplyExchangeModel) {
-       _status = ExchangeStatus.bleStartReply;
+       setStatus = ExchangeStatus.bleStartReply;
        final jsonStr = jsonEncode((model).toJson());
        logger?.d('exchange ble to app start reply == ${jsonStr}');
         _libMgr.send(evt:CmdEvtType.exchangeAppBleStartReply,json: jsonStr);
@@ -896,7 +908,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
          _streamV2Exchange.sink.add(_v2Model ?? IDOV2ExchangeModel());
        }
      }else if (model is IDOBleEndReplyExchangeModel) {
-       _status = ExchangeStatus.bleEndReply;
+       setStatus = ExchangeStatus.bleEndReply;
        final jsonStr = jsonEncode((model).toJson());
        logger?.d('exchange ble to app end reply == ${jsonStr}');
        _libMgr.send(evt:CmdEvtType.exchangeAppBleEndReply,json: jsonStr);
@@ -909,7 +921,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
          ///此处v2运动数据结束
        }
      }else if (model is IDOBlePauseReplyExchangeModel) {
-       _status = ExchangeStatus.blePauseReply;
+       setStatus = ExchangeStatus.blePauseReply;
        final jsonStr = jsonEncode((model).toJson());
        logger?.d('exchange ble to app pause reply == ${jsonStr}');
        _libMgr.send(evt:CmdEvtType.exchangeAppBlePauseReply,json: jsonStr);
@@ -921,7 +933,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
          _streamV2Exchange.sink.add(_v2Model ?? IDOV2ExchangeModel());
        }
      }else if (model is IDOBleRestoreReplyExchangeModel) {
-       _status = ExchangeStatus.bleRestoreReply;
+       setStatus = ExchangeStatus.bleRestoreReply;
        final jsonStr = jsonEncode((model).toJson());
        logger?.d('exchange ble to app restore reply == ${jsonStr}');
        _libMgr.send(evt:CmdEvtType.exchangeAppBleRestoreReply,json: jsonStr);
@@ -933,7 +945,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
          _streamV2Exchange.sink.add(_v2Model ?? IDOV2ExchangeModel());
        }
      }else if (model is IDOBleIngReplyExchangeModel) {
-       _status = ExchangeStatus.bleIngReply;
+       setStatus = ExchangeStatus.bleIngReply;
        final jsonStr = jsonEncode((model).toJson());
        logger?.d('exchange ble to app ing reply == ${jsonStr}');
        _libMgr.send(evt:CmdEvtType.exchangeAppBleIngReply,json: jsonStr);
@@ -945,7 +957,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
          _streamV2Exchange.sink.add(_v2Model ?? IDOV2ExchangeModel());
        }
      }else if (model is IDOBleOperatePlanReplyExchangeModel) {
-       _status = ExchangeStatus.bleOperatePlanReply;
+       setStatus = ExchangeStatus.bleOperatePlanReply;
        final jsonStr = jsonEncode((model).toJson());
        logger?.d('exchange ble to app plan reply == ${jsonStr}');
        _libMgr.send(evt:CmdEvtType.exchangeAppBlePlan,json: jsonStr);
@@ -955,7 +967,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
            ///此处运动计划结束
        }
      }else if (model is IDOAppBlePauseReplyExchangeModel) {
-       _status = ExchangeStatus.appBlePauseReply;
+       setStatus = ExchangeStatus.appBlePauseReply;
        final jsonStr = jsonEncode((model).toJson());
        logger?.d('exchange app start ble to app pause reply == ${jsonStr}');
        _libMgr.send(evt:CmdEvtType.exchangeAppStartBlePauseReply,json: jsonStr);
@@ -967,7 +979,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
          _streamV2Exchange.sink.add(_v2Model ?? IDOV2ExchangeModel());
        }
      }else if (model is IDOAppBleRestoreReplyExchangeModel) {
-       _status = ExchangeStatus.appBleRestoreReply;
+       setStatus = ExchangeStatus.appBleRestoreReply;
        final jsonStr = jsonEncode((model).toJson());
        logger?.d('exchange app start ble to app restore reply == ${jsonStr}');
        _libMgr.send(evt:CmdEvtType.exchangeAppStartBleRestoreReply,json: jsonStr);
@@ -979,7 +991,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
          _streamV2Exchange.sink.add(_v2Model ?? IDOV2ExchangeModel());
        }
      }else if (model is IDOAppBleEndReplyExchangeModel) {
-       _status = ExchangeStatus.appBleEndReply;
+       setStatus = ExchangeStatus.appBleEndReply;
        final jsonStr = jsonEncode((model).toJson());
        logger?.d('exchange app start ble to app end reply == ${jsonStr}');
        _libMgr.send(evt:CmdEvtType.exchangeAppStartBleEndReply,json: jsonStr);

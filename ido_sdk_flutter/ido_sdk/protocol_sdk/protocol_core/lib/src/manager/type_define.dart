@@ -9,6 +9,9 @@ typedef FileTranStatusCallback = void Function(int error, int errorVal);
 /// 同步进度 0 ~ 100
 typedef SyncProgressCallback = void Function(int progress, SyncType type);
 
+/// 日志进度 0 ~ 100
+typedef LogProgressCallback = void Function(int progress);
+
 /// 同步回调数据
 typedef SyncDataCallback = void Function(
     SyncJsonType type, String jsonStr, int errorCode);

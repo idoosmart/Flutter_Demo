@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:protocol_lib/protocol_lib.dart';
-import 'package:get_storage/get_storage.dart';
+import 'package:get_storage_lite/get_storage.dart';
 
 import '../../service/model/voicealarm_model.dart';
 import '../logger/logger.dart';

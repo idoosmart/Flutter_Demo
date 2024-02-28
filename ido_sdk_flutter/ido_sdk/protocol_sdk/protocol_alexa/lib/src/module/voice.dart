@@ -1,15 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ffi';
 import 'dart:io' as io;
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:alexa_channel/alexa_channel.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:native_channel/native_channel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:alexa_net/alexa_net.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:protocol_alexa/src/module/client.dart';
 import 'package:protocol_lib/protocol_lib.dart';

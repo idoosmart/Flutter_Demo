@@ -38,29 +38,23 @@ dependencies:
   event_bus: 2.0.0
 
   flutter_cupertino_datetime_picker: ^3.0.0
+  connectivity_plus: 3.0.3
 
   flutter_localizations:
     sdk: flutter
   english_words: ^4.0.0
   webview_flutter: ^4.0.7
   flutter_easyloading: ^3.0.5
+  permission_handler: ^11.0.1
+  device_info_plus: ^9.1.2
 
   # SDK
   protocol_lib:
-    git:
-      url: https://github.com/idoosmart/Flutter_Demo.git
-      ref: v1.0.0
-      path: ido_sdk_flutter/ido_sdk/protocol_sdk/protocol_lib
+    path: ../ido_sdk/protocol_sdk/protocol_lib/
   protocol_alexa:
-    git:
-      url: https://github.com/idoosmart/Flutter_Demo.git
-      ref: v1.0.0
-      path: ido_sdk_flutter/ido_sdk/protocol_sdk/protocol_alexa
+    path: ../ido_sdk/protocol_sdk/protocol_alexa/
   flutter_bluetooth:
-    git:
-      url: https://github.com/idoosmart/Flutter_Demo.git
-      ref: v1.0.0
-      path: ido_sdk_flutter/ido_sdk/bluetooth_sdk
+    path: ../ido_sdk/bluetooth_sdk/
 
 executables:
   slidy:

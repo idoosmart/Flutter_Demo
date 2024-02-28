@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:protocol_core/protocol_core.dart';
+import 'package:protocol_lib/src/private/logger/logger.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../ido_protocol_lib.dart';
@@ -30,6 +31,7 @@ class SyncDataHandle extends AbstractSyncData {
   late final _libMgr = IDOProtocolLibManager();
   late final _funTable = _libMgr.funTable;
   StreamSubscription? _syncStreamSubscription;
+  late Completer<bool>? _completer;
 
   SyncDataHandle(super.needSyncActivity, super.needSyncGps, super.funcProgress,
       super.funcData, super.funcCompleted);
@@ -41,6 +43,9 @@ class SyncDataHandle extends AbstractSyncData {
 
   @override
   void stop() {
+    funcCompleted(ErrorCode.success);
+    _completer?.complete(true);
+    _completer = null;
     _syncStreamSubscription?.cancel();
   }
 }
@@ -66,7 +71,7 @@ extension _IDOSyncDataExt on SyncDataHandle {
   }
 
   Future<bool> _exec() {
-    final completer = Completer<bool>();
+    _completer = Completer<bool>();
     final streamList = <Stream<CmdResponse>>[];
     if (_isNeedSyncV2Data()) {
       final healthStream = _coreMgr
@@ -118,7 +123,8 @@ extension _IDOSyncDataExt on SyncDataHandle {
             .asStream();
         streamList.add(gpsStream);
       }
-    } else if (_isNeedSyncV3Data()) {
+    }
+    else if (_isNeedSyncV3Data()) {
       final v3DataStream = _coreMgr
           .sync(
               type: SyncType.v3Data,
@@ -139,8 +145,9 @@ extension _IDOSyncDataExt on SyncDataHandle {
         .map((event) => event.last)
         .listen((event) {
       funcCompleted(event.code);
-      completer.complete(event.code == 0);
+      _completer?.complete(event.code == 0);
+      _completer = null;
     });
-    return completer.future;
+    return _completer!.future;
   }
 }

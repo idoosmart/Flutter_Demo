@@ -1,6 +1,7 @@
 part of '../client.dart';
 
 class _AlexaClient implements AlexaClient {
+  final _keywordContentType = "Content-Type: application/json";
   final _service = ServiceManager();
   late final _auth = Auth();
   late final _voice = Voice();
@@ -326,92 +327,113 @@ extension _AlexaClientExt on _AlexaClient {
 
     // 收到下行流数据
     _alexaChannel.blockDownStreamData = (data) {
-      final model = _parseDirectives(data);
+      final models = _parseDirectives(data);
       //logger?.v('22========Directives Response: $model');
-      if (model != null) {
-        if (_subjectDirectiveData.hasListener && !_subjectDirectiveData.isClosed) {
-          _subjectDirectiveData.add(model);
+      if (models != null) {
+        for (final model in models) {
+          if (_subjectDirectiveData.hasListener && !_subjectDirectiveData.isClosed) {
+            _subjectDirectiveData.add(model);
+          }
         }
       }
     };
     return completer.future;
   }
 
-  /// 创建下行流
-  Future<bool> _createNewDirectives() async {
-    _closeNewDirectivesIfNeed();
-    logger?.v('开始创建下行流通道...');
-     isSmartHomeSkill = false;
-    logger?.v('isSmartHomeSkill = false');
-    _cancelTokenDirectives = CancelToken();
-    final rs = await _service.createDirectives(
-        accessToken: _auth.accessToken!, cancelToken: _cancelTokenDirectives);
-    if (rs.isOK && rs.result != null) {
-      await _subscriptDirectives?.cancel();
-      _subscriptDirectives = rs.result!.stream.listen((data) {
-        final model = _parseDirectives(data);
-        //logger?.v('22========Directives Response: $model');
-        if (model != null) {
-          if (_subjectDirectiveData.hasListener && !_subjectDirectiveData.isClosed) {
-            _subjectDirectiveData.add(model);
-          }
-          if (model.isStopCapture) {
-            // 停止流上传
-            //_voice.stopUpload();
-          }
-        }
-      },onDone: () {
-        logger?.e('下行流通道结束');
-      }, onError: (e){
-        logger?.e('下行流通道异常：$e');
-        _hasCreateNewDirectives = true;
-        if (e is DioException) {
-          if (e.type != DioExceptionType.cancel) {
-            if (_reachability.hasNetwork) {
-              createNewDirectives();
-            }else {
-              logger?.e("下行流通道中断，无网络，待有网后重新创建1");
-            }
-          }
-        } else if(e is SocketException) {
-          logger?.e("下行流通道中断，io异常，重新创建dio实例");
-          _closeNewDirectivesIfNeed();
-          _isOnNewDirectivesCreating = false;
-          HttpClient.getInstance().doRecreateDioV2();
-        } else {
-          if (_reachability.hasNetwork) {
-            createNewDirectives();
-          }else {
-            logger?.e("下行流通道中断，无网络，待有网后重新创建2");
-          }
-        }
-      });
-      _hasCreateNewDirectives = false;
-      _isOnNewDirectivesCreating = false;
-      logger?.d('下行流通道创建: 成功');
-      return true;
-    }
-    _hasCreateNewDirectives = true;
-    _isOnNewDirectivesCreating = false;
-    logger?.e('下行流通道创建: 失败 rs:$rs');
-    return false;
-  }
+  /// 创建下行流 （废弃）
+  // Future<bool> _createNewDirectives() async {
+  //   _closeNewDirectivesIfNeed();
+  //   logger?.v('开始创建下行流通道...');
+  //    isSmartHomeSkill = false;
+  //   logger?.v('isSmartHomeSkill = false');
+  //   _cancelTokenDirectives = CancelToken();
+  //   final rs = await _service.createDirectives(
+  //       accessToken: _auth.accessToken!, cancelToken: _cancelTokenDirectives);
+  //   if (rs.isOK && rs.result != null) {
+  //     await _subscriptDirectives?.cancel();
+  //     _subscriptDirectives = rs.result!.stream.listen((data) {
+  //       final models = _parseDirectives(data);
+  //       //logger?.v('22========Directives Response: $model');
+  //       if (models != null) {
+  //         for (final model in models) {
+  //           if (_subjectDirectiveData.hasListener && !_subjectDirectiveData.isClosed) {
+  //             _subjectDirectiveData.add(model);
+  //           }
+  //           if (model.isStopCapture) {
+  //             // 停止流上传
+  //             //_voice.stopUpload();
+  //           }
+  //         }
+  //       }
+  //     },onDone: () {
+  //       logger?.e('下行流通道结束');
+  //     }, onError: (e){
+  //       logger?.e('下行流通道异常：$e');
+  //       _hasCreateNewDirectives = true;
+  //       if (e is DioException) {
+  //         if (e.type != DioExceptionType.cancel) {
+  //           if (_reachability.hasNetwork) {
+  //             createNewDirectives();
+  //           }else {
+  //             logger?.e("下行流通道中断，无网络，待有网后重新创建1");
+  //           }
+  //         }
+  //       } else if(e is SocketException) {
+  //         logger?.e("下行流通道中断，io异常，重新创建dio实例");
+  //         _closeNewDirectivesIfNeed();
+  //         _isOnNewDirectivesCreating = false;
+  //         HttpClient.getInstance().doRecreateDioV2();
+  //       } else {
+  //         if (_reachability.hasNetwork) {
+  //           createNewDirectives();
+  //         }else {
+  //           logger?.e("下行流通道中断，无网络，待有网后重新创建2");
+  //         }
+  //       }
+  //     });
+  //     _hasCreateNewDirectives = false;
+  //     _isOnNewDirectivesCreating = false;
+  //     logger?.d('下行流通道创建: 成功');
+  //     return true;
+  //   }
+  //   _hasCreateNewDirectives = true;
+  //   _isOnNewDirectivesCreating = false;
+  //   logger?.e('下行流通道创建: 失败 rs:$rs');
+  //   return false;
+  // }
 
-  DirectiveModel? _parseDirectives(Uint8List data) {
+  List<DirectiveModel>? _parseDirectives(Uint8List data) {
     try {
-      var str = utf8.decode(data);
-      logger?.v('下行流通道收到数据：data len:${data.length} \nContent: $str');
-      if (str.contains('Content-Type: application/json')) {
-        str = str.substring(str.indexOf('{'), str.lastIndexOf('}') + 1);
-        logger?.v('下行流通道数据解析成功：\n json:$str');
-        final json = jsonDecode(str);
-        final directive = json['directive'];
-        if (directive != null && directive is Map<String, dynamic>) {
-          final directiveModel = DirectiveModel.fromJson(directive);
-          if (directiveModel.isSpeak) {}
-          return directiveModel;
+      var strData = utf8.decode(data);
+      logger?.v('下行流通道收到数据：data len:${data.length} \n$strData');
+      final items = strData.split(_keywordContentType);
+      if (items.isEmpty) {
+        logger?.v('下行流通道数据解析：未找到有效数据');
+        return null;
+      }
+      final list = <DirectiveModel>[];
+      for (var str in items) {
+        try {
+          final start = str.indexOf('{');
+          final end = str.lastIndexOf('}');
+          if (start == -1 || end == -1) {
+            logger?.v('非json数据，忽略');
+            continue;
+          }
+          str = str.substring(start, end + 1);
+          logger?.v('下行流通道数据解析成功：\n json:|$str|');
+          final json = jsonDecode(str);
+          final directive = json['directive'];
+          if (directive != null && directive is Map<String, dynamic>) {
+            final directiveModel = DirectiveModel.fromJson(directive);
+            list.add(directiveModel);
+          }
+        } catch(e) {
+          logger?.e('下行流通道json解析异常:${e.toString()}');
+          continue;
         }
       }
+      return list;
     } catch (e) {
       logger?.e('下行流通道数据解析异常');
       logger?.e(e.toString());

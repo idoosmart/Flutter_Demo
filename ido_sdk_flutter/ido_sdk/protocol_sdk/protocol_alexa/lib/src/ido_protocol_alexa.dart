@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:alexa_channel/alexa_channel.dart';
-import 'package:alexa_channel/pigeon_generate/alexa_channel.g.dart';
+import 'package:native_channel/native_channel.dart';
 import 'package:alexa_net/alexa_net.dart';
 import 'package:flutter/foundation.dart';
 import 'package:ido_logger/ido_logger.dart';
@@ -18,6 +17,7 @@ import 'module/auth.dart';
 import 'module/client.dart';
 import 'private/tools/lan_type_ext.dart';
 import 'private/tools/data_box.dart';
+import 'private/reachability/alexa_reachability.dart';
 
 part 'private/protocol_alexa_impl.dart';
 
@@ -49,6 +49,11 @@ abstract class IDOProtocolAlexa {
   /// 切换语言 默认英语
   static Future<bool> changeLanguage(AlexaLanguageType type) {
     return _IDOProtocolAlexa.changeLanguage(type);
+  }
+
+  /// 网络变更需实时调用此方法(重要!!!)
+  static void onNetworkChanged({required bool hasNetwork}) {
+    AlexaReachability().setNetworkState(hasNetwork);
   }
 
   /// Alexa CBL授权

@@ -75,7 +75,7 @@ enum FileTransType {
   /// 图片资源升级 (不指定后缀即不限后缀)
   fzbin({}),
 
-  /// 字库升级
+  /// ota、字库升级
   bin({'.bin'}),
 
   /// 语言包升级 (不指定后缀即不限后缀)
@@ -86,6 +86,9 @@ enum FileTransType {
 
   /// 表盘
   iwf_lz({'.zip'}),
+
+  /// 表盘 思澈
+  watch({}),
 
   /// 壁纸表盘
   wallpaper_z({'.jpg', '.png', '.bmp'}),
@@ -129,7 +132,8 @@ enum FileTransType {
   final Set<String> typeNameSet;
 
   /// 扩展名是否匹配
-  bool isContainsExt(String ext) => typeNameSet.isEmpty || typeNameSet.contains(ext);
+  bool isContainsExt(String ext) =>
+      typeNameSet.isEmpty || typeNameSet.contains(ext);
 }
 
 enum FileTransStatus {

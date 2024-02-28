@@ -13,12 +13,12 @@ import android.content.Context
 import android.os.Build
 import android.os.ParcelUuid
 import android.text.TextUtils
+import com.example.flutter_bluetooth.Config
 import com.example.flutter_bluetooth.IDOScanSettings
 import com.example.flutter_bluetooth.ble.callback.BaseLeScanner
 import com.example.flutter_bluetooth.ble.protocol.ProtoMaker
 import com.example.flutter_bluetooth.logger.Logger
-import com.example.flutter_bluetooth.Config
-
+import com.example.flutter_bluetooth.utils.PairedDeviceUtils
 import java.util.*
 
 /**
@@ -72,7 +72,7 @@ class ScanManager() : BaseLeScanner() {
             result?.let {
                 val address = result.device?.address
 
-                if (!TextUtils.isEmpty(scanSettings?.deviceAddress) && scanSettings?.deviceAddress != address) {
+                if (!TextUtils.isEmpty(scanSettings?.deviceAddress) && !scanSettings?.deviceAddress.equals(address, ignoreCase = true)) {
                     return@let
                 }
 
@@ -100,7 +100,7 @@ class ScanManager() : BaseLeScanner() {
         val UUID = data?.get("UUID") as HashMap<String, Any?>?
         val serviceUUIDs = UUID?.get("UUID") as MutableList<String>?
         Logger.d("startScan , deviceAddress = $deviceAddress , serviceUUIDs = $serviceUUIDs")
-        scanSettings = IDOScanSettings(serviceUUIDs, deviceAddress)
+        scanSettings = IDOScanSettings(serviceUUIDs, deviceAddress?.uppercase())
         macDeviceScanned.clear()
         startScan()
     }
@@ -141,6 +141,7 @@ class ScanManager() : BaseLeScanner() {
             filter.build()
         }?.toMutableList() ?: mutableListOf()
         scanner.startScan(scanFilter, createScanSetting(), scanCallback21)
+        Logger.p("[ScanManager] " + PairedDeviceUtils.getAllPairedDeviceInfo())
         Logger.d("[ScanManager] start scan...")
         getConnectedDevicesAndSendNotify()
     }

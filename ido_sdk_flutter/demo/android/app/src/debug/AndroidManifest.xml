@@ -4,5 +4,28 @@
          the Flutter tool needs it to communicate with the running application
          to allow setting breakpoints, to provide hot reload, etc.
     -->
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- targetSdkVersion_28 需添加 -->
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission
+        android:name="android.permission.INTERNET"/>
+    <uses-permission
+        android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <!-- 蓝牙权限 -->
+    <uses-permission
+        android:name="android.permission.BLUETOOTH"/>
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"/>
+    <!-- 定位权限 -->
+    <uses-permission
+        android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission
+        android:name="android.permission.ACTIVITY_RECOGNITION"/>
+    <uses-permission
+        android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <!-- 相机权限 -->
+    <uses-permission
+        android:name="android.permission.CAMERA"/>
+
 </manifest>

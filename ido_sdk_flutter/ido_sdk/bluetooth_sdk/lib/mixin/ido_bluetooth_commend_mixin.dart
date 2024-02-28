@@ -54,7 +54,10 @@ class GetMacAddressCommendHandler extends CommendHandler {
   handleRequest(Uint8List cmd) {
     if (cmd.compare(getMacAddressCommend)) {
       bluetoothManager.writeData(getMacAddressCommend);
-      print("GetMacAddressCommendHandler");
+      bluetoothManager.addLog("GetMacAddressCommendHandler",
+          className: 'AnalyticMacAdd'
+              'ressCommendHandler',
+          method: 'handleRequest');
     } else {
       if (getNext() != null) {
         getNext()?.handleRequest(cmd);

@@ -235,10 +235,10 @@ class BaseFile extends AbstractFileOperate {
     final archive = ZipDecoder().decodeBuffer(inputStream);
     logger?.d('unzip $zipFilePath \n\t to $targetDir');
     extractArchiveToDisk(archive, targetDir);
-    final size = dir.statSync().size;
-    if (size < 512) {
+    // 目标目录为空，记录日志
+    if (dir.listSync().isEmpty) {
       logger?.e(
-          'error: The file is too small, and an exception may exist.  size:$size');
+          'error: The file is too small, and an exception may exist.');
     }
   }
 
@@ -319,6 +319,7 @@ extension BaseFileExt on BaseFile {
       case FileTransType.fw:
       case FileTransType.fzbin:
       case FileTransType.bin:
+      case FileTransType.watch:
         rs = FileTranCompressionType.fastlz;
         break;
       case FileTransType.lang:
@@ -376,6 +377,7 @@ extension BaseFileExt on BaseFile {
         return '.fw';
       case FileTransType.fzbin:
       case FileTransType.bin:
+      case FileTransType.watch:
         fileExt = '.${fileType.name}';
         break;
       case FileTransType.lang:
@@ -473,5 +475,20 @@ class CropImageConfig {
   String toString() {
     //return 'CropImageConfig{srcPath: $srcPath, targetPath: $targetPath, width: $width, height: $height, isCircle: $isCircle}';
     return 'CropImageConfig{width: $width, height: $height, isCircle: $isCircle}';
+  }
+}
+
+extension _DirectorySize on Directory {
+  int totalSizeSync() {
+    int totalSize = 0;
+    if (existsSync()) {
+      // 遍历目录下的所有实体（文件和子目录）
+      listSync(recursive: true).forEach((entity) {
+        if (entity is File) {
+          totalSize += entity.lengthSync();
+        }
+      });
+    }
+    return totalSize;
   }
 }

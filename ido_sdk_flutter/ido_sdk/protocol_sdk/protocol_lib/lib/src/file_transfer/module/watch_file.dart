@@ -193,8 +193,8 @@ extension _WatchFileIwfLz on WatchFile {
         format: format,
         blockSize: blockSize);
     final iwfFile = File('$iwfFilePath$fileName');
-    if (rs != 0 && !await iwfFile.exists()) {
-      logger?.d('failed to create .iwf file');
+    if (rs != 0 || !await iwfFile.exists()) {
+      logger?.d('failed to create .iwf file rs: $rs');
       throw UnsupportedError('failed to create .iwf file');
     }
 

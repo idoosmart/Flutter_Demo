@@ -1,19 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
-import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:protocol_core/protocol_core.dart';
 import 'package:archive/archive_io.dart';
 import 'package:protocol_lib/protocol_lib.dart';
 import 'package:protocol_lib/src/private/logger/logger.dart';
+import 'package:native_channel/native_channel.dart';
 import 'package:image/image.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 import '../device_info/model/device_info_ext_model.dart';
-import '../function_table/model/function_table_model.dart';
-import '../function_table/ido_function_table.dart';
-import '../type_define/image_type.dart';
 import '../private/local_storage/local_storage.dart';
 
 
@@ -51,16 +47,15 @@ class IDOTool {
   /// 创建EPO.DAT文件
   /// ```dart
   /// dirPath 存放要制作epo文件的目录
-  /// epoFilePath 制作的epo文件存放路径
+  /// epoFilePath 制作的epo文件存放路径（epoFilePath不该在dirPath目录内）
   /// ```
   Future<bool> makeEpoFile({
     required String dirPath,
     required String epoFilePath,
   }) async {
-    // 目标文件不该在相同目录内
     if (epoFilePath.startsWith(dirPath)) {
       throw UnsupportedError(
-          'The target files should not be in the same directory');
+          'epoFilePath不该在dirPath目录内, 请修改');
     }
 
     const fileName = '0.epo';
@@ -85,6 +80,39 @@ class IDOTool {
     }
     logger?.e('failed to create epo file rs:$rs');
     return Future(() => false);
+  }
+
+  /// 制作思澈表盘文件
+  /// ```dart
+  /// dirPath 存放制作素材文件的目录
+  /// fileName 表盘名称（注：需要和dial_config.json中的name的值一致，无需后缀）
+  /// outputFilePath 制作的watch文件存放路径（注：需要绝对路径，如：/xx/*/{name}.watch)
+  /// 返回 0成功 非0失败 -1: 没有控件 -2: json文件加载失败 -3: 文件制作失败
+  /// ```
+  Future<int> makeSifliDialFile({
+    required String inputFilePath,
+    required String fileName,
+    required  String outputFilePath}) async {
+    if (outputFilePath.startsWith(inputFilePath)) {
+      throw UnsupportedError(
+          'outputFilePath不该在inputFilePath目录内，请修改');
+    }
+    final tmpFile = File('$inputFilePath/$fileName.watch');
+    // if (tmpFile.existsSync()) {
+    //   await tmpFile.delete(); // 清理临时文件
+    // }
+    final rs = _coreMgr.mkSifliDialFile(filePath: inputFilePath);
+    if (rs == 0 && tmpFile.existsSync()) {
+      await tmpFile.copy(outputFilePath); // rename
+      if (await File(outputFilePath).exists()) {
+        return rs;
+      }
+      logger?.e('mkSifliDialFile file rename failed, rs: -3');
+      return -3;
+    }
+    final code = rs != 0 ? rs : -3;
+    logger?.e('mkSifliDialFile file rename failed, rs: $code');
+    return code;
   }
 
   /// 设置流数据是否输出开关
@@ -168,12 +196,49 @@ class IDOTool {
   /// 图片格式转换 png 添加透明背景色
   /// src: 原图片
   Future<Image?> imageCompressToPng(String imagePath) async {
-    final jpgBytes = File(imagePath).readAsBytesSync();
-    final  pngBytes = await FlutterImageCompress.compressWithList(
-      jpgBytes,
-      format: CompressFormat.png,
-    );
-    return decodeImage(pngBytes);
+    final targetImagePath = "$imagePath.tmp";
+    final targetFile = File(targetImagePath);
+    Image? pngImage;
+
+    if (!File(imagePath).existsSync()) {
+      logger?.e("imageCompressToPng imagePath:$imagePath 文件不存在");
+      return null;
+    }
+
+    try {
+      // 转换
+      final rs = _coreMgr.jpgToPNG(
+          inputFilePath: imagePath, outputFilePath: targetImagePath);
+
+      // 0 成功, 1 已经是png，其它失败
+      if (rs == 0) {
+        if (await targetFile.exists()) {
+          final pngBytes = targetFile.readAsBytesSync();
+          pngImage = decodeImage(pngBytes);
+        }
+      } else if (rs == 1) {
+        final srcFile = File(imagePath);
+        if (await srcFile.exists()) {
+          final pngBytes = srcFile.readAsBytesSync();
+          pngImage = decodeImage(pngBytes);
+        }
+      }
+
+      // 删除临时文件
+      if (targetFile.existsSync()) {
+        targetFile.deleteSync();
+      }
+    } catch(e) {
+      final msgPath = await storage?.pathMessageIcon();
+      final dirMessageIconExists = msgPath != null ? Directory(msgPath).existsSync() : false;
+      final srcFileExists = File(imagePath).existsSync();
+      final outFileExists = targetFile.existsSync();
+      logger?.e("imageCompressToPng error:$e "
+          "dirMessageIconExists:$dirMessageIconExists "
+          "srcFileExists:$srcFileExists "
+          "outFileExists:$outFileExists");
+    }
+    return pngImage;
   }
 
 }
@@ -237,6 +302,27 @@ class IDOCallNotice {
 
 /// 协议库缓存
 class IDOCache {
+
+  /// 协议库log配置 （重启生效）
+  ///
+  /// fileSize 单日志文件大小（接近该值），单位字节，默认为5MB, 取值范围 1MB ~ 30MB
+  /// numberOfLogFiles 日志文件个数（不超过该值），默认3个, 取值范围 1 ~ 50
+  logConfigProtocol({
+    required int fileSize,
+    required int numberOfLogFiles}) async {
+    fileSize = min(max(fileSize, 1 * 1024 * 1024), 30 * 1024 * 1024);
+    numberOfLogFiles = min(max(numberOfLogFiles, 1), 50);
+    await storage?.saveLogConfigProtocol(fileSize, numberOfLogFiles);
+  }
+
+  /// c库log配置（重启生效）
+  ///
+  /// saveDay 保存日志天数 最少两天
+  logConfigClib({required int saveDay}) async {
+    await storage?.saveLogConfigClib(saveDay);
+  }
+
+
   /// 获取log根路径
   Future<String> logPath() async {
     final pathSDK = await LocalStorage.pathSDKStatic();
@@ -251,8 +337,8 @@ class IDOCache {
 
   /// 获取alexa测试目录
   Future<String> alexaTestPath() async {
-    final dirDocument = await getApplicationDocumentsDirectory();
-    return Future.value('${dirDocument.path}/alexa_test_pkg');
+    final dirDocument = await ToolsImpl().getDocumentPath();
+    return Future.value('${dirDocument!}/alexa_test_pkg');
   }
 
   /// 获取当前设备缓存根路径
@@ -265,7 +351,8 @@ class IDOCache {
     final pathSDK = await LocalStorage.pathSDKStatic();
     //return await compute(_doZip, "$pathSDK/logs");
     final info = _ExportInfo("$pathSDK/logs", "$pathSDK/protocol_logs.zip");
-    return await compute(_doZip, info);
+    return _innerDoZip(info);
+    //return await compute(_doZip, info);
   }
 
   /// 导出消息图标 返回压缩后日志zip文件绝对路径
@@ -278,11 +365,15 @@ class IDOCache {
     }
     //return await compute(_doZip, "$pathSDK/logs");
     final info = _ExportInfo(msgIconPath, "$pathSDK/message_icon.zip");
-    return await compute(_doZip, info);
+    return _innerDoZip(info);
+    //return await compute(_doZip, info);
   }
 
   /// 导出flash日志 返回压缩后日志zip文件绝对路径
-  Future<String?> exportLogFlash() async {
+  ///
+  /// timeOut 最大获取日志时长 (单位秒，默认60秒)
+  Future<String?> exportLogFlash({int timeOut = 60,
+    void Function(int progress)? progressCallback}) async {
     final path =  await storage?.pathDeviceLog();
     if (path == null) {
       logger?.e("get pathDeviceLog is null");
@@ -298,12 +389,15 @@ class IDOCache {
     }
 
     /// flash 日志只获取通用日志
-    final rs = await libManager.deviceLog.startGet(types:[IDOLogType.general]).first;
+    final rs = await libManager.deviceLog.startGet(types:[IDOLogType.general],
+        timeOut: timeOut,
+        progressCallback: progressCallback).first;
     if (rs) {
       final logPath = await libManager.deviceLog.logDirPath;
       final info = _ExportInfo("$logPath/flash", outputFile);
-      final filePath = await compute(_doZip, info);
-      return filePath;
+      // final filePath = await compute(_doZip, info);
+      // return filePath;
+      return _innerDoZip(info);
     }
     return null;
   }
@@ -347,25 +441,65 @@ class IDOCache {
     return storage?.loadDeviceExtListByDisk(sortDesc: sortDesc);
   }
 
-  static Future<String?> _doZip(_ExportInfo info) async {
+  /// 记录原生层log（内部使用）
+  void recordNativeLog(String msg) {
+      logger?.v(msg);
+  }
+
+  // 存在卡住问题（待优化）
+  // static Future<String?> _doZip(_ExportInfo info) async {
+  //   try {
+  //     logger?.d('_doZip input: ${info.inputPath} output:${info.outputFilePath}');
+  //     final pathLog = info.inputPath;
+  //     final dir = Directory(pathLog);
+  //     if (await dir.exists()) {
+  //       final zipPath = info.outputFilePath;
+  //       final zipFile = File(zipPath);
+  //       if (await zipFile.exists()) {
+  //         logger?.d('_doZip delete:$zipPath');
+  //         await File(zipPath).delete();
+  //       }
+  //       zipFile.createSync();
+  //       final encoder = ZipFileEncoder();
+  //       encoder.create(zipPath);
+  //       await encoder.addDirectory(dir);
+  //       encoder.close();
+  //       logger?.d('_doZip done');
+  //       return zipFile.existsSync() ? zipPath : null;
+  //     }
+  //     return null;
+  //   } catch (e) {
+  //     logger?.d('_doZip fail');
+  //     logger?.e(e.toString());
+  //     return null;
+  //   }
+  // }
+}
+
+extension _IDOCacheExt on IDOCache {
+  Future<String?> _innerDoZip(_ExportInfo info) async {
     try {
+      logger?.d('_innerDoZip input: ${info.inputPath} output:${info.outputFilePath}');
       final pathLog = info.inputPath;
       final dir = Directory(pathLog);
       if (await dir.exists()) {
         final zipPath = info.outputFilePath;
         final zipFile = File(zipPath);
         if (await zipFile.exists()) {
+          logger?.d('_innerDoZip delete:$zipPath');
           await File(zipPath).delete();
         }
         zipFile.createSync();
         final encoder = ZipFileEncoder();
         encoder.create(zipPath);
-        encoder.addDirectory(dir);
+        await encoder.addDirectory(dir);
         encoder.close();
+        logger?.d('_innerDoZip done');
         return zipFile.existsSync() ? zipPath : null;
       }
       return null;
     } catch (e) {
+      logger?.d('_innerDoZip fail');
       logger?.e(e.toString());
       return null;
     }

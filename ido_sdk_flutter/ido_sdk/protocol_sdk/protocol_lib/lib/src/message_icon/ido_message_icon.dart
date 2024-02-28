@@ -2,9 +2,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:native_channel/native_channel.dart';
 import 'package:protocol_core/protocol_core.dart';
 import 'package:protocol_lib/protocol_lib.dart';
@@ -14,6 +12,8 @@ import 'module/download_icon.dart';
 import 'module/get_app_info.dart';
 import 'module/set_app_name.dart';
 import 'module/transfer_icon.dart';
+import 'part/icon_help.dart';
+
 import '../private/logger/logger.dart';
 import '../private/local_storage/local_storage.dart';
 
@@ -50,6 +50,9 @@ abstract class IDOMessageIcon {
   /// 正在更新图标和名字
   Future<bool> get updating;
 
+  /// 监听更新状态
+  Stream<bool> listenUpdateState();
+
   /// 注册监听更新消息图标(全局注册一次即可)
   void registerListenUpdate();
 
@@ -69,6 +72,9 @@ abstract class IDOMessageIcon {
   /// 获取icon图片存放目录地址
   Future<String> getIconDirPath();
 
+  /// 监听icon图片存放目录地址
+  Stream<String> listenIconDirPath();
+
   /// 重置APP图标信息（删除本地沙盒缓存的图片）
   /// macAddress 需要清除数据的MAC地址
   /// deleteIcon 是否删除icon 图片文件，默认删除
@@ -76,5 +82,8 @@ abstract class IDOMessageIcon {
 
   /// android 当有收到通知时下发消息图标到设备
   Future<bool> androidSendMessageIconToDevice(int eventType);
+
+  /// android 原生图标存放目录地址c
+  Future<String> androidOriginalIconDirPath();
 
 }

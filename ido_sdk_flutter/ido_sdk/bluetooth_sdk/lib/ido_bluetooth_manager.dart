@@ -12,8 +12,10 @@ import 'Tool/logger/ido_bluetooth_logger.dart';
 import 'Tool/ido_bluetooth_tool.dart';
 import 'channel/ido_bluetooth_channel.dart';
 import 'ido_bluetooth.dart';
+import 'ido_bluetooth_update_log.dart';
 import 'mixin/ido_bluetooth_commend_mixin.dart';
 import 'mixin/ido_bluetooth_timeout_mixin.dart';
+import 'model/ido_bluetooth_media_state.dart';
 part 'manager/ido_bluetooth_manager.dart';
 
 final bluetoothManager = IDOBluetoothManager();
@@ -42,6 +44,8 @@ abstract class IDOBluetoothManager {
   /// heartPingSecond: Heartbeat interval (ios)
   /// outputToConsole：console output log
   register({int heartPingSecond, bool outputToConsole});
+
+  heartPingSwitch(bool isOn);
 
   /// 开始搜索
   /// macAddress（Android）:根据Mac地址搜索
@@ -157,6 +161,12 @@ abstract class IDOBluetoothManager {
   /// state： 'Completed' Upgrade completed
   /// error: error
   Stream<Map> dfuProgress();
+
+  ///主动获取媒体音频开关状态
+  Future<IDOBluetoothMediaState> getMediaAudioState(String btMac);
+
+  ///监听媒体音频开关状态
+  Stream<IDOBluetoothMediaState> mediaAudioState();
 
   /// 日志路径
   /// log path

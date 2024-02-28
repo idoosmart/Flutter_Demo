@@ -128,10 +128,9 @@ extension _FileTaskNormal on FileTask {
         return _completer!.future;
       }
 
-      // 读取文件
-      final fileData = await file.readAsBytes();
-      logger?.d(
-          'fileData len:${fileData.length} hashCode:${fileData.hashCode} \n\t data len:${fileData.length} hashCode:${fileData.hashCode}');
+      // 读取文件大小
+      final fileLength = await file.length();
+      logger?.d('fileLength len:$fileLength');
       final dataType = _dataType();
       final compressionType = _compressionType();
 

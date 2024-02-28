@@ -17,6 +17,7 @@ object Constants {
         const val DISCONNECT_SPP = "disconnectSPP"
         const val START_DFU = "startNordicDFU"
         const val AUTO_CONNECT = "autoConnect"
+        const val GET_A2DP_STATE = "getMediaState"
     }
 
     object ResponseMethod {
@@ -33,6 +34,7 @@ object Constants {
         const val SPP_STATE = "SPPState"
         const val WRITE_LOG = "writeLog"
         const val DFU_STATE = "dfuProgress"
+        const val A2DP_STATE = "mediaState"
 
 
         const val ON_BOND_STATE_CHANGED = ""

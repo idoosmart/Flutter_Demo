@@ -21,6 +21,9 @@ class _LocalStorage implements LocalStorage {
   static const _keyIsAuthCodeBindMode = 'bind-mode-code-data1';
   static const _keyIsBindState = 'bind-state1';
 
+  static const _keyConfigLogProtocol = 'log-protocol';
+  static const _keyConfigLogClib = 'log-clib';
+
   String? _pathSDK;
   String? _pathMsgIcon;
   String? _pathDevices;
@@ -39,6 +42,12 @@ class _LocalStorage implements LocalStorage {
 
   @override
   late LocalStorageConfig config;
+
+  @override
+  Future<bool>initStorage() async {
+    await getStorage();
+    return Future(() => true);
+  }
 
   @override
   Future<String?> getString({required String key}) async {
@@ -239,7 +248,7 @@ class _LocalStorage implements LocalStorage {
 
   @override
   Future<bool> cleanIconInfoData(String macAddress) {
-    // logger?.d('清除消息图标信息数据');
+    logger?.d('clean icon info data == $macAddress');
     return remove(key: _keyIconInfo,macAddress: macAddress);
   }
   
@@ -266,7 +275,7 @@ class _LocalStorage implements LocalStorage {
   Future<bool> saveIconInfoDataToDisk(IDOAppIconInfoModel model) {
     final map = model.toJson();
     final json = jsonEncode(map);
-    // logger?.d(' save icon info data: $json');
+    logger?.d(' save icon info data: $json');
     return setString(key: _keyIconInfo, value: json);
   }
 
@@ -274,6 +283,13 @@ class _LocalStorage implements LocalStorage {
   Future<bool> cleanAll() {
     // TODO: implement cleanAll
     throw UnimplementedError();
+  }
+
+  @override
+  void resetCachePathOnDeviceChanged() {
+    logger?.v("resetCachePathOnDeviceChanged");
+    _pathCLibFuncTable = null;
+    _pathDeviceLog = null;
   }
 
   @override
@@ -399,14 +415,52 @@ class _LocalStorage implements LocalStorage {
     return await setBool(key: _keyIsBindState, value: isBind);
   }
 
+
+  /// 日志文件保存策略
+  @override
+  Future<Map<String, dynamic>?> loadLogConfigProtocol() async {
+    final storage = await getStorage();
+    final ctx = storage.read<String>(_keyConfigLogProtocol);
+    //logger?.v("loadLogConfigProtocol txt = $ctx");
+    return ctx != null ? jsonDecode(ctx) : null;
+  }
+
+  @override
+  Future<int?> loadLogConfigClib() async {
+    final storage = await getStorage();
+    final val = storage.read<int>(_keyConfigLogClib);
+    //logger?.v("loadLogConfigClib val = $val");
+    return val;
+  }
+
+  @override
+  Future<bool> saveLogConfigProtocol(int fileSize, fileCount) async {
+    final map = {
+      "fileSize": fileSize,
+      "fileCount": fileCount
+    };
+    logger?.v("saveLogConfigProtocol map = $map");
+    final storage = await getStorage();
+    await storage.write(_keyConfigLogProtocol, jsonEncode(map));
+    return true;
+  }
+
+  @override
+  Future<bool> saveLogConfigClib(int saveDay) async {
+    final storage = await getStorage();
+    logger?.v("saveLogConfigClib saveDay = $saveDay");
+    await storage.write(_keyConfigLogClib, saveDay);
+    return true;
+  }
+
   /// 获取当前sdk根目录
   /// ```
   /// 返回：/xx/../ido_sdk
   /// ```
   static Future<String> pathSDKStatic() async {
     if (_pathSDKStatic == null) {
-      final dirDocument = await getApplicationDocumentsDirectory();
-      final rootDir = '${dirDocument.path}/${_LocalStorage._dirName}';
+      final dirDocument = await ToolsImpl().getDocumentPath();
+      final rootDir = '${dirDocument!}/${_LocalStorage._dirName}';
       _pathSDKStatic = rootDir;
       return Future(() => rootDir);
     } else {
@@ -418,8 +472,9 @@ class _LocalStorage implements LocalStorage {
 extension _LocalStorageExt on _LocalStorage {
   Future<GetStorage> getStorage() async {
     _LocalStorage._pathSDKStatic ??= await _LocalStorage.pathSDKStatic();
+    await GetStorage.init('storage', '${_LocalStorage._pathSDKStatic}/local_storage');
     _getStorage ??=
-        GetStorage('storage', '${_LocalStorage._pathSDKStatic}/local_storage');
+        GetStorage('storage');
     return Future(() => _getStorage!);
   }
 
@@ -428,8 +483,8 @@ extension _LocalStorageExt on _LocalStorage {
     if (_pathSDK != null) {
       return Future(() => _pathSDK!);
     }
-    final dirDocument = await getApplicationDocumentsDirectory();
-    final rootDir = '${dirDocument.path}/${_LocalStorage._dirName}';
+    final dirDocument = await ToolsImpl().getDocumentPath();
+    final rootDir = '${dirDocument!}/${_LocalStorage._dirName}';
     final path = await _createDir(rootDir);
     _pathSDK = path;
     return Future(() => _pathSDK!);

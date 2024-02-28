@@ -11,7 +11,7 @@ enum TaskStatus {
   timeout
 }
 
-abstract class BaseTask<T> {
+abstract class BaseTask {
 
   late final _coreManager = IDOProtocolClibManager();
 

@@ -20,14 +20,18 @@ class GetFileInfoImpl: ApiGetFileInfo {
                 let modificationDate = attributes[.modificationDate] as? Date
                 let creationTimeStamp = creationDate?.timeIntervalSince1970 ?? 0
                 let modificationTimeStamp = modificationDate?.timeIntervalSince1970 ?? 0
-                completion(Result.success(["createSeconds":Int64(creationTimeStamp),
-                                           "changeSeconds":Int64(modificationTimeStamp)]))
+                let res = ["createSeconds":Int64(creationTimeStamp),
+                           "changeSeconds":Int64(modificationTimeStamp)]
+                completion(Result.success(res))
+                NativeChannelPlugin.shared.tools?.getNativeLog(msg: "ios file info == \(res)",completion: {})
             } catch {
                 print("Error: \(error)")
                 completion(Result.success(["createSeconds":0,"changeSeconds":0]))
+                NativeChannelPlugin.shared.tools?.getNativeLog(msg: "ios file not exist error \(error)",completion: {})
             }
         }else {
             completion(Result.success(["createSeconds":0,"changeSeconds":0]))
+            NativeChannelPlugin.shared.tools?.getNativeLog(msg: "ios file not exist",completion: {})
         }
     }
     

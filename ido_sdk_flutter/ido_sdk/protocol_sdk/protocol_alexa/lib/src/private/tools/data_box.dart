@@ -4,8 +4,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:uuid/uuid.dart';
+import 'package:native_channel/native_channel.dart';
 
 import '../../../protocol_alexa.dart';
 import 'list_extension.dart';
@@ -79,7 +79,7 @@ abstract class DataBox {
 
   /// 时区
   static Future<Uint8List> timeZoneChanged() async {
-    final String currentTimeZone = await FlutterNativeTimezone.getLocalTimezone();
+    final String currentTimeZone = await ToolsImpl().getCurrentTimeZone();
 
     return {
       'context': [],

@@ -46,12 +46,11 @@ class _IDOBluetoothManager
   //heartPingSecond:心跳包间隔(ios)
   //outputToConsole：输出日志
   @override
-  register({int heartPingSecond = 25, bool outputToConsole = false}) async{
+  register({int heartPingSecond = 20, bool outputToConsole = false}) async {
     //日志
     await _registerLog();
     //通道
-    _channel.callHandle();
-    _channel.bluetoothState();
+    _channel.register();
     if (Platform.isIOS) {
       _heartPing.startHeartPing(heartPingSecond: heartPingSecond);
     }
@@ -61,10 +60,11 @@ class _IDOBluetoothManager
     _channel.deviceStateSubject.listen((event) => _listenDeviceState(event));
     receiveData().listen((event) => _listenReceiveData(event));
     _scanResult().listen((event) => _listenScanResult(event));
-    addLog('bluetoothSDK register version = ${getSdkVersion()}', method: 'register');
+    addLog('bluetoothSDK register version = ${getSdkVersion()}',
+        method: 'register');
   }
 
-  _registerLog({bool outputToConsole = false}) async{
+  _registerLog({bool outputToConsole = false}) async {
     await IDOBluetoothLogger().register(outputToConsole: outputToConsole);
     _channel.logStateSubject
         .listen((value) => IDOBluetoothLogger().writeLog(value));
@@ -120,7 +120,8 @@ class _IDOBluetoothManager
         !isConnected &&
         isAutoConnect) {
       needReconnect(isDueToPhoneBluetoothSwitch: true);
-    } else if (event.state == IDOBluetoothStateType.poweredOff) {
+    } else if (event.state == IDOBluetoothStateType.poweredOff ||
+        event.state == IDOBluetoothStateType.resetting) {
       stopScan();
       currentDevice?.state = IDOBluetoothDeviceStateType.disconnected;
     }
@@ -210,7 +211,7 @@ class _IDOBluetoothManager
         stopScan();
         await _addScanInterval();
       } else {
-        autoConnectAndroid(
+        _autoConnectAndroid(
             device: currentDevice,
             isDueToPhoneBluetoothSwitch: isDueToPhoneBluetoothSwitch);
       }
@@ -225,11 +226,13 @@ class _IDOBluetoothManager
   Future<List<IDOBluetoothDeviceModel>?> startScan([String? macAddress]) async {
     final state = await getBluetoothState();
     if (await poweredOn) {
-      stopScan();
-      _channel.deviceMap.clear();
-      _channel.startScan(macAddress);
-      addLog('--- startScan $macAddress', method: 'startScan');
-      rescanCount = 0;
+      Future.delayed(Duration(milliseconds: macAddress == null? 0: 10),(){
+        stopScan();
+        _channel.deviceMap.clear();
+        _channel.startScan(macAddress);
+        addLog('--- startScan $macAddress', method: 'startScan');
+        rescanCount = 0;
+      });
     } else if (!await authorized || state == IDOBluetoothStateType.unknown) {
       if (rescanCount > 3) {
         return null;
@@ -246,10 +249,15 @@ class _IDOBluetoothManager
     if (macAddress == null) {
       return null;
     }
-    final device = _channel.scanSubject.firstWhere((event) {
+    addLog("开始扫描指定设备 $macAddress", method: 'startScan');
+    final device = await _channel.scanSubject.firstWhere((event) {
       final result = event.where((element) => element.macAddress == macAddress);
       return result.isNotEmpty;
-    }).timeout(const Duration(seconds: 60));
+    }).timeout(const Duration(seconds: 60), onTimeout: () {
+      addLog("未扫描到指定设备", method: 'startScan');
+      return [];
+    });
+    _channel.stopScan();
     return device;
   }
 
@@ -342,6 +350,15 @@ class _IDOBluetoothManager
         currentDevice = null;
       }
       cancelAllTimeout();
+      final state = await getBluetoothState();
+      if (state == IDOBluetoothStateType.poweredOff && Platform.isIOS) {
+        //  安卓这种情况系统直接发出断链通知，iOS同步逻辑直接发送断链通知。
+        Future.delayed(const Duration(seconds: 1)).then((value) =>
+            bluetoothManager.addDeviceState(IDOBluetoothDeviceStateModel(
+                macAddress: macAddress,
+                state: IDOBluetoothDeviceStateType.disconnected,
+                errorState: IDOBluetoothDeviceConnectErrorType.cancelByUser)));
+      }
     }
     return deviceState()
         .map((event) =>
@@ -367,8 +384,8 @@ class _IDOBluetoothManager
     final value = await _channel.state();
     final json = value ?? {};
     final stateValue = IDOBluetoothStateModel.fromMap(json);
-    // addLog('getBluetoothState = ${stateValue.state}',
-    //     method: 'getBluetoothState');
+    addLog('getBluetoothState = ${stateValue.state}',
+        method: 'getBluetoothState');
     return stateValue.state;
   }
 
@@ -388,6 +405,11 @@ class _IDOBluetoothManager
     device ??= currentDevice;
     if (device == null) {
       return IDOBluetoothDeviceStateType.disconnected;
+    } else if (_channel.isConnecting &&
+        device.macAddress == currentDevice?.macAddress) {
+      addLog("getDeviceState _channel.isConnecting = ${_channel.isConnecting}",
+          method: "getDeviceState");
+      return IDOBluetoothDeviceStateType.connecting;
     }
     final value = await _channel.deviceState(device);
     final json = value as Map;
@@ -451,16 +473,17 @@ class _IDOBluetoothManager
     // addLog('writeData - ${isTrans
     //     ? IDOBluetoothWriteType.withoutResponse
     //     : IDOBluetoothWriteType.withResponse}', method: 'writeData');
-    return isTrans
-        ? IDOBluetoothWriteType.withoutResponse
-        : IDOBluetoothWriteType.withResponse;
+    if (isTrans && Platform.isIOS) {
+      await Future.delayed(Duration(milliseconds: 10));
+    }
+    return _writeType;
   }
 
   //发送数据状态
   @override
   Stream<IDOBluetoothWriteState> writeState({IDOBluetoothDeviceModel? device}) {
     device ??= currentDevice;
-    return _channel.sendStateSubject.map((event) {
+    final stateStream = _channel.sendStateSubject.map((event) {
       final state = event.state ?? false;
       state ? (_sendErrorCount = 0) : (_sendErrorCount++);
       if (_sendErrorCount > 3 && event.macAddress != null) {
@@ -473,6 +496,10 @@ class _IDOBluetoothManager
       // addLog('writeState  ${event.type},state = $state', method: 'writeState');
       return event;
     });
+    if (Platform.isIOS && _writeType == IDOBluetoothWriteType.withoutResponse) {
+      return stateStream.delay(const Duration(milliseconds: 10));
+    }
+    return stateStream;
   }
 
   //收到数据
@@ -543,7 +570,8 @@ class _IDOBluetoothManager
     return _scanResult().map((event) {
       if (_deviceIDs != null) {
         if (_deviceIDs!.isNotEmpty) {
-          event.retainWhere((element) => _deviceIDs!.contains(element.deviceId));
+          event
+              .retainWhere((element) => _deviceIDs!.contains(element.deviceId));
         }
       }
       if (_deviceNames != null) {
@@ -553,7 +581,8 @@ class _IDOBluetoothManager
       }
       if (_macAddresss != null) {
         if (_macAddresss!.isNotEmpty) {
-          event.retainWhere((element) => _macAddresss!.contains(element.macAddress));
+          event.retainWhere(
+              (element) => _macAddresss!.contains(element.macAddress));
         }
       }
       if (_uuids != null) {
@@ -567,7 +596,11 @@ class _IDOBluetoothManager
 
   //添加扫描过滤
   @override
-  scanFilter({List<String>? deviceNames, List<int>? deviceIDs, List<String>? macAddresss, List<String>? uuids}) {
+  scanFilter(
+      {List<String>? deviceNames,
+      List<int>? deviceIDs,
+      List<String>? macAddresss,
+      List<String>? uuids}) {
     _deviceNames = deviceNames;
     _deviceIDs = deviceIDs;
     _macAddresss = macAddresss;
@@ -579,8 +612,6 @@ class _IDOBluetoothManager
   Stream<IDOBluetoothStateModel> bluetoothState() {
     return _channel.stateSubject;
   }
-
-
 
   //设备状态状态
   @override
@@ -594,17 +625,19 @@ class _IDOBluetoothManager
           currentDevice!.isNeedGetMacAddress) {
         //首次绑定需要获取Mac地址，这里挡住，保证后续链接已经有Mac地址
         return false;
-      }else {
+      } else {
         _deviceSubject.add(currentDevice ?? IDOBluetoothDeviceModel());
+      }
+      if (currentDevice?.macAddress == event.macAddress) {
+        _channel.isConnecting = false;
       }
       return true;
     });
   }
 
-
   @override
   Stream<IDOBluetoothDeviceModel> listenCurrentDevice() {
-     return _deviceSubject;
+    return _deviceSubject;
   }
 
   ///内部调用
@@ -685,13 +718,13 @@ class _IDOBluetoothManager
       return false;
     }
     _channel.cancelPair(device);
-    addLog("cancelPair", method: 'cancelPair');
+    addLog("cancelPair - ${device.macAddress}", method: 'cancelPair');
   }
 
   ///自动重连（android）
-  autoConnectAndroid(
+  _autoConnectAndroid(
       {IDOBluetoothDeviceModel? device,
-      bool isDueToPhoneBluetoothSwitch = false}) async{
+      bool isDueToPhoneBluetoothSwitch = false}) async {
     addLog(
         "autoConnect,device = ${device?.macAddress},name = ${device?.name} - "
         "${currentDevice?.name}"
@@ -712,9 +745,9 @@ class _IDOBluetoothManager
       //等待上个设备断链
       await deviceState()
           .where((event) =>
-      event.state == IDOBluetoothDeviceStateType.disconnected &&
-          (event.macAddress == lastDevice.macAddress ||
-              (event.uuid == lastDevice.uuid && Platform.isIOS)))
+              event.state == IDOBluetoothDeviceStateType.disconnected &&
+              (event.macAddress == lastDevice.macAddress ||
+                  (event.uuid == lastDevice.uuid && Platform.isIOS)))
           .first;
     }
     if (device != null) {
@@ -812,8 +845,9 @@ class _IDOBluetoothManager
 
   @override
   autoConnect({IDOBluetoothDeviceModel? device}) {
+    needAutoConnect(true);
     if (Platform.isAndroid) {
-      autoConnectAndroid(device: device);
+      _autoConnectAndroid(device: device);
     } else {
       connect(device);
     }
@@ -826,6 +860,21 @@ class _IDOBluetoothManager
 
   @override
   String getSdkVersion() {
-    return "4.0.0";
+    return IDOBluetoothUpdateLog().getSdkVersion();
+  }
+
+  @override
+  heartPingSwitch(bool isOn) {
+    _heartPing.openBully = isOn;
+  }
+
+  @override
+  Future<IDOBluetoothMediaState> getMediaAudioState(String btMac) async {
+    return await _channel.getMediaState(btMac);
+  }
+
+  @override
+  Stream<IDOBluetoothMediaState> mediaAudioState() {
+    return _channel.mediaStateSubject;
   }
 }

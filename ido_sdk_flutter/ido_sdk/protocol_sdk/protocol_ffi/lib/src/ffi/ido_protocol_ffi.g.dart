@@ -206,6 +206,21 @@ class ProtocolFfiBindings {
   late final _EnableLog =
       _EnableLogPtr.asFunction<int Function(int, int, ffi.Pointer<ffi.Char>)>();
 
+  /// @brief 设置log保存天数
+  /// @param saveDay 保存日志天数 最少两天
+  /// @return SUCCESS(0) 成功
+  int SetSaveLogDay(
+    int saveDay,
+  ) {
+    return _SetSaveLogDay(
+      saveDay,
+    );
+  }
+
+  late final _SetSaveLogDayPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int)>>('SetSaveLogDay');
+  late final _SetSaveLogDay = _SetSaveLogDayPtr.asFunction<int Function(int)>();
+
   /// @brief:设置当前绑定状态
   /// @param mode 模式
   /// {
@@ -1122,15 +1137,23 @@ class ProtocolFfiBindings {
       _lookup<ffi.NativeFunction<ffi.Void Function()>>('initParameter');
   late final _initParameter = _initParameterPtr.asFunction<void Function()>();
 
-  /// @brief gps数据实时处理入口,需要对输出的数据进行判断，若纬度为-180则为错误值，不应该输出
+  /// @brief gps数据实时处理入口,需要对输出的数据进行判断，若纬度为-180则为错误值，不应该输出 ，每次只会传进来一个坐标
   /// @param data json字符串
-  /// @param len 字符串长度
+  /// @param len 字符串长度 不超过2MByte
   /// json字符串内容:
+  /// android:
   /// { lon,经度,数据类型double
   /// lat,纬度,数据类型double
   /// timestamp,时间戳,数据类型int
   /// accuracy,定位精度,数据类型double
   /// gpsaccuracystatus,定位等级，0 = 定位未知, 1 = 定位好, 2 = 定位差,数据类型int}
+  /// ios:
+  /// { lon,经度,数据类型double
+  /// lat,纬度,数据类型double
+  /// timestamp,时间戳,数据类型int
+  /// hor_accuracy,水平精度,数据类型double
+  /// ver_accuracy,垂直精度,数据类型double
+  /// }
   /// @return json字符串 内容与上面json字符串内容一致
   ffi.Pointer<ffi.Char> appGpsAlgProcessRealtime(
     ffi.Pointer<ffi.Char> data,
@@ -1480,6 +1503,23 @@ class ProtocolFfiBindings {
   late final _mkConnactFile = _mkConnactFilePtr
       .asFunction<ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Char>)>();
 
+  /// @brief 制作思澈表盘文件,会在输入路径下生成(.watch)表盘文件
+  /// @param file_path 素材文件路径
+  /// @return 0成功 非0失败 -1: 没有控件 -2: json文件加载失败
+  int mkSifliDialFile(
+    ffi.Pointer<ffi.Char> file_path,
+  ) {
+    return _mkSifliDialFile(
+      file_path,
+    );
+  }
+
+  late final _mkSifliDialFilePtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Pointer<ffi.Char>)>>(
+          'mkSifliDialFile');
+  late final _mkSifliDialFile =
+      _mkSifliDialFilePtr.asFunction<int Function(ffi.Pointer<ffi.Char>)>();
+
   /// @brief 压缩png图片质量
   /// @param inputFilePath   输入文件路径
   /// @param outputFilePath 输出文件路径
@@ -1499,6 +1539,27 @@ class ProtocolFfiBindings {
           ffi.Int Function(
               ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)>>('compressToPNG');
   late final _compressToPNG = _compressToPNGPtr
+      .asFunction<int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)>();
+
+  /// @brief jpg转png
+  /// @param inputFilePath   输入文件路径
+  /// @param outputFilePath 输出文件路径
+  /// @return int 0 成功, 1 已经是png，其它失败
+  int jpgToPNG(
+    ffi.Pointer<ffi.Char> inputFilePath,
+    ffi.Pointer<ffi.Char> outputFilePath,
+  ) {
+    return _jpgToPNG(
+      inputFilePath,
+      outputFilePath,
+    );
+  }
+
+  late final _jpgToPNGPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int Function(
+              ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)>>('jpgToPNG');
+  late final _jpgToPNG = _jpgToPNGPtr
       .asFunction<int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)>();
 
   /// @brief mp3音频文件采样率转换  将采样率转化为44.1khz
@@ -1663,10 +1724,13 @@ class ProtocolFfiBindings {
   late final _AduioGetMp3SamplingRate = _AduioGetMp3SamplingRatePtr.asFunction<
       int Function(ffi.Pointer<ffi.Char>)>();
 
-  /// @brief 制作功能表信息文件
-  /// @param path 输出文件路径(包含文件名及后缀)
-  /// @return:
-  /// SUCCESS(0) : 成功
+  /// ------------------------------ 工具接口 ------------------------------
+  /// /**
+  ///  * @brief 制作功能表信息文件
+  ///  * @param path 输出文件路径(包含文件名及后缀)
+  ///  * @return:
+  ///  *   SUCCESS(0) : 成功
+  ///  */
   int funcTableOutputOnJsonFile(
     ffi.Pointer<ffi.Char> path,
   ) {
@@ -1680,6 +1744,72 @@ class ProtocolFfiBindings {
           'funcTableOutputOnJsonFile');
   late final _funcTableOutputOnJsonFile = _funcTableOutputOnJsonFilePtr
       .asFunction<int Function(ffi.Pointer<ffi.Char>)>();
+
+  /// @brief 模拟器回应数据解释，传入key`replyinfo`，输出对应的字节数据
+  /// @param json_data 素材JSON数据，对应事件号的`replyinfo`
+  /// @param json_data_len 素材JSON数据长度
+  /// @param evt 事件号
+  /// @return JSON字符串，转换后的字节数据用JSON格式返回
+  ffi.Pointer<ffi.Char> simulatorRespondInfoExec(
+    ffi.Pointer<ffi.Char> json_data,
+    int json_data_len,
+    int evt,
+  ) {
+    return _simulatorRespondInfoExec(
+      json_data,
+      json_data_len,
+      evt,
+    );
+  }
+
+  late final _simulatorRespondInfoExecPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Char>, ffi.Int,
+              ffi.Int)>>('simulatorRespondInfoExec');
+  late final _simulatorRespondInfoExec =
+      _simulatorRespondInfoExecPtr.asFunction<
+          ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Char>, int, int)>();
+
+  /// @brief 模拟器收到APP的字节数据，解释成对应的json内容输出
+  /// @param data 素材字节数据
+  /// @param data_len 字节数据长度
+  /// @return 输出json数据字符串
+  ffi.Pointer<ffi.Char> simulatorReceiveBinary2Json(
+    ffi.Pointer<ffi.Char> data,
+    int data_len,
+  ) {
+    return _simulatorReceiveBinary2Json(
+      data,
+      data_len,
+    );
+  }
+
+  late final _simulatorReceiveBinary2JsonPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.Char> Function(
+              ffi.Pointer<ffi.Char>, ffi.Int)>>('simulatorReceiveBinary2Json');
+  late final _simulatorReceiveBinary2Json = _simulatorReceiveBinary2JsonPtr
+      .asFunction<ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Char>, int)>();
+
+  /// @brief 计算长包指令的校验码
+  /// @param data 素材字节数据
+  /// @param data_len 字节数据长度
+  /// @return 输出2个字节的CRC校验码
+  int getCrc16(
+    ffi.Pointer<ffi.Char> data,
+    int data_len,
+  ) {
+    return _getCrc16(
+      data,
+      data_len,
+    );
+  }
+
+  late final _getCrc16Ptr = _lookup<
+          ffi.NativeFunction<ffi.Int Function(ffi.Pointer<ffi.Char>, ffi.Int)>>(
+      'getCrc16');
+  late final _getCrc16 =
+      _getCrc16Ptr.asFunction<int Function(ffi.Pointer<ffi.Char>, int)>();
 
   /// ------------------------------ v2消息/来电提醒 ------------------------------
   /// /**
@@ -1879,6 +2009,25 @@ class ProtocolFfiBindings {
       _lookup<ffi.NativeFunction<ffi.Int Function()>>('ProtocolGetHeatLogInfo');
   late final _ProtocolGetHeatLogInfo =
       _ProtocolGetHeatLogInfoPtr.asFunction<int Function()>();
+
+  /// @brief:获取flashlog进度回调注册
+  /// @param func 函数指针
+  /// @return:SUCCESS(0)成功
+  int FlashLogTranProgressCallbackReg(
+    protocol_report_progress_cb_handle func,
+  ) {
+    return _FlashLogTranProgressCallbackReg(
+      func,
+    );
+  }
+
+  late final _FlashLogTranProgressCallbackRegPtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Int Function(protocol_report_progress_cb_handle)>>(
+      'FlashLogTranProgressCallbackReg');
+  late final _FlashLogTranProgressCallbackReg =
+      _FlashLogTranProgressCallbackRegPtr.asFunction<
+          int Function(protocol_report_progress_cb_handle)>();
 
   /// @brief 获取flashlog完成回调注册
   /// @param func 函数指针

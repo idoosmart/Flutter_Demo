@@ -110,6 +110,11 @@ typedef CallbackBatteryLogInfoCompleteCbHandle = void Function(String, int);
 /// typedef void (*protocol_get_heat_log_info_complete_cb_handle)(char *json_str, uint32_t error_code);
 typedef CallbackHeatLogInfoCompleteCbHandle = void Function(String, int);
 
+/// 获取flashlog进度回调注册
+///
+/// extern uint32_t FlashLogTranProgressCallbackReg(protocol_report_progress_cb_handle func);
+typedef CallbackFlashLogTranProgressCallbackReg = void Function(int);
+
 // ----------------------------------- 定时器 -----------------------------------
 
 /// 定时器超时回调

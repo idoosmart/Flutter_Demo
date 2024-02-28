@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
                        DESC
   s.homepage         = 'http://example.com'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.author           = { 'iDO' => 'huc@idoosmart.com' }
   s.source           = { :path => '.' }
   s.platform         = :ios, '9.0'
   s.libraries  = 'iconv','z','c++'

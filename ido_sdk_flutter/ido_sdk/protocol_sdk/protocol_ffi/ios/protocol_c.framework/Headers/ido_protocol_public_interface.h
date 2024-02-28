@@ -185,6 +185,13 @@ extern int callBackEnable(protocol_data_send_handle func);
 extern int EnableLog(bool isPrintConsole,bool isWriteFile,char* filePath);
 
 /**
+ * @brief 设置log保存天数
+ * @param saveDay 保存日志天数 最少两天
+ * @return SUCCESS(0) 成功
+ */
+extern int SetSaveLogDay(int saveDay);
+
+/**
  * @brief:设置当前绑定状态
  * @param mode 模式
  * {
@@ -632,15 +639,23 @@ extern int initType(int motion_type_in);
 extern void initParameter(void);
 
 /**
- * @brief gps数据实时处理入口,需要对输出的数据进行判断，若纬度为-180则为错误值，不应该输出
+ * @brief gps数据实时处理入口,需要对输出的数据进行判断，若纬度为-180则为错误值，不应该输出 ，每次只会传进来一个坐标
  * @param data json字符串
- * @param len 字符串长度
+ * @param len 字符串长度 不超过2MByte
  * json字符串内容:
+ * android:
  * { lon,经度,数据类型double
  *   lat,纬度,数据类型double
  *   timestamp,时间戳,数据类型int
  *   accuracy,定位精度,数据类型double
  *   gpsaccuracystatus,定位等级，0 = 定位未知, 1 = 定位好, 2 = 定位差,数据类型int}
+ *   ios:
+ * { lon,经度,数据类型double
+ *   lat,纬度,数据类型double
+ *   timestamp,时间戳,数据类型int
+ *   hor_accuracy,水平精度,数据类型double
+ *   ver_accuracy,垂直精度,数据类型double
+ * }
  * @return json字符串 内容与上面json字符串内容一致
  */
 extern char *appGpsAlgProcessRealtime(char *data,int len);
@@ -841,12 +856,27 @@ extern int mkPhotoFile(const char * file_path,const char * save_file_path,int fo
 extern char *mkConnactFile(const char * jsondata);
 
 /**
+ * @brief 制作思澈表盘文件,会在输入路径下生成(.watch)表盘文件
+ * @param file_path 素材文件路径
+ * @return 0成功 非0失败 -1: 没有控件 -2: json文件加载失败
+ */
+extern int mkSifliDialFile(const char *file_path);
+
+/**
  * @brief 压缩png图片质量
  * @param inputFilePath   输入文件路径
  * @param outputFilePath 输出文件路径
  * @return int 成功 SUCCESS
  * */
 extern int compressToPNG(const char *inputFilePath,const char *outputFilePath);
+
+/**
+ * @brief jpg转png
+ * @param inputFilePath   输入文件路径
+ * @param outputFilePath 输出文件路径
+ * @return int 0 成功, 1 已经是png，其它失败
+ * */
+extern int jpgToPNG(const char *inputFilePath,const char *outputFilePath);
 
 /**
  * @brief mp3音频文件采样率转换  将采样率转化为44.1khz
@@ -911,6 +941,7 @@ extern int AudioSRConversionProgressCallbackReg(protocol_report_progress_cb_hand
  * */
 extern int AduioGetMp3SamplingRate(const char * in_path);
 
+// ------------------------------ 工具接口 ------------------------------
 /**
  * @brief 制作功能表信息文件
  * @param path 输出文件路径(包含文件名及后缀)
@@ -918,6 +949,31 @@ extern int AduioGetMp3SamplingRate(const char * in_path);
  *   SUCCESS(0) : 成功
  */
 extern int funcTableOutputOnJsonFile(char *path);
+
+/**
+ * @brief 模拟器回应数据解释，传入key`replyinfo`，输出对应的字节数据
+ * @param json_data 素材JSON数据，对应事件号的`replyinfo`
+ * @param json_data_len 素材JSON数据长度
+ * @param evt 事件号
+ * @return JSON字符串，转换后的字节数据用JSON格式返回
+ */
+extern char *simulatorRespondInfoExec(const char *json_data,int json_data_len,int evt);
+
+/**
+ * @brief 模拟器收到APP的字节数据，解释成对应的json内容输出
+ * @param data 素材字节数据
+ * @param data_len 字节数据长度
+ * @return 输出json数据字符串
+ */
+extern char *simulatorReceiveBinary2Json(const char *data,int data_len);
+
+/**
+ * @brief 计算长包指令的校验码
+ * @param data 素材字节数据
+ * @param data_len 字节数据长度
+ * @return 输出2个字节的CRC校验码
+ */
+extern uint16_t getCrc16(const char *data,int data_len);
 
 // ------------------------------ v2闹钟同步 ------------------------------
 
@@ -1053,6 +1109,13 @@ extern int ProtocolGetBatteryLogInfo(void);
  * @return int SUCCESS(0)成功
  * */
 extern int ProtocolGetHeatLogInfo(void);
+
+/**
+ * @brief:获取flashlog进度回调注册
+ * @param func 函数指针
+ * @return:SUCCESS(0)成功
+ * */
+extern uint32_t FlashLogTranProgressCallbackReg(protocol_report_progress_cb_handle func);
 
 /**
  * @brief 获取flashlog完成回调注册

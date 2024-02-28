@@ -220,12 +220,17 @@ extension _TransferIconExt on _TransferIcon {
     final dic = jsonDecode(response.json!) as Map<String,dynamic>;
     _iconWidth = dic['icon_width'] as int? ?? 0;
     _iconHeight = dic['icon_height'] as int? ?? 0;
+    if (_iconWidth == 0 || _iconHeight == 0) {
+      _iconWidth = 60;
+      _iconHeight = 60;
+    }
     logger?.d('icon width == ${_iconWidth!} icon height == ${_iconHeight!}');
     /// 裁剪图标
     logger?.d("android tailor picture time length == ${items.length}");
 
+    /// 裁剪超时增加1秒，当只有1个图标裁剪时容易超时
     final isOk = await _tailorPicture(items)
-        .timeout(Duration(seconds: items.length),
+        .timeout(Duration(seconds: (items.length + 1)),
         onTimeout: () {
        logger?.d('android tailor picture timeout');
        return false;

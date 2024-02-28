@@ -27,8 +27,8 @@ final deviceMapKey = Platform.isAndroid ? "macAddress" : "uuid";
 
 //获取MacAddress指令
 final getMacAddressCommend = Uint8List.fromList([0x02, 0x04]);
-//心跳指令
-final heartPingCommend = Uint8List.fromList([0x02, 0xA0]);
+//心跳指令  [0x02, 0xA0]
+final heartPingCommend = Uint8List.fromList([0x02, 0x03]);
 //获取配对指令
 final getPairCommend = Uint8List.fromList([0x02,0x10]);
 //打开ANCS

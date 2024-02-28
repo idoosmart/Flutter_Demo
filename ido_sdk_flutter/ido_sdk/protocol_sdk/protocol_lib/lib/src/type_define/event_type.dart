@@ -29,6 +29,11 @@ enum CmdEvtType {
       evtBase: _VBusEvtBase.base_app_get,
       evtType: _VBusEvtType.app_get_sn_info),
 
+  /// 获取单位
+  getUnit(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.app_get_unit),
+
   /// 获取bt蓝牙名称
   getBtName(
       evtBase: _VBusEvtBase.base_app_get,
@@ -337,6 +342,12 @@ enum CmdEvtType {
   getBatteryLog(
       evtBase: _VBusEvtBase.base_app_get,
       evtType: _VBusEvtType.func_get_v3_battery_log
+  ),
+
+  /// 获取BT连接手机型号
+  getBtConnectPhoneModel(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.func_v3_get_bt_connect_phone_model
   ),
 
   // ----------------------------------- 设置 -----------------------------------
@@ -1253,6 +1264,11 @@ enum CmdEvtType {
   evtBase: _VBusEvtBase.base_app_set,
   evtType: _VBusEvtType.app_protocol_test_cmd_1),
 
+  /// 设置来电快捷回复开关
+  setCallQuickReplyOnOff(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.app_set_call_quick_reply_on_off),
+
   /// 设置手机语音助手开关
   setVoiceAssistantOnOff(
       evtBase: _VBusEvtBase.base_app_set,
@@ -1262,7 +1278,18 @@ enum CmdEvtType {
 
   final int evtBase;
   final int evtType;
+
+  static CmdEvtType? fromRawValue(int rawValue)  {
+    if (_cmdMap.isEmpty) {
+      for (var e in CmdEvtType.values) {
+          _cmdMap[e.evtType] = e;
+      }
+    }
+    return _cmdMap[rawValue];
+  }
 }
+
+final _cmdMap = <int,CmdEvtType>{};
 
 /// 事件的方向
 abstract class _VBusEvtBase {
@@ -1571,6 +1598,9 @@ abstract class _VBusEvtType {
   /// 设置手机语音助手开关 struct protocol_set_voice_assistant_on_off
   static const int app_set_voice_assistant_on_off = 193;
 
+  /// 设置来电快捷回复开关  struct protocol_set_call_quick_reply_on_off
+  static const int app_set_call_quick_reply_on_off = 194;
+
   /// 绑定	struct protocol_start_bind,struct protocol_start_bind_reply
   static const int app_bind_start = 200;
 
@@ -1713,13 +1743,16 @@ abstract class _VBusEvtType {
   static const int app_get_bp_alg_version = 338;
 
   /// 获取固件支持的详情最大设置数量
-  static const app_get_support_max_set_items_num = 339;
+  static const int app_get_support_max_set_items_num = 339;
 
   /// 获取固件不可删除的快捷应用列表
-  static const app_get_undeleteable_meun_list = 340;
+  static const int app_get_undeleteable_meun_list = 340;
 
   /// 获取sn
-  static const app_get_sn_info = 341;
+  static const int app_get_sn_info = 341;
+
+  /// 获取单位
+  static const int app_get_unit = 342;
 
   /// 检查重启状态,非协议,用于内部状态处理
   static const int check_reboot = 350;
@@ -2217,6 +2250,9 @@ abstract class _VBusEvtType {
 
   /// 获取用户习惯信息
   static const int func_v3_get_habit_information = 5059;
+
+  /// V3获取BT连接手机型号 struct protocol_v3_get_bt_connect_phone_model_reply
+  static const int func_v3_get_bt_connect_phone_model = 5061;
 
   /// v3设置gps热启动参数 替代v2设置热启动参数 158事件
   static const int func_v3_set_hot_start_param = 5070;

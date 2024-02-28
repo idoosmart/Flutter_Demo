@@ -1,6 +1,6 @@
 name: protocol_lib
 description: ido protocol_lib (private)
-version: 4.0.11
+version: 4.0.16
 homepage:
 publish_to: none
 
@@ -17,28 +17,17 @@ dependencies:
   path: ^1.8.2
   archive: 3.3.7
   crypto: ^3.0.2
-#  shared_preferences: ^2.0.15
-  path_provider: ^2.0.11
-  image: ^4.0.15  #^3.2.2
+  image: ^4.0.15
   http: ^0.13.5
-  get_storage: ^2.0.3
-  flutter_image_compress: ^2.0.4
 
+  get_storage_lite:
+    path: ../plugins/get_storage_lite
   protocol_core:
-    git:
-      url: https://github.com/idoosmart/Flutter_Demo.git
-      ref: v1.0.0
-      path: ido_sdk_flutter/ido_sdk/protocol_sdk/protocol_core
+    path: ../protocol_core/
   ido_logger:
-    git:
-      url: https://github.com/idoosmart/Flutter_Demo.git
-      ref: v1.0.0
-      path: ido_sdk_flutter/ido_sdk/protocol_sdk/plugins/ido_logger
+    path: ../plugins/ido_logger/
   native_channel:
-    git:
-      url: https://github.com/idoosmart/Flutter_Demo.git
-      ref: v1.0.0
-      path: ido_sdk_flutter/ido_sdk/protocol_sdk/plugins/native_channel
+    path: ../plugins/native_channel
 
 
 dev_dependencies:

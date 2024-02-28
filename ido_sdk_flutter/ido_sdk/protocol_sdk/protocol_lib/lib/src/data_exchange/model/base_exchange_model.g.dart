@@ -289,6 +289,10 @@ IDOAppIngV3ExchangeModel _$IDOAppIngV3ExchangeModelFromJson(
       speed: json['real_time_speed'] as int?,
       duration: json['duration'] as int?,
       calories: json['calories'] as int?,
+      gpsInfoCount: json['gps_info_count'] as int?,
+      gps: (json['gps'] as List<dynamic>?)
+          ?.map((e) => Map<String, int>.from(e as Map))
+          .toList(),
     )
       ..day = json['day'] as int?
       ..hour = json['hour'] as int?
@@ -310,6 +314,8 @@ Map<String, dynamic> _$IDOAppIngV3ExchangeModelToJson(
       'real_time_speed': instance.speed,
       'duration': instance.duration,
       'calories': instance.calories,
+      'gps_info_count': instance.gpsInfoCount,
+      'gps': instance.gps,
     };
 
 IDOAppIngV3ReplyExchangeModel _$IDOAppIngV3ReplyExchangeModelFromJson(
@@ -409,6 +415,9 @@ IDOAppActivityDataV3ExchangeModel _$IDOAppActivityDataV3ExchangeModelFromJson(
       grade: json['grade'] as int?,
       realSpeedCount: json['real_speed_count'] as int?,
       paceSpeedCount: json['pace_speed_count'] as int?,
+      inClassCalories: json['in_class_calories'] as int?,
+      completionRate: json['completion_rate'] as int?,
+      hrCompletionRate: json['hr_completion_rate'] as int?,
       kmSpeeds:
           (json['km_speed_s'] as List<dynamic>?)?.map((e) => e as int).toList(),
       stepsFrequency: (json['steps_frequency'] as List<dynamic>?)
@@ -483,6 +492,9 @@ Map<String, dynamic> _$IDOAppActivityDataV3ExchangeModelToJson(
       'pace_speed_count': instance.paceSpeedCount,
       'km_speed_count': instance.kmSpeedCount,
       'action_data_count': instance.actionDataCount,
+      'in_class_calories': instance.inClassCalories,
+      'completion_rate': instance.completionRate,
+      'hr_completion_rate': instance.hrCompletionRate,
       'km_speed_s': instance.kmSpeeds,
       'steps_frequency': instance.stepsFrequency,
       'items_mi_speed': instance.itemsMiSpeed,

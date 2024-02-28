@@ -1,8 +1,9 @@
-
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:protocol_core/protocol_core.dart';
+import 'package:protocol_lib/protocol_lib.dart';
 import 'package:protocol_lib/src/private/logger/logger.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -26,12 +27,17 @@ enum IDOLogType {
   heat
 }
 
-abstract class IDODeviceLog {
+/// 日志进度 0 ~ 100
+typedef DeviceLogProgressCallback = void Function(int progress);
 
+abstract class IDODeviceLog {
   factory IDODeviceLog() => _IDODeviceLog();
 
-  /// 判断
+  /// 判断是否获取日志中
   bool get getLogIng;
+
+  /// 监听获取日志状态
+  Stream<bool> listenLogIng();
 
   /// 获取所有日志目录地址，每个日志目录下存放以时间戳命名的文件
   /// flash 日志目录 =>  Flash
@@ -40,12 +46,17 @@ abstract class IDODeviceLog {
   /// 旧的重启日志目录 => Reboot
   Future<String> get logDirPath;
 
+  /// 监听日志存放目录地址
+  Stream<String> listenLogDirPath();
+
   /// 开始获取日志
   /// types 日志类型
   /// timeOut 最大获取日志时长 (单位秒，默认60秒)
-  Stream<bool> startGet({required List<IDOLogType> types,int timeOut = 60});
+  Stream<bool> startGet(
+      {required List<IDOLogType> types,
+      int timeOut = 60,
+        DeviceLogProgressCallback? progressCallback});
 
   /// 取消
   void cancel();
-
 }

@@ -172,6 +172,13 @@ object ProtoMaker {
         return map
     }
 
+    fun makeA2dpState(btMacAddress: String, state: Int?): Map<String, Any?> {
+        val map = hashMapOf<String, Any?>()
+        map["btMac"] = btMacAddress
+        map["type"] = if (state == BluetoothProfile.STATE_CONNECTED) 1 else 0
+        return map
+    }
+
     /**
      * @param state 参考[BleDFUState]
      */

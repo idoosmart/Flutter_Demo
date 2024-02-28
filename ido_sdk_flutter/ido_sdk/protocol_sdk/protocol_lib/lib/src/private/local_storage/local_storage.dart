@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:protocol_lib/protocol_lib.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:get_storage/get_storage.dart';
+import 'package:get_storage_lite/get_storage.dart';
+import 'package:native_channel/native_channel.dart';
 
 import '../../function_table/model/function_table_model.dart';
 import '../../device_info/model/device_info_model.dart';
@@ -24,6 +24,9 @@ abstract class LocalStorage {
   late final LocalStorageConfig config;
   factory LocalStorage.config({required LocalStorageConfig config}) =>
       _LocalStorage._internal(config);
+
+  /// 初始化存储器
+  Future<bool>initStorage();
 
   /// 存储键-值数据（当前连接设备可用）
   Future<bool> setString({required String key, required String value});
@@ -113,6 +116,9 @@ abstract class LocalStorage {
   /// 清除所有缓存数据（待实现）
   Future<bool> cleanAll();
 
+  /// 切换设备时重置内存中的缓存路径
+  void resetCachePathOnDeviceChanged();
+
   // 设备列表
   Future<List<DeviceInfoExtModel>> loadDeviceExtListByDisk({bool sortDesc = true});
   DeviceInfoExtModel? loadDeviceInfoExtWith(String? macAddress);
@@ -156,4 +162,10 @@ abstract class LocalStorage {
   Future<bool> saveIconInfoDataToDisk(IDOAppIconInfoModel model);
   Future<bool> cleanIconInfoData(String macAddress);
   Future<bool> removeIconDir(String dirPath);
+
+  // 日志文件保存策略
+  Future<Map<String, dynamic>?> loadLogConfigProtocol();
+  Future<int?> loadLogConfigClib();
+  Future<bool> saveLogConfigProtocol(int fileSize, fileCount);
+  Future<bool> saveLogConfigClib(int saveDay);
 }

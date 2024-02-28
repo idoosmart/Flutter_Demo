@@ -14,12 +14,17 @@ import com.example.flutter_bluetooth.logger.Logger
 class IDOBTDevice(deviceAddress: String?) {
     private val btPair = BTPair(deviceAddress)
     private val sppConnector = SPPConnector(deviceAddress)
+    private val a2dpConnectHelper = A2dpConnectHelper(deviceAddress!!)
 
     /**
      * 创建BT配对
      */
     fun createPair(listener: IBondStateListener?) {
         btPair.createPair(listener)
+    }
+
+    fun getA2dpState(): Int {
+        return a2dpConnectHelper.getA2dpState()
     }
 
     /**
@@ -58,6 +63,10 @@ class IDOBTDevice(deviceAddress: String?) {
      */
     fun writeData(data: ByteArray) {
         sppConnector.addCmd(data)
+    }
+
+    fun registerA2dpStateListener(listener: A2dpConnectHelper.OnA2dpConnectChangedListener) {
+        a2dpConnectHelper.onA2dpConnectChangedListener = listener
     }
 
     fun registerSPPDataListener(listener: ISPPDataListener?) {

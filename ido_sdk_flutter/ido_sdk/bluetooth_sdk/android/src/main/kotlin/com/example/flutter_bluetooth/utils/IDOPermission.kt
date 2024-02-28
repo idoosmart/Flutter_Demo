@@ -28,6 +28,11 @@ object IDOPermission {
         return hasPermissions(context, Permissions.getBleScanPermissions())
     }
 
+    @JvmStatic
+    fun hasOnlyBlePermission(context: Context): Boolean {
+        return hasPermissions(context, Permissions.getOnlyBlePermissions())
+    }
+
     fun requestBlePermission(activity: Activity, requestCode: Int) {
         requestPermissions(activity, Permissions.getBleScanPermissions(), requestCode);
     }
@@ -94,6 +99,20 @@ object IDOPermission {
                 arrayOf(
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.BLUETOOTH_ADMIN,
+                    Manifest.permission.BLUETOOTH
+                )
+            }
+        }
+
+        fun getOnlyBlePermissions():Array<String>{
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                arrayOf(
+                    Manifest.permission.BLUETOOTH_SCAN,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                )
+            } else {
+                arrayOf(
                     Manifest.permission.BLUETOOTH_ADMIN,
                     Manifest.permission.BLUETOOTH
                 )

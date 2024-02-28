@@ -91,7 +91,7 @@ class Payload {
   final Map? highTemperature;
   final Map? lowTemperature;
   final List? weatherForecast;
-  final String? tokens;//删除闹钟用的到
+  final dynamic? tokens;//删除闹钟用的到
 
   const Payload({
     this.type,

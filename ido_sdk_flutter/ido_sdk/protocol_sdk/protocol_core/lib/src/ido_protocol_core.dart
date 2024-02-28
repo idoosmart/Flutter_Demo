@@ -17,6 +17,7 @@ import './task/log_task.dart';
 import './logger/logger.dart';
 
 import './manager/manager_clib.dart';
+import 'task/base_task.dart';
 
 part 'part/protocol_core_impl.dart';
 
@@ -55,7 +56,9 @@ abstract class IDOProtocolCoreManager {
 
   /// 设备日志
   CancelableOperation<CmdResponse> deviceLog(
-      {required LogType type, required String dirPath});
+      {required LogType type,
+       required String dirPath,
+      LogProgressCallback? progressCallback});
 
   /// 蓝牙响应数据总入口
   ///
@@ -175,6 +178,7 @@ abstract class IDOProtocolCoreManager {
 
   /// 初始化log
   initLogs({bool outputToConsoleClib = false});
+
   // /// 注入logger实例（日志合并）
   // static void setLogger(LoggerManager? aLogger) {
   //   logger = aLogger;
@@ -185,4 +189,7 @@ abstract class IDOProtocolCoreManager {
   /// 设置flash获取时间，单位秒，默认一分钟
   /// return int SUCCESS(0)成功
   int setProtocolGetFlashLogSetTime(int time);
+
+  /// 直接下发原始数据给固件
+  int writeRawData({required Uint8List data});
 }

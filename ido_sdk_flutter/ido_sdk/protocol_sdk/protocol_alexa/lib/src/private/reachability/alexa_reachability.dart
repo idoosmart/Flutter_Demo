@@ -1,9 +1,5 @@
 import 'dart:async';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
-
-import '../logger/logger.dart';
-
 /// 网络状态
 enum NetworkStatus {
   /// 网络不可用
@@ -19,19 +15,19 @@ enum NetworkStatus {
 /// 网络状态监听
 class AlexaReachability {
   NetworkStatus _networkStatus = NetworkStatus.reachableViaWiFi;
-  ConnectivityResult _status = ConnectivityResult.none;
-  late final Connectivity _connectivity = Connectivity();
-  late StreamSubscription<ConnectivityResult> _subscription;
+  // ConnectivityResult _status = ConnectivityResult.none;
+  // late final Connectivity _connectivity = Connectivity();
+  // late StreamSubscription<ConnectivityResult> _subscription;
   late StreamController<NetworkStatus> _streamController;
 
   static final _instance = AlexaReachability._internal();
   factory AlexaReachability() => _instance;
   AlexaReachability._internal() {
-    _initConnectivity();
+    //_initConnectivity();
     _streamController = StreamController.broadcast();
-    _subscription = _connectivity.onConnectivityChanged.listen((e) {
-      _updateConnectionStatus(e);
-    });
+    // _subscription = _connectivity.onConnectivityChanged.listen((e) {
+    //   _updateConnectionStatus(e);
+    // });
   }
 
   /// 是否有网
@@ -40,51 +36,18 @@ class AlexaReachability {
   /// 网络状态类型
   NetworkStatus get networkStatus => _networkStatus;
 
+
+  // 判断网络可达，需要用到connectivity_plus这个库，该引用编译后会产生：
+  // connectivity_plus.xcframework \ Reachability.xcframework，
+  // 使用纯dart代码暂未找到解决办法，此处去除网络变化获取，改由外部传入
+  void setNetworkState(bool hasNetwork) {
+    _networkStatus = hasNetwork ? NetworkStatus.reachableViaWiFi : NetworkStatus.notReachable;
+    _streamController.add(_networkStatus);
+  }
+
   /// 网络状态变更
   void listenNetworkStatusChanged(void Function(NetworkStatus status) func) {
     _streamController.stream.listen(func);
   }
 
-  void _dispose() {
-    _subscription.cancel();
-    _streamController.close();
-  }
-
-  Future<void> _initConnectivity() async {
-    late ConnectivityResult result;
-    try {
-      result = await _connectivity.checkConnectivity();
-    } catch (e) {
-      logger?.e(e.toString());
-      return;
-    }
-    return _updateConnectionStatus(result);
-  }
-
-  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
-    _status = result;
-    _networkStatus = _mappingStatus();
-    logger?.d('network changed:${result.name}');
-    if (_streamController.hasListener) {
-      _streamController.add(_networkStatus);
-    }
-  }
-
-  NetworkStatus _mappingStatus() {
-    NetworkStatus ns = NetworkStatus.reachableViaWiFi;
-    switch (_status) {
-      case ConnectivityResult.wifi:
-        ns = NetworkStatus.reachableViaWiFi;
-        break;
-      case ConnectivityResult.mobile:
-        ns = NetworkStatus.reachableViaWWAN;
-        break;
-      case ConnectivityResult.none:
-        ns = NetworkStatus.notReachable;
-        break;
-      default:
-        break;
-    }
-    return ns;
-  }
 }

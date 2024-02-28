@@ -22,7 +22,7 @@ class DeviceInfoModel {
   final int? devType;
   final int? energe;
   @JsonKey(name: 'firmware_version')
-  final int? firmwareVersion;
+  int? firmwareVersion;
   final int? mode;
   @JsonKey(name: 'pair_flag')
   final int? pairFlag;

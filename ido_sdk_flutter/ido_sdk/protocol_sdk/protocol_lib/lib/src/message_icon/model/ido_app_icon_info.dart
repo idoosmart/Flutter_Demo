@@ -1,4 +1,7 @@
 
+import 'package:protocol_lib/protocol_lib.dart';
+import 'package:protocol_lib/src/private/logger/logger.dart';
+
 class IDOAppInfo {
   /// 事件类型
   int evtType;
@@ -86,16 +89,29 @@ class IDOAppIconItemModel extends IDOAppInfo {
       appVersion: json['app_version'] as String? ?? ''
     );
    if (model.packName == 'com.apple.MobileSMS') {
+     //0：不需要更新 1：需要更新icon ，2：需要更新app名，3：icon和app都需要更新
+     final state = json['need_sync_icon'] as int?;
      model.isUpdateAppName = true;
      model.isDownloadAppInfo = true;
-     model.isUpdateAppIcon = true;
+     model.isUpdateAppIcon = state == 0 || state == 2;
      model.appName = 'SMS';
    }else if (model.packName == 'com.apple.missed.mobilephone') {
+     //0：不需要更新 1：需要更新icon ，2：需要更新app名，3：icon和app都需要更新
+     final state = json['need_sync_icon'] as int?;
      model.isUpdateAppName = true;
      model.isDownloadAppInfo = true;
-     model.isUpdateAppIcon = true;
+     model.isUpdateAppIcon = state == 0 || state == 2;
      model.appName = 'Missed calls';
    }else {
+     if (model.packName == "com.ss.iphone.ugc.Ame") {
+          /// tiktok老的包名强转新的包名
+         logger?.d("tiktok老的包名强转新的包名 com.ss.iphone.ugc.Ame => com.zhiliaoapp.musically");
+         model.packName = "com.zhiliaoapp.musically";
+     } else if (model.packName == "in.startv.hotstar") {
+       /// Hotstar老的包名强转新的包名
+       logger?.d("Hotstar老的包名强转新的包名 in.startv.hotstar => in.startv.hotstarLite");
+       model.packName = "in.startv.hotstarLite";
+     }
      //0：不需要更新 1：需要更新icon ，2：需要更新app名，3：icon和app都需要更新
      final state = json['need_sync_icon'] as int?;
      model.isUpdateAppName = state == 0 || state == 1;

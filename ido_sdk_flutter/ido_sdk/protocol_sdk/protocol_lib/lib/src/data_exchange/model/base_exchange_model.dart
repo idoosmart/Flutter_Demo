@@ -306,8 +306,25 @@ class IDOAppIngV3ExchangeModel extends IDOBaseExchangeModel {
   /// 卡路里
   int? calories;
 
+  /// gps个数 最多30个
+  @JsonKey(name: 'gps_info_count')
+  int? gpsInfoCount;
+
+  /// 坐标数据 最多30个
+  /// example: "gps" : [
+  ///     {
+  ///       "latitude" :22543100,
+  ///       "longitude" :114057800
+  ///     },
+  ///     {
+  ///       "latitude" :23129100,
+  ///       "longitude" :113264400
+  ///     }
+  ///   ]
+  List<Map<String,int>>? gps;
+
   IDOAppIngV3ExchangeModel({this.version,this.signal,this.distance,
-    this.speed,this.duration,this.calories});
+    this.speed,this.duration,this.calories,this.gpsInfoCount,this.gps});
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> newMap = {};
@@ -627,6 +644,18 @@ class IDOAppActivityDataV3ExchangeModel extends IDOBaseExchangeModel {
   @JsonKey(name: 'action_data_count')
   int? actionDataCount;
 
+  ///课程内运动热量 单位千卡
+  @JsonKey(name: 'in_class_calories')
+  int? inClassCalories;
+
+  ///动作完成率 0—100
+  @JsonKey(name: 'completion_rate')
+  int? completionRate;
+
+  ///心率控制率 0—100
+  @JsonKey(name: 'hr_completion_rate')
+  int? hrCompletionRate;
+
   /// 每公里耗时秒数 配速集合
   @JsonKey(name: 'km_speed_s')
   List<int>? kmSpeeds;
@@ -696,6 +725,9 @@ class IDOAppActivityDataV3ExchangeModel extends IDOBaseExchangeModel {
       this.grade,
       this.realSpeedCount,
       this.paceSpeedCount,
+      this.inClassCalories,
+      this.completionRate,
+      this.hrCompletionRate,
       this.kmSpeeds,
       this.stepsFrequency,
       this.itemsMiSpeed,

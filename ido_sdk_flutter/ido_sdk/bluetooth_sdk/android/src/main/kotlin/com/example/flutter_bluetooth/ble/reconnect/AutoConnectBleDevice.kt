@@ -6,6 +6,8 @@ import com.example.flutter_bluetooth.ble.DeviceManager
 import com.example.flutter_bluetooth.ble.device.AbsIDOBleDevice
 import com.example.flutter_bluetooth.dfu.BLEDevice
 import com.example.flutter_bluetooth.logger.Logger
+import com.example.flutter_bluetooth.utils.OSUtil
+import com.example.flutter_bluetooth.utils.PairedDeviceUtils
 
 
 /**
@@ -46,10 +48,20 @@ open class AutoConnectBleDevice(deviceAddress: String) : AbsIDOBleDevice(deviceA
     private var mFindDeviceAndGattErrorTimes = 0
 
     /**
+     * 本次连接是不是蓝牙开启触发
+     */
+    private var mIsConnectDueToPhoneBluetoothSwitch = false
+
+    /**
+     * 是否需要重置重连次数
+     */
+    private var mNeedResetReconnectTime = false
+
+    /**
      * 自动连接
      */
     fun autoConnect(isDueToPhoneBluetoothSwitch: Boolean = false) {
-        Logger.p("autoConnect($deviceAddress)")
+        Logger.p("autoConnect($deviceAddress) , isDueToPhoneBluetoothSwitch = $isDueToPhoneBluetoothSwitch")
 
         mIsInitiativeDisConnect = false
 
@@ -84,6 +96,7 @@ open class AutoConnectBleDevice(deviceAddress: String) : AbsIDOBleDevice(deviceA
         mIsAutoConnecting = true
 
         ReconnectTask.stop()
+        mIsConnectDueToPhoneBluetoothSwitch = isDueToPhoneBluetoothSwitch
         toConnect(false)
     }
 
@@ -136,13 +149,14 @@ open class AutoConnectBleDevice(deviceAddress: String) : AbsIDOBleDevice(deviceA
     }
 
     override fun callOnConnectFailedByGATT(status: Int, newState: Int) {
+        Logger.p("[AutoConnectBle]  callOnConnectFailedByGATT, mIsAutoConnecting = $mIsAutoConnecting, mHasFindDevice = $mHasFindDevice,  mIsConnectDueToPhoneBluetoothSwitch = $mIsConnectDueToPhoneBluetoothSwitch, status = $status, newState = $newState")
         if (mIsAutoConnecting) {
             if (mHasFindDevice) {
                 mFindDeviceAndGattErrorTimes++
                 Logger.p("[AutoConnectBle]  mFindDeviceAndGattErrorTimes = $mFindDeviceAndGattErrorTimes")
                 mBluetoothCallback?.callOnGattErrorAndNeedRebootBluetooth()
             }
-            if (tryConnectNotExistDevice()) {
+            if (tryConnectNotExistDeviceByGattError()) {
                 return
             }
             tryReconnect();
@@ -181,9 +195,9 @@ open class AutoConnectBleDevice(deviceAddress: String) : AbsIDOBleDevice(deviceA
 
     override fun callOnEnableNormalNotifyFailed() {
         Logger.e("[AutoConnectBle]  callOnEnableNormalNotifyFailed mIsAutoConnecting = $mIsAutoConnecting")
-        if (mIsAutoConnecting){
+        if (mIsAutoConnecting) {
             tryReconnect()
-        }else {
+        } else {
             super.callOnEnableNormalNotifyFailed()
         }
     }
@@ -207,6 +221,7 @@ open class AutoConnectBleDevice(deviceAddress: String) : AbsIDOBleDevice(deviceA
             mIsAutoConnecting = false
             mIsInitiativeDisConnect = false
             mFindDeviceAndGattErrorTimes = 0
+            mIsConnectDueToPhoneBluetoothSwitch = false
             ReconnectTask.stop()
             ScanTargetDeviceTask.stop()
             ScanManager.getManager().stopScanDevices()
@@ -214,6 +229,7 @@ open class AutoConnectBleDevice(deviceAddress: String) : AbsIDOBleDevice(deviceA
     }
 
     private fun tryReconnect() {
+        Logger.p("[AutoConnectBle]  tryReconnect start, reset = $mNeedResetReconnectTime")
         if (mIsInitiativeDisConnect) {
             Logger.e("[AutoConnectBle]  tryReconnect() is refused, mIsInitiativeDisConnect = true")
             stopReconnect()
@@ -272,6 +288,7 @@ open class AutoConnectBleDevice(deviceAddress: String) : AbsIDOBleDevice(deviceA
                 /*    if (bleDevice.mIsInDfuMode){
                     callOnInDfuMode(bleDevice);
                 }else {*/
+                Logger.p("[AutoConnectBle] find target device: $bleDevice")
                 if (bleDevice.mIsInDfuMode) {
                     callOnInDfuMode()
                 } else {
@@ -311,6 +328,7 @@ open class AutoConnectBleDevice(deviceAddress: String) : AbsIDOBleDevice(deviceA
      * 否则会一直失败
      */
     private fun tryConnectNotExistDevice(): Boolean {
+        Logger.p("[AutoConnectBle] tryConnectNotExistDevice, errorTimes = $mFindDeviceAndGattErrorTimes, mHasTryConnectNotExistDevice = $mHasTryConnectNotExistDevice")
 
         if (mFindDeviceAndGattErrorTimes <= 3) {
             return false
@@ -321,11 +339,68 @@ open class AutoConnectBleDevice(deviceAddress: String) : AbsIDOBleDevice(deviceA
         if (Build.VERSION.SDK_INT < 28) {
             return false
         }
+
         if (mHasTryConnectNotExistDevice) {
             return false
         }
-        Logger.p("[AutoConnectBle] try To Connect not exist device...")
         mHasTryConnectNotExistDevice = true
+
+        Logger.p("[AutoConnectBle] try To Connect not exist device...")
+        //连接一个不存在的设备
+        toConnect("AA:BB:CC:DD:EE:FF")
+        return true
+    }
+
+    /**
+     * 有些 android 9,10 手机的蓝牙有一些bug，如果一直连接某个设备失败，
+     * 则需connect一下别的设备，然后再回来连接目标设备
+     * 否则会一直失败
+     *
+     * 该方法是在重连时，连续两次直连后还是失败，则会扫描设备，如果扫描出来设备重连还是报133，则会尝试调用该方法
+     */
+    private fun tryConnectNotExistDeviceByGattError(): Boolean {
+        val isNeedUnPair = OSUtil.isMagicOS() && mIsConnectDueToPhoneBluetoothSwitch
+        Logger.p("[AutoConnectBle] gatt error, isNeedUnPair = $isNeedUnPair, errorTimes = $mFindDeviceAndGattErrorTimes, tried = $mHasTryConnectNotExistDevice")
+        //magicos 出现133时，如果是因为开关蓝牙，则直接解除配对后重新连接
+        // 因为这里已经经历了两次直连和一次扫描连接了，没必要再重试了
+        if (isNeedUnPair) {
+            if (mFindDeviceAndGattErrorTimes < 1) {
+                return false
+            }
+        } else if (mFindDeviceAndGattErrorTimes <= 3) {
+            return false
+        }
+
+        if (!BluetoothAdapter.getDefaultAdapter().isEnabled) {
+            return false
+        }
+        if (Build.VERSION.SDK_INT < 28) {
+            return false
+        }
+
+        try {
+            if (isNeedUnPair) {
+                val isBtPaired = PairedDeviceUtils.isPaired(deviceAddress)
+                if (isBtPaired) {
+                    Logger.p("[AutoConnectBle] Magic OS & bt is paired, now unpair it and reconnect!")
+                    PairedDeviceUtils.removeBondState(deviceAddress)
+//                    mNeedResetReconnectTime = true
+                    return false
+                } else {
+                    Logger.p("[AutoConnectBle] Magic OS but bt is not paired")
+                }
+            }
+        } catch (e: Exception) {
+            Logger.p("[AutoConnectBle] Magic OS process error: $e")
+        }
+
+        if (mHasTryConnectNotExistDevice) {
+            return false
+        }
+        mHasTryConnectNotExistDevice = true
+
+
+        Logger.p("[AutoConnectBle] try To Connect not exist device...")
         //连接一个不存在的设备
         toConnect("AA:BB:CC:DD:EE:FF")
         return true

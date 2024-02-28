@@ -3,11 +3,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
-import 'package:image/image.dart' as pkg_img;
 import 'package:protocol_core/protocol_core.dart';
 import 'package:protocol_lib/protocol_lib.dart';
 import 'package:tuple/tuple.dart';
-
+import '../part/icon_help.dart';
 import '../../private/logger/logger.dart';
 
 abstract class DownloadIcon {
@@ -19,7 +18,6 @@ abstract class DownloadIcon {
 
 class _DownloadIcon implements DownloadIcon {
 
-  late final _coreMgr = IDOProtocolCoreManager();
   late final _libMgr = IDOProtocolLibManager();
 
   Completer<IDOAppIconInfoModel>? _completer;
@@ -94,7 +92,7 @@ extension _DownloadIconExt on _DownloadIcon {
         final filePath = "${dirPath}/${packName}${'_100'}.png";
         return response.stream.toBytes().then((value) {
          return File(filePath).writeAsBytes(value).then((file1) {
-           return _cropPicture(filePath, packName, model.iconWidth ?? 46, model.iconHeight ?? 46).then((file2) {
+           return IconHelp.cropPicture(filePath, packName, model.iconWidth ?? 46, model.iconHeight ?? 46).then((file2) {
              logger?.d('download icon success == ${packName}');
               return Tuple2(file1.path,file2?.path??'');
             });
@@ -116,6 +114,8 @@ extension _DownloadIconExt on _DownloadIcon {
           final tuple = element as Tuple2;
           final path1 = tuple.item1 as String;
           final path2 = tuple.item2 as String;
+          logger?.d("big icon path === $path1");
+          logger?.d("smart icon path === $path2");
           if (path1.contains(item.packName)) {
             item?.iconLocalPathBig = path1;
             item?.iconLocalPath = path2;
@@ -126,29 +126,6 @@ extension _DownloadIconExt on _DownloadIcon {
       _completer = null;
     });
     return _completer!.future;
-  }
-
-  /// 图片裁剪并压缩
-  Future<File?>_cropPicture(String path,String packName,int iconWidth,int iconHeight) async {
-    logger?.d('cutting picture pack name == ${packName} path == ${path} width == ${iconWidth} height == ${iconHeight}');
-    final dirPath = await _libMgr.messageIcon.getIconDirPath();
-    var image = pkg_img.decodeImage(File(path).readAsBytesSync());
-    if (image == null) {
-      return Future(() => null);
-    }
-    /// 格式转换
-    final pngImage = await _libMgr.tools.imageCompressToPng(path) ?? image;
-    /// 图片裁圆
-    final circleImage = pkg_img.copyCropCircle(pngImage);
-    /// 缩放
-    var resizeImage = pkg_img.copyResize(circleImage!,width:iconWidth, height:iconHeight,interpolation: pkg_img.Interpolation.cubic);
-    /// 存放路径
-    final filePath = "${dirPath}/${packName}${'_46'}.png";
-    /// 写入文件
-    final file = await File(filePath).writeAsBytes(pkg_img.encodePng(resizeImage));
-    ///图片压缩
-    _coreMgr.compressToPNG(inputFilePath: file.path, outputFilePath: file.path);
-    return file;
   }
 
 }

@@ -1,19 +1,18 @@
 import 'dart:async';
-import 'dart:ffi';
 import 'dart:io';
-
 import 'package:flutter/services.dart';
-import 'package:flutter_bluetooth/Tool/logger/ido_bluetooth_logger.dart';
 import 'package:flutter_bluetooth/model/ido_bluetooth_dfu_state.dart';
-
 import 'package:rxdart/rxdart.dart';
 import 'package:flutter_bluetooth/ido_bluetooth.dart';
-
 import '../model/ido_bluetooth_dfu_config.dart';
+import '../model/ido_bluetooth_media_state.dart';
+part 'firmware_data_channel.dart';
 
 class IDOBluetoothChannel {
   final MethodChannel _channel = const MethodChannel('flutter_bluetooth_IDO');
+  final MethodChannel _firmwareDataChannel = const MethodChannel('firmware_data');
   final EventChannel _stateChannel = const EventChannel('bluetoothState');
+  final EventChannel _deviceStateChannel = const EventChannel('deviceState');
 
   final stateSubject = PublishSubject<IDOBluetoothStateModel>();
   final scanSubject = PublishSubject<List<IDOBluetoothDeviceModel>>();
@@ -25,7 +24,7 @@ class IDOBluetoothChannel {
   final logStateSubject = PublishSubject<Map>();
   final dfuStateSubject = PublishSubject<IDOBluetoothDfuState>();
   final dfuProgressSubject = PublishSubject<Map>();
-  final EventChannel _dfuProgress = const EventChannel('dfuProgress');
+  final mediaStateSubject = PublishSubject<IDOBluetoothMediaState>();
 
   //当前搜索的设备，会在开始搜索时清空
   final deviceMap = <String, IDOBluetoothDeviceModel>{};
@@ -35,12 +34,24 @@ class IDOBluetoothChannel {
   //TODO 占时只维护pair的回调
   final isPairList = <Completer<IDOBluetoothPairType>>[];
 
+  //开始调用connect直到收到设备状态都为true
+  bool isConnecting = false;
+
+  register(){
+    callHandle();
+    bluetoothState();
+    if (Platform.isAndroid) {
+      callHandleFirmwareData();
+      deviceStateChannel();
+    }
+  }
+
   callHandle() {
     try {
       _channel.setMethodCallHandler((call) {
         final arguments = call.arguments;
         final method = call.method;
-        if (["deviceState"].contains(method)) {
+        if (["deviceState","scanResult"].contains(method)) {
           bluetoothManager.addLog(
               {
                 '通道消息callHandle': method,
@@ -48,11 +59,11 @@ class IDOBluetoothChannel {
               }.toString(),
               method: method);
         }
-        if (call.method == "sendState") {
+        if (call.method == "sendState" && Platform.isIOS) {
           //发送数据状态
           final model = IDOBluetoothWriteState.fromMap(arguments);
           sendStateSubject.add(model);
-        } else if (call.method == "receiveData") {
+        } else if (call.method == "receiveData" && Platform.isIOS) {
           final receiveData = IDOBluetoothReceiveData.fromMap(arguments);
           receiveDataSubject.add(receiveData);
         } else if (call.method == "scanResult") {
@@ -65,7 +76,7 @@ class IDOBluetoothChannel {
           bluetoothManager.currentDevice?.isOta = isOta;
         } else if (call.method == "pairState") {
           final value = call.arguments;
-          final isPair = value["isPair "];
+          final isPair = value["isPair"];
           if (bluetoothManager.currentDevice != null) {
             bluetoothManager.currentDevice!.isPair = isPair as bool;
           }
@@ -83,8 +94,11 @@ class IDOBluetoothChannel {
           dfuStateSubject.add(dfuState);
         } else if (call.method == "dfuProgress") {
           dfuProgressSubject.add(arguments);
+        } else if (call.method == "mediaState"){
+          final state = IDOBluetoothMediaState.fromJson(arguments);
+          mediaStateSubject.add(state);
         }
-        return Future.value(Null);
+        return Future.value(true);
       });
     } catch (e) {
       final json = {
@@ -101,6 +115,13 @@ class IDOBluetoothChannel {
     _stateChannel.receiveBroadcastStream().listen((event) {
       final value = event as Map;
       stateSubject.add(IDOBluetoothStateModel.fromMap(value));
+    }, onError: (dynamic error) {}, cancelOnError: true);
+  }
+
+  deviceStateChannel(){
+    _deviceStateChannel.receiveBroadcastStream().listen((event) {
+      final value = event as Map;
+      _deviceState(value);;
     }, onError: (dynamic error) {}, cancelOnError: true);
   }
 
@@ -146,6 +167,15 @@ extension InvokeChannel on IDOBluetoothChannel {
 
   connect(IDOBluetoothDeviceModel device) {
     // print('channel connect  ${device.macAddress}');
+    bluetoothManager.addDeviceState(IDOBluetoothDeviceStateModel(
+      uuid: device.uuid ?? "",
+      macAddress: device.macAddress ?? "",
+      state: IDOBluetoothDeviceStateType.connecting,
+      errorState: IDOBluetoothDeviceConnectErrorType.none,
+    ));
+    if (bluetoothManager.currentDevice?.macAddress == device.macAddress) {
+      isConnecting = true;
+    }
     _channel.invokeMethod("connect", {
       "uuid": device.uuid,
       "macAddress": device.macAddress,
@@ -186,7 +216,11 @@ extension InvokeChannel on IDOBluetoothChannel {
   }
 
   writeData(Map data) {
-    _channel.invokeMethod("sendData", data);
+    if (Platform.isIOS) {
+      _channel.invokeMethod("sendData", data);
+    }  else{
+      _firmwareDataChannel.invokeMethod("sendData", data);
+    }
   }
 
   setPair(IDOBluetoothDeviceModel device) {
@@ -208,6 +242,15 @@ extension InvokeChannel on IDOBluetoothChannel {
 
   autoConnect(IDOBluetoothDeviceModel device,
       {bool isDueToPhoneBluetoothSwitch = false}) {
+    bluetoothManager.addDeviceState(IDOBluetoothDeviceStateModel(
+      uuid: device.uuid ?? "",
+      macAddress: device.macAddress ?? "",
+      state: IDOBluetoothDeviceStateType.connecting,
+      errorState: IDOBluetoothDeviceConnectErrorType.none,
+    ));
+    if (bluetoothManager.currentDevice?.macAddress == device.macAddress) {
+      isConnecting = true;
+    }
     _channel.invokeMethod("autoConnect", {
       "uuid": device.uuid,
       "macAddress": device.macAddress,
@@ -246,13 +289,21 @@ extension DeviceStateChannel on IDOBluetoothChannel {
         model.macAddress = bluetoothManager.currentDevice?.macAddress;
       }
     }
+
     deviceStateSubject.add(model);
+  }
+
+  Future<IDOBluetoothMediaState> getMediaState(String btMac) async{
+    final value = await _channel.invokeMethod<Map>("getMediaState",
+        {"btMac": btMac})??{};
+    return IDOBluetoothMediaState.fromJson(value);
   }
 }
 
 extension ScanResultChannel on IDOBluetoothChannel {
   _scanResult(Map json) {
     // print('_scanResult = $json');
+
     final device = IDOBluetoothDeviceModel.fromJson(json);
     final key = json[deviceMapKey];
     final storeDevice = allDeviceMap[key];

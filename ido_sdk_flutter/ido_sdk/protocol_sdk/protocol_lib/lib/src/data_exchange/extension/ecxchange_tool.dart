@@ -266,11 +266,12 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
       int aerobicMins, int limitMins, int warmUp, int fatBurning, int aerobicExercise,
       int anaerobicExercise, int extremeExercise, int warmUpTime, int fatBurningTime,
       int aerobicExerciseTime, int anaerobicExerciseTime, int extremeExerciseTime,
-      int avgSpeed, int avgStepStride, int maxStepStride, int kmSpeed,
+      int avgSpeed, int avgStepStride, int maxStepStride, int kmSpeed, int maxSpeed,
       int fastKmSpeed, int avgStepFrequency, int maxStepFrequency, int avgHrValue,
       int maxHrValue, int kmSpeedCount, int actionDataCount, int stepsFrequencyCount,
       int miSpeedCount, int recoverTime, int vo2max, int trainingEffect, int grade,
-      int realSpeedCount, int paceSpeedCount, List<int> kmSpeeds, List<int> stepsFrequency,
+      int realSpeedCount, int paceSpeedCount, int inClassCalories,
+      int completionRate, int hrCompletionRate, List<int> kmSpeeds, List<int> stepsFrequency,
       List<int> itemsMiSpeed, List<int> itemRealSpeed, List<int> paceSpeedItems, List<Map<String,dynamic>> actionData,
       ) {
     this.day = day;
@@ -303,6 +304,7 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
     this.avgStepStride = avgStepStride;
     this.maxStepStride = maxStepStride;
     this.kmSpeed = kmSpeed;
+    this.maxSpeed = maxSpeed;
     this.fastKmSpeed = fastKmSpeed;
     this.avgStepFrequency = avgStepFrequency;
     this.maxStepFrequency = maxStepFrequency;
@@ -318,6 +320,9 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
     this.mileCount = (this.mileCount ?? 0) + miSpeedCount;
     this.realSpeedCount = (this.realSpeedCount ?? 0) + realSpeedCount;
     this.paceSpeedCount = (this.paceSpeedCount ?? 0) + paceSpeedCount;
+    this.inClassCalories = inClassCalories;
+    this.completionRate = completionRate;
+    this.hrCompletionRate = hrCompletionRate;
     this.kmSpeeds?.addAll(kmSpeeds);
     this.stepsFrequencys?.addAll(stepsFrequency);
     this.mileSpeeds?.addAll(itemsMiSpeed);

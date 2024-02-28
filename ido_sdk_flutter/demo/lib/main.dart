@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth/ido_bluetooth.dart';
 import 'package:protocol_alexa/protocol_alexa.dart';
@@ -12,9 +13,6 @@ import 'generated/l10n.dart';
 
 const clientId =
     'amzn1.application-oa2-client.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
-
-// const clientId =
-//     'amzn1.application-oa2-client.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
 
 void main() async {
   runApp(const MyApp());
@@ -72,6 +70,11 @@ registerBluetoothSDK() async {
 
 registerProtocolAlexa() async {
   await IDOProtocolAlexa.register(clientId: clientId);
+
+  Connectivity().onConnectivityChanged.listen((event) {
+    debugPrint('onConnectivityChanged: ${event.name}');
+    IDOProtocolAlexa.onNetworkChanged(hasNetwork: event != ConnectivityResult.none);
+  });
 }
 
 /// 蓝牙与协议库桥接

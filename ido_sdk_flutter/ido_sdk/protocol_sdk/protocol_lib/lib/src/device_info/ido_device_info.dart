@@ -42,7 +42,7 @@ class IDODeviceInfo {
   int get bindTimeout => _device?.bindConfirmTimeout ?? 0;
 
   /// 设备平台 0:nordic, 10:realtek 8762x, 20:cypress psoc6, 30:Apollo3, 40:汇顶, 50:nordic+泰凌微,
-  /// 60:泰凌微+5340+no nand flash, 70:汇顶+富瑞坤, 80:5340
+  /// 60:泰凌微+5340+no nand flash, 70:汇顶+富瑞坤, 80:5340, 90: 炬芯, 99: 思澈
   int get platform => _device?.platform ?? 0;
 
   /// 设备形状类型 0：无效；1：圆形；2：方形的； 3：椭圆
@@ -63,8 +63,10 @@ class IDODeviceInfo {
   /// 设备固件主版本号
   int get firmwareVersion => _device?.firmwareVersion ?? 0;
 
+  /// 设备SN
   String? get sn => _device?.snString();
 
+  /// BtName
   String? get btName => _device?.btNameString();
 
 
@@ -319,6 +321,60 @@ class IDODeviceInfo {
     _deviceExt = storage?.loadDeviceInfoExtWith(libManager.macAddress);
     _deviceExt?.macAddressBt = macAddressBt;
     _subjectOnChanged.add(0);
+  }
+
+  /// 更新内存及缓存中的固件三级版本号
+  /// ```dart
+  /// macAddress 要修改的设备mac地址
+  /// fwVersion1 固件版本version1
+  /// fwVersion2 固件版本version2
+  /// fwVersion3 固件版本version3
+  ///
+  void updateDeviceFwVersion({
+    required String macAddress,
+    required int fwVersion1,
+    required int fwVersion2,
+    required int fwVersion3
+  }) async {
+    final macAddr = macAddress.replaceAll(':', '').toUpperCase();
+    // 当前连接设备
+    if (macAddr == _libMgr.macAddress) {
+      logger?.d("updateDeviceFwVersion online macAddr:$macAddr _fw: $_fw");
+      if (_fw != null) {
+        logger?.d("updateDeviceFwVersion: ${_fw?.firmwareVersion1}.${_fw?.firmwareVersion2}.${_fw?.firmwareVersion3} -> $fwVersion2.$fwVersion2.$fwVersion2");
+        _fw?.firmwareVersion1 = fwVersion1;
+        _fw?.firmwareVersion2 = fwVersion2;
+        _fw?.firmwareVersion3 = fwVersion3;
+        await storage?.saveFirmwareVersionToDisk(_fw!);
+      }
+    } else {
+        // TODO 更新缓存
+      logger?.d("updateDeviceFwVersion offline macAddr:$macAddr");
+    }
+  }
+
+  /// 更新内存及缓存中的固件主版本号
+  /// ```dart
+  /// macAddress 要修改的设备mac地址
+  /// firmwareVersion 固件主版本号
+  ///
+  void updateDeviceFwMainVersion({
+    required String macAddress,
+    required int firmwareVersion
+  }) async {
+    final macAddr = macAddress.replaceAll(':', '').toUpperCase();
+    // 当前连接设备
+    if (macAddr == _libMgr.macAddress) {
+      logger?.d("updateDeviceFwMainVersion online macAddr:$macAddr _device: $_device");
+      if (_device != null) {
+        logger?.d("updateDeviceFwMainVersion: ${_device?.firmwareVersion} -> $firmwareVersion");
+        _device?.firmwareVersion = firmwareVersion;
+        await storage?.saveDeviceInfoToDisk(_device!);
+      }
+    } else {
+      // TODO 更新缓存
+      logger?.d("updateDeviceFwMainVersion offline macAddr:$macAddr");
+    }
   }
 
   /// 清理数据 (SDK内部使用)

@@ -21,14 +21,19 @@ class SyncFastOperation extends AbstractSyncFast {
       return Future<bool>(() {
         _subscriptFastSyncComplete?.cancel();
         _subscriptFastSyncComplete =  _coreMgr.fastSyncComplete((errorCode) {
-          completer.complete(true);
+          if (!completer.isCompleted) {
+            completer.complete(true);
+          }
         });
         return completer.future;
       }).timeout(const Duration(seconds: 3), onTimeout: () async {
         logger?.d('the function table is refreshed again after the fast data synchronization configuration times out');
         //超时3秒重新刷新功能表
         await _funTable.refreshFuncTable();
-        completer.complete(true);
+        _subscriptFastSyncComplete?.cancel();
+        if (!completer.isCompleted) {
+          completer.complete(true);
+        }
         return completer.future;
       });
     } else {

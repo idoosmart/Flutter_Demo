@@ -5,8 +5,8 @@ class _IDOProtocolLibManager
   static const _pathStorageC = 'c_files';
   static const _pathStorageLib = 'protocol_lib';
   static const _pathStorageLog = 'logs';
-  // 最后修改时间: 2023-10-09 16:41:05
-  static const _sdkVersion = '4.0.11';
+  // 最后修改时间: 2024-01-16 15:59:40
+  static const _sdkVersion = '4.0.16';
 
   static bool _outputToConsoleClib = false;
   static bool _isReleaseClib = true;
@@ -34,42 +34,18 @@ class _IDOProtocolLibManager
   String? _macAddress; // SDK内统一为去除冒号后的转大写字符串
   String? _uuid; // ios专用
 
-  _IDOProtocolLibManager._internal();
+  _IDOProtocolLibManager._internal() {
+    storage = LocalStorage.config(config: this);
+  }
   static final _instance = _IDOProtocolLibManager._internal();
   factory _IDOProtocolLibManager() => _instance;
-
-  /// 数据交换相关指令(不需要响应)
-  late final _exchangeExcludeCmd = {
-    CmdEvtType.exchangeAppBleStartReply,
-    CmdEvtType.exchangeAppBleEndReply,
-    CmdEvtType.exchangeAppBlePauseReply,
-    CmdEvtType.exchangeAppBleRestoreReply,
-    CmdEvtType.exchangeAppBleIngReply,
-    CmdEvtType.exchangeAppBlePlan,
-    CmdEvtType.exchangeAppStartBlePauseReply,
-    CmdEvtType.exchangeAppStartBleRestoreReply,
-    CmdEvtType.exchangeAppStartBleEndReply,
-  };
-
-  /// 数据交换相关指令(需要响应，拥有较高优先级)
-  late final _exchangeCmd = {
-    CmdEvtType.exchangeAppStart,
-    CmdEvtType.exchangeAppEnd,
-    CmdEvtType.exchangeAppRestore,
-    CmdEvtType.exchangeAppPause,
-    CmdEvtType.exchangeAppV2Ing,
-    CmdEvtType.exchangeAppV3Ing,
-    CmdEvtType.exchangeAppPlan,
-    CmdEvtType.exchangeAppGetV3HrData,
-    CmdEvtType.exchangeAppGetActivityData,
-  };
 
   /// 处理不需要响应的指令
   late final _excludeCmd = {
     CmdEvtType.connected,
     CmdEvtType.disconnect,
     CmdEvtType.alexaVoiceBleGetPhoneLoginState,
-  }..addAll(_exchangeExcludeCmd);
+  };
 
   // 有效的通知事件
   late final _controlEventTypeSet = {551}
@@ -85,10 +61,9 @@ class _IDOProtocolLibManager
     _cRequestHandle();
     _fastSyncComplete();
     _listenDeviceState();
-    _registerMessageIcon();
     _registerAlexaReceive();
     _registerUpdateSetModeChanged();
-    storage = LocalStorage.config(config: this);
+    _registerMessageIcon();
     // 设置c库运行模式
     _setClibRunMode(isDebug: !_isReleaseClib);
     // 设置c库流数据记录到log开关公开 0不写入 1写入 默认不写入流数据
@@ -180,7 +155,7 @@ class _IDOProtocolLibManager
 
   @override
   Stream<CmdResponse> send({required CmdEvtType evt, String? json = '{}'}) {
-    assert(_isInitClib, 'has call await libManager.initClib() in main.dart');
+    assert(_isInitClib, 'has call await IDOProtocolLibManager.register(...) in main.dart');
     if (json == null || json.isEmpty || json.trim().isEmpty) {
       json = '{}';
     }
@@ -201,32 +176,9 @@ class _IDOProtocolLibManager
           evtType: evt.evtType,
           msg: msg)).asStream();
     }
-
     final useQueue = !_excludeCmd.contains(evt);
+    const priority = CmdPriority.normal;
 
-    final priority =
-        _exchangeCmd.contains(evt) ? CmdPriority.high : CmdPriority.normal;
-    /*
-    if (evt == CmdEvtType.setFastMsgV3) {
-        if (Platform.isAndroid) { /// Android监听通知消息下发
-          logger?.d("listen android send notification message");
-          int code = 0;
-          int evt = 577;
-          final map = {
-            "data_type":13,
-            "notify_type":0,
-            "msg_ID":0,
-            "msg_notice":0,
-            "error_index":0
-          };
-          String jsonStr = jsonEncode(map);
-          _coreMgr.streamListenReceiveData.add(Tuple3(code,evt,jsonStr));
-        }
-    }
-    */
-    // if (evt == CmdEvtType.setNoticeMessageState) {
-    //   debugPrint('捕捉到发送事件 evt = $evt');
-    // }
     return _coreMgr
         .writeJson(
             evtBase: evt.evtBase,
@@ -241,7 +193,7 @@ class _IDOProtocolLibManager
   @override
   StreamSubscription listenStatusNotification(
       void Function(IDOStatusNotification status) func) {
-    assert(_isInitClib, 'has call await libManager.initClib() in main.dart');
+    assert(_isInitClib, 'has call await IDOProtocolLibManager.register(...) in main.dart');
     return statusNotification!.listen(func);
   }
 
@@ -337,6 +289,13 @@ class _IDOProtocolLibManager
             msgId: msgID,
             msgNotice: msgNotice,
             errorIndex: errorIndex);
+        if (model.dataType == 55) {
+           // 固件快速模式切换慢速模式
+           logger?.d("固件快速模式切换慢速模式 type == $dataType");
+        }else if (model.dataType == 56) {
+          // 固件慢速模式切换快速模式
+          logger?.d("固件慢速模式切换快速模式 type == $dataType");
+        }
         func(model);
       } else if (_controlEventTypeSet.contains(tuple.item2)) {
         logger?.v(
@@ -375,8 +334,11 @@ class _IDOProtocolLibManager
       bool outputToConsoleClib = false,
       bool isReleaseClib = true,
       LoggerLevel logLevel = LoggerLevel.verbose}) async {
-    // TODO 测试阶段 isReleaseClib 强制为false
-    isReleaseClib = false;
+
+    // 优先初始化Storage
+    _IDOProtocolLibManager();
+    await storage?.initStorage();
+
     return register(
         writeToFile: writeToFile,
         outputToConsole: outputToConsole,
@@ -399,12 +361,21 @@ class _IDOProtocolLibManager
     _isReleaseClib = isReleaseClib;
     String dirPath = '';
     if (writeToFile || outputToConsole) {
+      final map = await storage?.loadLogConfigProtocol();
+      var maximumFileSize = 5 * 1024 * 1024;
+      var maximumNumberOfLogFiles = 3;
+      if (map != null) {
+        maximumFileSize = map["fileSize"] as int;
+        maximumNumberOfLogFiles =  map["fileCount"] as int;
+      }
       final pathSDK = await LocalStorage.pathSDKStatic();
       dirPath = '$pathSDK/$_pathStorageLog';
       final config = LoggerConfig(
           dirPath: '$dirPath/$_pathStorageLib',
           writeToFile: writeToFile,
           outputToConsole: outputToConsole,
+          maximumFileSize: maximumFileSize,
+          maximumNumberOfLogFiles: maximumNumberOfLogFiles,
           level: logLevel);
       LoggerSingle.configLogger(config: config);
       // logger = LoggerManager(config: config);
@@ -412,6 +383,7 @@ class _IDOProtocolLibManager
       IDOProtocolCoreManager()
           .initLogs(outputToConsoleClib: _outputToConsoleClib);
       logger = LoggerSingle();
+      logger?.v("protocol log map = $map");
     } else {
       logger = null;
       // IDOProtocolCoreManager.setLogger(logger);
@@ -446,7 +418,7 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
       required bool isBinded,
       String? deviceName = '',
       String? uuid = ''}) async {
-    assert(_isInitClib, 'has call await libManager.initClib() in main.dart');
+    assert(_isInitClib, 'has call await IDOProtocolLibManager.register(...) in main.dart');
     assert(macAddress.isNotEmpty, 'macAddress cannot be empty');
     if (macAddress.isEmpty) {
       logger?.e('macAddress cannot be empty');
@@ -468,7 +440,8 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
       _macAddress = tmpMacAddress;
       _uuid = uuid;
       logger?.d(
-          'mark connected $_macAddress isBinded:$isBinded otaType:$otaType');
+          'mark connected $_macAddress isBinded:$isBinded otaType:$otaType deviceName:$deviceName');
+      storage?.resetCachePathOnDeviceChanged();
       _stopTimerFastSync();
 
       // 设置c库绑定模式
@@ -509,7 +482,8 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
     _macAddress = tmpMacAddress;
     _uuid = uuid;
     logger
-        ?.d('mark connected $_macAddress isBinded:$isBinded otaType:$otaType');
+        ?.d('mark connected $_macAddress isBinded:$isBinded otaType:$otaType deviceName:$deviceName');
+    storage?.resetCachePathOnDeviceChanged();
     _stopTimerFastSync();
 
     // 记录该设备
@@ -632,6 +606,7 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
       final rs = errorCode == 0;
       if (!rs) {
         funTable.refreshFuncTable(); // 快速配置失败，重新获取一次功能表
+        _getDeviceInfo(); // 快速配置失败，重新获取一次设备信息 (用于触发绑定状态判定）
       }
       statusNotification?.add(rs
           ? IDOStatusNotification.fastSyncCompleted
@@ -674,6 +649,13 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
   /// 初如化log
   _initClibFilePath() async {
     final pathSDK = await LocalStorage.pathSDKStatic();
+
+    // 添加c库日志保留天数据设置
+    var saveDay = await storage?.loadLogConfigClib() ?? 2;
+    saveDay = min(saveDay, 2); // 最小两天
+    _coreMgr.setSaveLogDay(saveDay);
+    logger?.v("clib log saveDay = $saveDay");
+
     // 初始化SDK存储文件路径
     final dirClib =
         Directory('$pathSDK/${_IDOProtocolLibManager._pathStorageC}');

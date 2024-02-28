@@ -56,7 +56,7 @@ class LoggerManager {
               printEmojis: false,
               printTime: true,
               noBoxingByDefault: config.noBoxingByDefault,
-              isDebug: kDebugMode),
+              isDebug: false),
           output: MultiOutput(listOutput),
           level: config.level.cast());
       wtf('config.level:${config.level}');

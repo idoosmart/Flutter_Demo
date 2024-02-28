@@ -249,6 +249,7 @@ public class ScanManager extends NewLeScanner {
      */
     private void getConnectedDevicesAndSendNotify() {
         List<BluetoothDevice> deviceList = mBluetoothManager.getConnectedDevices(BluetoothProfile.GATT);
+        Logger.p("[ScanManager] getConnectedDevicesAndSendNotify "+deviceList);
         if (deviceList == null || deviceList.size() == 0) {
             return;
         }

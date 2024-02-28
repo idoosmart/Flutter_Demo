@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'native_channel'
-  s.version          = '0.0.1'
+  s.version          = '1.0.0'
   s.summary          = 'A new Flutter project.'
   s.description      = <<-DESC
 A new Flutter project.
@@ -14,6 +14,9 @@ A new Flutter project.
   s.author           = { 'Your Company' => 'email@example.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
+  s.resource_bundles = {
+       'ido_assets' => ['Assets/*.jpg','Assets/*.png']
+     }
   s.dependency 'Flutter'
   s.platform = :ios, '9.0'
 

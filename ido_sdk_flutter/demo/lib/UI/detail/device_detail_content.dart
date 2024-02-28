@@ -70,7 +70,7 @@ class _DeviceDetailContentState extends State<DeviceDetailContent> {
       });
     });
 
-    libManager.exchangeData.appListenBleExec().listen((event) {
+    libManager.exchangeData.listenBleResponse().listen((event) {
       if (event.code == 0) {
         debugPrint(
             'appListenBleExec === ${event.model?.day} ${event.model?.hour} ${event.model?.minute} ${event.model?.second}');

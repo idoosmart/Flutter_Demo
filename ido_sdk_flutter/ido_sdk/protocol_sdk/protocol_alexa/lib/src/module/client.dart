@@ -10,8 +10,7 @@ import 'package:protocol_alexa/src/module/auth.dart';
 import 'package:protocol_alexa/src/module/upload_directives.dart';
 import 'package:protocol_alexa/src/module/voice.dart';
 import 'package:protocol_lib/protocol_lib.dart';
-import 'package:rxdart/rxdart.dart';
-import 'package:alexa_channel/alexa_channel.dart';
+import 'package:native_channel/native_channel.dart';
 
 import '../../protocol_alexa.dart';
 import '../private/local_storage/local_storage.dart';

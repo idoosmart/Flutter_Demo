@@ -31,6 +31,12 @@ abstract class GetAndroidAppInfo {
 
   /// 判断是否为默认app
   Future<bool> isDefualtApp(String packageName);
+
+  /// Android 应用图标存放目录
+  Future<String> androidAppIconDirPath();
+
+  /// 复制APP图标到指定目录
+  Future<bool> copyAppIcon();
   
 }
 
@@ -58,9 +64,6 @@ class GetAppInfoImpl extends ApiGetAppInfo implements GetAndroidAppInfo {
   /// 邮件、未接电话、日历、短信 （名称使用默认英语）
   @override
   Future<List<Map?>> getDefaultAppInfoList() {
-    if (!Platform.isAndroid) {
-      return Future(() => []);
-    }
     return _getAppInfo.readDefaultAppList();
   }
   
@@ -97,6 +100,24 @@ class GetAppInfoImpl extends ApiGetAppInfo implements GetAndroidAppInfo {
       return Future(() => false);
     }
     return _getAppInfo.isDefaultApp(packageName);
+  }
+
+  /// Android 应用图标存放目录
+  @override
+  Future<String> androidAppIconDirPath() {
+    if (!Platform.isAndroid) {
+      return Future(() => "");
+    }
+     return _getAppInfo.androidAppIconDirPath();
+  }
+
+  /// 复制APP图标到指定目录
+  @override
+  Future<bool> copyAppIcon() {
+     if (!Platform.isIOS) {
+       return Future(() => false);
+     }
+     return _getAppInfo.copyAppIcon();
   }
 
 }

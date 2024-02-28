@@ -9,12 +9,18 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
   late final _queueSync = Executor();
   late final _queueLog = Executor();
   late final _queueTrans = Executor();
+  late final _taskTool = _ListTaskTool();
   // //数据响应接口
   late final _cLibManager = IDOProtocolClibManager();
   late final _subjectDeviceState = StreamController<int>.broadcast();
   late final _subjectControlEvent =
-      StreamController<Tuple3<int, int, String>>.broadcast();
+  StreamController<Tuple3<int, int, String>>.broadcast();
   late final _subjectFastSyncComplete = StreamController<int>.broadcast();
+
+  /// 数据交换相关指令(不需要响应)
+  late final _exchangeExcludeCmd = [620, 624, 626, 628, 622, 5055, 610, 612, 614];
+  /// 数据交换相关指令(需要响应)
+  late final _exchangeCmd = [600, 604, 608, 606, 602, 5021, 5056, 5023, 5022];
 
   CallbackWriteDataToBle? _callbackWriteDataToBle;
   CallbackCRequestCmd? _callbackCRequestCmd;
@@ -46,14 +52,14 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
   @override
   CancelableOperation<CmdResponse> writeJson(
       {required int evtBase,
-      required int evtType,
-      String? json,
-      int? val1,
-      int? val2,
-      bool useQueue = true,
-      CmdPriority cmdPriority = CmdPriority.normal,
-      Map<String, String>? cmdMap}) {
-    if (!useQueue) {
+        required int evtType,
+        String? json,
+        int? val1,
+        int? val2,
+        bool useQueue = true,
+        CmdPriority cmdPriority = CmdPriority.normal,
+        Map<String, String>? cmdMap}) {
+    if (!useQueue || _exchangeExcludeCmd.contains(evtType)) {
       if (cmdMap != null) {
         logger?.v('发送：${cmdMap["cmd"]} - "${cmdMap["desc"]}"');
       }
@@ -69,9 +75,37 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
           onCancel: () {});
     }
 
+    // 数据交换相关指令特殊处理(不使用队列）
+    if (_exchangeCmd.contains(evtType)) {
+      if (cmdMap != null) {
+        logger?.v('exchange cmd - ${cmdMap["cmd"]} "${cmdMap["desc"]}"');
+      }
+      final exchangeTask = ExchangeTask.create(evtType, evtBase, json);
+      return CancelableOperation<CmdResponse>.fromFuture(_taskTool.addTask(exchangeTask),
+          onCancel: () {
+            logger?.d('exchange CancelableOperation cancel, evtType:$evtType');
+            exchangeTask.cancel();
+            logger?.v("exchange cmd - cancel $evtType");
+          });
+    }
+    // else {
+    //   if (cmdMap != null) {
+    //     logger?.v('cmd - ${cmdMap["cmd"]} "${cmdMap["desc"]}"');
+    //   }
+    //   final cmdTask = CommandTask.create(evtType, evtBase, json);
+    //   return CancelableOperation<CmdResponse>.fromFuture(_taskTool.addTask(cmdTask),
+    //       onCancel: () {
+    //         logger?.d('CancelableOperation cancel, evtType:$evtType');
+    //         cmdTask.cancel();
+    //         logger?.v("cmd - cancel $evtType");
+    //       });
+    // }
+
+    // 基础指令不使用队列
     // 过滤重复指令不超过3个
     if (_queueCmd.findTaskCount(evtBase: evtBase, evtType: evtType, json: json) >=
         _maxSameCmdTaskCount) {
+      logger?.w("同一指令$evtType超过队列$_maxSameCmdTaskCount个限制, json:$json");
       return CancelableOperation<CmdResponse>.fromFuture(
           Future(() => CmdResponse(code: ErrorCode.task_already_exists)),
           onCancel: () {});
@@ -109,8 +143,8 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
   @override
   CancelableOperation<CmdResponse> sync(
       {required SyncType type,
-      required SyncProgressCallback progressCallback,
-      required SyncDataCallback dataCallback}) {
+        required SyncProgressCallback progressCallback,
+        required SyncDataCallback dataCallback}) {
     // 数据同步的优先级要低于基础指令
     Cancelable<CmdResponse>? rs;
     return CancelableOperation<CmdResponse>.fromFuture(
@@ -153,13 +187,16 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
 
   @override
   CancelableOperation<CmdResponse> deviceLog(
-      {required LogType type, required String dirPath}) {
+      {required LogType type,
+        required String dirPath,
+        LogProgressCallback? progressCallback}) {
     Cancelable<CmdResponse>? rs;
     return CancelableOperation<CmdResponse>.fromFuture(
         (rs = _queueLog.execute(
           arg1: type,
           arg2: dirPath,
-          fun2: _execLogs,
+          arg3: progressCallback,
+          fun3: _execLogs,
           priority: WorkPriority.regular,
           interval: const Duration(milliseconds: 50),
           onDispose: _onDispose,
@@ -185,6 +222,7 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
     _queueSync.dispose();
     _queueLog.dispose();
     _queueTrans.dispose();
+    _taskTool.cancelAll();
   }
 
   @override
@@ -262,7 +300,7 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
     Executor.showLog = false;
     final log = LoggerSingle();
     assert(
-        log.config != null, 'You need to call LoggerSingle.configLogger(...)');
+    log.config != null, 'You need to call LoggerSingle.configLogger(...)');
     if (log.config != null) {
       logger = log;
       IDOProtocolAPI().initLogs(outputToConsoleClib: outputToConsoleClib);
@@ -272,6 +310,11 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
   @override
   int setProtocolGetFlashLogSetTime(int time) {
     return _cLibManager.cLib.setProtocolGetFlashLogSetTime(time);
+  }
+
+  @override
+  int writeRawData({required Uint8List data}) {
+    return _cLibManager.cLib.writeRawData(data: data);
   }
 }
 
@@ -309,8 +352,11 @@ extension _IDOProtocolCoreManagerExt on _IDOProtocolCoreManager {
 
   /// 执行日志task
   Future<CmdResponse> _execLogs(
-      LogType logType, String dirPath, Stream notification) async {
-    final task = LogTask.create(logType, dirPath);
+      LogType logType,
+      String dirPath,
+      LogProgressCallback? progressCallback,
+      Stream notification) async {
+    final task = LogTask.create(logType, dirPath,progressCallback);
     notification.listen((event) {
       if (event is String && event == 'kill') {
         logger?.d('log task kill logType:$logType');
@@ -327,7 +373,7 @@ extension _IDOProtocolCoreManagerExt on _IDOProtocolCoreManager {
       FileTranProgressCallback progressCallback,
       Stream notification) async {
     final task =
-        FileTask.create(fileTranItem, statusCallback, progressCallback);
+    FileTask.create(fileTranItem, statusCallback, progressCallback);
     notification.listen((event) {
       if (event is String && event == 'kill') {
         logger?.d('trans task kill filePath:${fileTranItem.filePath}');
@@ -368,7 +414,7 @@ extension _IDOProtocolCoreManagerExt on _IDOProtocolCoreManager {
       if (_callbackWriteDataToBle != null) {
         // type 0:BLE数据 1:SPP数据
         final req =
-            CmdRequest(data: tuple.item1, type: tuple.item2, macAddress: '');
+        CmdRequest(data: tuple.item1, type: tuple.item2, macAddress: '');
         _callbackWriteDataToBle!(req);
       }
     });
@@ -447,4 +493,32 @@ extension _IDOProtocolCoreManagerExt on _IDOProtocolCoreManager {
     }
     return rs;
   }
+}
+
+
+class _ListTaskTool<T extends BaseTask> {
+  late List<T> _taskList;
+
+  _ListTaskTool() {
+    _taskList = [];
+  }
+
+  Future<CmdResponse> addTask(T task) async {
+    _taskList.add(task);
+    return _executeTask(task);
+  }
+
+  Future<CmdResponse> _executeTask(T task) async {
+    final result = await task.call();
+    _taskList.remove(task);
+    return result;
+  }
+
+  void cancelAll() {
+    for (var e in _taskList) {
+      e.cancel();
+    }
+    _taskList.clear();
+  }
+
 }

@@ -270,8 +270,6 @@ class IDOV3ExchangeModel {
     this.gpsData = const []
   });
 
-
-
   factory IDOV3ExchangeModel.fromJson(Map<String, dynamic> json) =>
       _$V3ExchangeModelFromJson(json);
 

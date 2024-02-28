@@ -24,6 +24,7 @@ class SyncTask extends BaseTask {
 
   @override
   cancel() {
+    logger?.d('cancel sync data');
     _status = TaskStatus.canceled;
     if (_completer != null && !_completer!.isCompleted) {
       final res = SyncResponse(code: ErrorCode.canceled);
@@ -46,6 +47,13 @@ extension _SyncTask on SyncTask {
 
     _completer = Completer<CmdResponse>();
 
+     _sync();
+
+    logger?.d('end call sync type: ${syncType}');
+    return _completer!.future;
+  }
+
+  Future<bool> _sync() async {
     switch(syncType) {
       case SyncType.v2Health:
         {
@@ -69,9 +77,7 @@ extension _SyncTask on SyncTask {
         break;
       default:
     }
-
-    logger?.d('end call sync type: ${syncType}');
-    return _completer!.future;
+    return Future(() => true);
   }
 
   //初始化健康数据偏移量,默认从0开始，不再需要外部赋值，当天全量同步

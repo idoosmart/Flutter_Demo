@@ -53,6 +53,10 @@ protocol ApiGetAppInfo {
   func convertEventTypeByPackageName(name: String, completion: @escaping (Result<Int64, Error>) -> Void)
   /// 判断是否为默认app
   func isDefaultApp(packageName: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  /// Android 应用图标存放目录
+  func androidAppIconDirPath(completion: @escaping (Result<String, Error>) -> Void)
+  /// 复制应用图标
+  func copyAppIcon(completion: @escaping (Result<Bool, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -170,6 +174,38 @@ class ApiGetAppInfoSetup {
       }
     } else {
       isDefaultAppChannel.setMessageHandler(nil)
+    }
+    /// Android 应用图标存放目录
+    let androidAppIconDirPathChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.native_channel.ApiGetAppInfo.androidAppIconDirPath", binaryMessenger: binaryMessenger)
+    if let api = api {
+      androidAppIconDirPathChannel.setMessageHandler { _, reply in
+        api.androidAppIconDirPath() { result in
+          switch result {
+            case .success(let res):
+              reply(wrapResult(res))
+            case .failure(let error):
+              reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      androidAppIconDirPathChannel.setMessageHandler(nil)
+    }
+    /// 复制应用图标
+    let copyAppIconChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.native_channel.ApiGetAppInfo.copyAppIcon", binaryMessenger: binaryMessenger)
+    if let api = api {
+      copyAppIconChannel.setMessageHandler { _, reply in
+        api.copyAppIcon() { result in
+          switch result {
+            case .success(let res):
+              reply(wrapResult(res))
+            case .failure(let error):
+              reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      copyAppIconChannel.setMessageHandler(nil)
     }
   }
 }

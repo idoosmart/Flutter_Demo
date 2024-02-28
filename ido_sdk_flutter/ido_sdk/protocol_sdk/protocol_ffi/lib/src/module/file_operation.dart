@@ -5,6 +5,8 @@ import 'package:ffi/ffi.dart' as pkg_ffi;
 import 'package:protocol_ffi/src/logger/logger.dart';
 
 import '../ido_protocol_fii.dart';
+import 'extension/uint8list.dart';
+import 'dart:convert';
 
 // 文件操作
 extension IDOProtocolAPIExtFileOperation on IDOProtocolAPI {
@@ -193,6 +195,16 @@ extension IDOProtocolAPIExtFileOperation on IDOProtocolAPI {
     return bindings.mkEpoFile(inPathUtf8.cast(), outPathUtf8.cast());
   }
 
+  /// 制作思澈表盘文件,会在输入路径下生成(.watch)表盘文件
+  /// ```dart
+  /// filePath 素材文件路径
+  /// 返回 0成功 非0失败 -1: 没有控件 -2: json文件加载失败
+  /// ```
+  int mkSifliDialFile({required String filePath}) {
+    final inPathUtf8 = filePath.toNativeUtf8();
+    return bindings.mkSifliDialFile(inPathUtf8.cast());
+  }
+
   /// 图片转换格式 png->bmp
   /// ```dart
   /// inPath 用于转换的png路径(包含文件名及后缀)
@@ -217,6 +229,22 @@ extension IDOProtocolAPIExtFileOperation on IDOProtocolAPI {
     ffi.Pointer<ffi.Char> inPathUtf8 = inputFilePath.toNativeUtf8().cast();
     ffi.Pointer<ffi.Char> outPathUtf8 = outputFilePath.toNativeUtf8().cast();
     final rs = bindings.compressToPNG(inPathUtf8, outPathUtf8);
+    pkg_ffi.calloc.free(inPathUtf8);
+    pkg_ffi.calloc.free(outPathUtf8);
+    return rs;
+  }
+
+  /// jpg转png
+  /// ```dart
+  /// inputFilePath   输入文件路径
+  /// outputFilePath 输出文件路径
+  /// int 0 成功, 1 已经是png，其它失败
+  /// ```
+  int jpgToPNG(
+      {required String inputFilePath, required String outputFilePath}) {
+    ffi.Pointer<ffi.Char> inPathUtf8 = inputFilePath.toNativeUtf8().cast();
+    ffi.Pointer<ffi.Char> outPathUtf8 = outputFilePath.toNativeUtf8().cast();
+    final rs = bindings.jpgToPNG(inPathUtf8, outPathUtf8);
     pkg_ffi.calloc.free(inPathUtf8);
     pkg_ffi.calloc.free(outPathUtf8);
     return rs;
@@ -328,5 +356,56 @@ extension IDOProtocolAPIExtFileOperation on IDOProtocolAPI {
     pkg_ffi.calloc.free(configPathUtf8);
     pkg_ffi.calloc.free(outPathUtf8);
     return rs;
+  }
+
+  /// @brief 模拟器收到APP的字节数据，解释成对应的json内容输出
+  /// @param data 素材字节数据
+  /// @param data_len 字节数据长度
+  /// @return 输出json数据字符串
+  String? simulatorReceiveBinary2Json({required Uint8List data}) {
+    final recData = data.allocatePointer();
+    //logger?.d('receiveDataFromBle() data:$data, len:${data.length}');
+    final rs = bindings.simulatorReceiveBinary2Json(recData.cast(), data.length);
+    String? str;
+    try {
+      str = rs.address == 0 ? null : rs.cast<pkg_ffi.Utf8>().toDartString();
+    } catch (e) {
+      logger?.e('simulatorReceiveBinary2Json() error:$e');
+    }
+    pkg_ffi.calloc.free(recData);
+    //logger?.d('call clib - ReceiveDatafromBle rs:$rs');
+    return str;
+  }
+
+  /// @brief 计算长包指令的校验码
+  /// @param data 素材字节数据
+  /// @param data_len 字节数据长度
+  /// @return 输出2个字节的CRC校验码
+  int getCrc16({required Uint8List data}) {
+    final recData = data.allocatePointer();
+    //logger?.d('receiveDataFromBle() data:$data, len:${data.length}');
+    final rs = bindings.getCrc16(recData.cast(), data.length);
+    pkg_ffi.calloc.free(recData);
+    //logger?.d('call clib - ReceiveDatafromBle rs:$rs');
+    return rs;
+  }
+
+  /// @brief 模拟器回应数据解释，传入key`replyinfo`，输出对应的字节数据
+  /// @param json_data 素材JSON数据，对应事件号的`replyinfo`
+  /// @param json_data_len 素材JSON数据长度
+  /// @param evt 事件号
+  /// @return JSON字符串，转换后的字节数据用JSON格式返回
+  String? simulatorRespondInfoExec(
+      {required String json, required int jsonLen, required int evtType}) {
+    ffi.Pointer<ffi.Char> jsonData = json.toNativeUtf8().cast();
+    final utf8List = utf8.encode(json); // 处理非unicode字符长度问题
+    // logger?.d(
+    //     'writeJsonData evtType:$evtType json:$json len:${utf8List.length}');
+    final rs =
+    bindings.simulatorRespondInfoExec(jsonData, jsonLen, evtType);
+    final str = rs.cast<pkg_ffi.Utf8>().toDartString();
+    pkg_ffi.calloc.free(jsonData);
+    //logger?.d('call clib - WriteJsonData rs:$rs');
+    return str;
   }
 }

@@ -332,6 +332,7 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
       case FileTransType.ton:
       case FileTransType.bpbin:
       case FileTransType.gps:
+      case FileTransType.watch:
         bf = NormalFile(type, item);
         break;
       case FileTransType.iwf_lz:
@@ -559,12 +560,14 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
   /// 重启关闭快速模式倒计时
   void _restartCloseFastModeTimer() {
     _stopCloseFastModeTimer();
-    _timerCloseFastMode = Timer.periodic(const Duration(seconds: 2 * 60), (timer) {
+    _timerCloseFastMode =
+        Timer.periodic(const Duration(seconds: 2 * 60), (timer) {
       _closeFastMode();
       _timerCloseFastMode?.cancel();
       _timerCloseFastMode = null;
     });
   }
+
   void _stopCloseFastModeTimer() {
     if (_timerCloseFastMode != null && _timerCloseFastMode!.isActive) {
       _timerCloseFastMode?.cancel();

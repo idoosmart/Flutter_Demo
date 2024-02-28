@@ -78,7 +78,7 @@ Payload _$PayloadFromJson(Map<String, dynamic> json) => Payload(
       rangeValueDelta: json['rangeValueDelta'],
       label: json['label'] as String?,
       dialogRequestId: json['dialogRequestId'],
-      tokens: json['tokens'] as String?,
+      tokens: json['tokens'],
     );
 
 Map<String, dynamic> _$PayloadToJson(Payload instance) => <String, dynamic>{

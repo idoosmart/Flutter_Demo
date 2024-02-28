@@ -14,10 +14,7 @@ dependencies:
   plugin_platform_interface: ^2.0.2
   ffi: ^2.0.1
   ido_logger:
-    git:
-      url: https://github.com/idoosmart/Flutter_Demo.git
-      ref: v1.0.0
-      path: ido_sdk_flutter/ido_sdk/protocol_sdk/plugins/ido_logger
+    path: ../plugins/ido_logger/
 
 dev_dependencies:
   flutter_test:

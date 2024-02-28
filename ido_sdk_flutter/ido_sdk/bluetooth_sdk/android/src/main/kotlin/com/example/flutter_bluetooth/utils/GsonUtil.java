@@ -2,6 +2,7 @@ package com.example.flutter_bluetooth.utils;
 
 import android.text.TextUtils;
 
+import com.example.flutter_bluetooth.logger.Logger;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -72,7 +73,12 @@ public class GsonUtil {
      * @return
      */
     public static String toJson(Object obj) {
-        return gson.toJson(obj);
+        try {
+            return gson.toJson(obj);
+        } catch (Exception e) {
+            Logger.e("toJson error: " + e + ", obj: " + obj);
+        }
+        return "";
     }
 
     /**

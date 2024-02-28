@@ -15,12 +15,13 @@ class LogTask extends BaseTask {
   TaskStatus _status = TaskStatus.waiting;
   final LogType logType;
   final String dirPath;
+  final LogProgressCallback? progressCallback;
   Completer<CmdResponse>? _completer;
   Timer? _rebootTimer;
   File? _file;
   final int _durationDay = 7*24*60*60;
 
-  LogTask.create(this.logType,this.dirPath) : super.create();
+  LogTask.create(this.logType,this.dirPath,this.progressCallback) : super.create();
 
   @override
   Future<CmdResponse> call() async {
@@ -211,12 +212,20 @@ extension _CommandTask on LogTask {
       /// falsh 日志全放在一起
       logger?.d("start get flash general log");
       _file = await _flashFileInit('general') as File;
+      /// flash获取完成回调
       coreManager.cLib.registerFlashLogTranCompleteCbHandle(func:(int errorCode){
         _status = TaskStatus.finished;
         final res = LogResponse(code: errorCode, logType: LogType.general, logPath: _file?.path);
         _completer?.complete(res);
         _completer = null;
         logger?.d('get flash general log complete');
+      });
+      /// flash获取进度回调
+      coreManager.cLib.registerFlashLogTranProgressCallbackReg(func: (int progress) {
+          logger?.d('flash log progress == $progress');
+          if (progressCallback != null) {
+              progressCallback!(progress > 100 ? 100 : progress);
+          }
       });
       coreManager.cLib.startGetFlashLog(type:0, fileName: _file?.path ?? '');
     }

@@ -5,11 +5,11 @@ part 'firmware_version_model.g.dart';
 @JsonSerializable()
 class FirmwareVersionModel {
   @JsonKey(name: 'firmware_version1')
-  final int? firmwareVersion1;
+  int? firmwareVersion1;
   @JsonKey(name: 'firmware_version2')
-  final int? firmwareVersion2;
+  int? firmwareVersion2;
   @JsonKey(name: 'firmware_version3')
-  final int? firmwareVersion3;
+  int? firmwareVersion3;
   @JsonKey(name: 'BT_flag')
   final int? btFlag;
   @JsonKey(name: 'BT_version1')

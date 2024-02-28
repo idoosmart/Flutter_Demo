@@ -57,9 +57,9 @@ class LoggerConfig {
     required this.outputToConsole,
     this.maximumFileSize = 2 * 1024 * 1024,
     this.rollingFrequency = 24 * 60 * 60,
-    this.maximumNumberOfLogFiles = 7,
+    this.maximumNumberOfLogFiles = 4,
     this.noBoxingByDefault = true,
-    this.level = LoggerLevel.verbose,
+    this.level = LoggerLevel.info,
     this.module = LoggerModule.any,
   });
 }

@@ -212,6 +212,18 @@ extension IDOProtocolAPIExtRegisterCallback on IDOProtocolAPI {
     );
   }
 
+  /// 获取flashlog进度注册
+  int registerFlashLogTranProgressCallbackReg({
+    required CallbackFlashLogTranProgressCallbackReg func,
+  }) {
+    _flashLogTranProgressCbHandle = func;
+    return bindings.FlashLogTranProgressCallbackReg(
+      ffi.Pointer.fromFunction(_registerFlashLogTranProgressCallbackReg),
+    );
+  }
+
+
+
   /// 响应原始数据回调
   void registerResponseRawData({
     required CallbackDataResponseHandle func,
@@ -591,6 +603,17 @@ extension IDOProtocolAPIExtRegisterCallback on IDOProtocolAPI {
       _callbackHeatLogInfoCompleteCbHandle!(json, errCode);
     } else {
       //logger?.d('call _callbackHeatLogInfoCompleteCbHandle is null');
+    }
+  }
+
+  static CallbackFlashLogTranProgressCallbackReg?
+  _flashLogTranProgressCbHandle;
+  static void _registerFlashLogTranProgressCallbackReg(int progress) {
+    if (_flashLogTranProgressCbHandle != null) {
+      //logger?.d('call _flashLogTranProgressCbHandle');
+      _flashLogTranProgressCbHandle!(progress);
+    } else {
+      //logger?.d('call _flashLogTranProgressCbHandle is null');
     }
   }
 

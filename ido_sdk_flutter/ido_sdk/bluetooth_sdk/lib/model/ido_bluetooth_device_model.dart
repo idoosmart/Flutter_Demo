@@ -29,6 +29,10 @@ class IDOBluetoothDeviceModel {
   bool isOta = false;
   //是否泰凌微ota
   bool isTlwOta = false;
+  //是否xx升级中
+  bool isInDfu = false;
+  //平台
+  int platform = -1;
   //bt版本（不保证准确）
   int? bltVersion;
 
@@ -37,9 +41,13 @@ class IDOBluetoothDeviceModel {
   bool isNeedGetMacAddress = true;
   //配对状态（Android）
   bool isPair = false;
+  //广播包
+  Uint8List? dataManufacturerData;
 
   IDOBluetoothDeviceModel(
       { // this.distance,
+        this.isInDfu = false,
+        this.platform = -1,
       this.name,
       this.state,
       this.uuid,
@@ -69,10 +77,13 @@ class IDOBluetoothDeviceModel {
       _transformIsOTA(sUUIDString??[]);
     }
     if (json.containsKey("dataManufacturerData")) {
-      final dataManufacturerData = json['dataManufacturerData'];
-      _transformADData(dataManufacturerData);
+      dataManufacturerData = json['dataManufacturerData'];
+      if (dataManufacturerData != null) {
+        _transformADData(dataManufacturerData!);
+        _transformAnyPlatform(dataManufacturerData!);
+      }
     }
-    if (isTlwOta) _transformTlwOta();
+    if (isTlwOta) _transformTlwMacAddress();
   }
 
   Map<String, dynamic> toMap() {
@@ -80,6 +91,19 @@ class IDOBluetoothDeviceModel {
     data['uuid'] = uuid;
     data['macAddress'] = macAddress;
     return data;
+  }
+
+  //兼容xx平台
+  _transformAnyPlatform(Uint8List data){
+    if (data.length < 16) {
+      return;
+    }
+    platform = data[15];
+    int dfuMode = data[14];
+    int version = data[8];
+    if (version == 3 && dfuMode == 1) {
+      isInDfu = true;
+    }
   }
 
   _transformIsOTA(List<String> uuids) {
@@ -95,9 +119,10 @@ class IDOBluetoothDeviceModel {
         .firstWhere((is_uuid_ota) => is_uuid_ota,
             orElse: () =>
                 name?.toLowerCase() == RX_UPDATE_NAME_TLW.toLowerCase());
+
   }
 
-  _transformTlwOta() {
+  _transformTlwMacAddress() {
     final macAdr = macAddress?.replaceAll(":", '') ?? '';
     if (macAdr.length < 12) return;
     int num1 = int.tryParse(macAdr.substring(0, 2), radix: 16) ?? 0;

@@ -84,19 +84,19 @@ class _Voice implements Voice {
 
   @override
   void test() async {
-    // 分块流上传
-    final dir = await getApplicationDocumentsDirectory();
-    final pcmPathLocal = '${dir.path}/files_trans/pcm/181247.pcm';
-    final pcmPath = pcmPathLocal; //_alexaDelegate._lastPcm ?? pcmPathLocal;
-    final file = io.File(pcmPath);
-    final fileStream = file.openRead();
-    final fileSize = await file.length();
-    const size = 10 * 1024 * 1024;
-
-    logger?.v('pcmPath:$pcmPath\nfileSize:$fileSize size:$size');
-    logger?.v('size: $size');
-    _VoiceUploadClient().uploadVoiceStream(fileStream, _alexaDelegate.uniqueID);
-    // _Http2Client()._tranFile(pcmPath);
+    // // 分块流上传
+    // final dir = await getApplicationDocumentsDirectory();
+    // final pcmPathLocal = '${dir.path}/files_trans/pcm/181247.pcm';
+    // final pcmPath = pcmPathLocal; //_alexaDelegate._lastPcm ?? pcmPathLocal;
+    // final file = io.File(pcmPath);
+    // final fileStream = file.openRead();
+    // final fileSize = await file.length();
+    // const size = 10 * 1024 * 1024;
+    //
+    // logger?.v('pcmPath:$pcmPath\nfileSize:$fileSize size:$size');
+    // logger?.v('size: $size');
+    // _VoiceUploadClient().uploadVoiceStream(fileStream, _alexaDelegate.uniqueID);
+    // // _Http2Client()._tranFile(pcmPath);
   }
 
   @override

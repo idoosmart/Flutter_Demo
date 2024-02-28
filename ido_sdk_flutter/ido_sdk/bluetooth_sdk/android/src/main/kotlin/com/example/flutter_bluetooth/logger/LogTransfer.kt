@@ -39,7 +39,10 @@ class LogTransfer private constructor() {
         result["detail"] = details
         channel?.let {
             handler.post {
-                it.invokeMethod(Constants.ResponseMethod.WRITE_LOG, result)
+                try {
+                    it.invokeMethod(Constants.ResponseMethod.WRITE_LOG, result)
+                } catch (_: Exception) {
+                }
             }
         }
 

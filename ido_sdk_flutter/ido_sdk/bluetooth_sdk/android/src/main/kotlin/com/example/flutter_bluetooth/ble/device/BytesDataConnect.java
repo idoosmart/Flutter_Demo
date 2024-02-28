@@ -382,7 +382,7 @@ public abstract class BytesDataConnect extends BaseConnect {
             return;
         }
 
-        Logger.p("[BytesDataConnect] addCmdData( " + ByteDataConvertUtil.bytesToHexString(cmd) + ")");
+//        Logger.p("[BytesDataConnect] addCmdData( " + ByteDataConvertUtil.bytesToHexString(cmd) + ")");
 
 
         if (isForce) {

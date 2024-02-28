@@ -1,4 +1,12 @@
 
+enum IDOBluetoothSwitchType{
+  off(0,false),
+  on(1,true);
+
+  final int number;
+  final bool state;
+  const IDOBluetoothSwitchType(this.number,this.state);
+}
 
 /*
 蓝牙状态：
@@ -39,13 +47,14 @@ enum IDOBluetoothDeviceStateType {
 无状态
 UUID或Mac地址异常
 蓝牙关闭
-主动断开连接
+主动断开连接（手机或固件发起）
 连接失败
 连接超时
 发现服务失败
 发现特征失败
 配对异常
 获取基本信息失败
+app主动断开
 *
 * */
 enum IDOBluetoothDeviceConnectErrorType {
@@ -59,6 +68,7 @@ enum IDOBluetoothDeviceConnectErrorType {
   characteristicsFail,
   pairFail,
   informationFail,
+  cancelByUser,
 }
 
 /*

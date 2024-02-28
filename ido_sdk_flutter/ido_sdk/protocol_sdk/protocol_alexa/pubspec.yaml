@@ -1,6 +1,6 @@
 name: protocol_alexa
 description: ido protocol_alexa lib (private)
-version: 2.0.8
+version: 2.0.9
 homepage:
 publish_to: none
 
@@ -14,38 +14,21 @@ dependencies:
 
   retrofit: ^4.0.1
   dio: ^5.1.0
-  connectivity_plus: 3.0.3
-  get_storage: ^2.0.3
   crypto: ^3.0.2
   rxdart: ^0.27.5
   http_parser: ^4.0.2
-  package_info_plus: 3.0.2
   uuid: ^3.0.7
-  path_provider: ^2.0.11
-  flutter_native_timezone: ^2.0.0
-#  intl: ^0.17.0
 
+  get_storage_lite:
+    path: ../plugins/get_storage_lite
   protocol_lib:
-    git:
-      url: https://github.com/idoosmart/Flutter_Demo.git
-      ref: v1.0.0
-      path: ido_sdk_flutter/ido_sdk/protocol_sdk/protocol_lib
+    path: ../protocol_lib/
   alexa_net:
-    git:
-      url: https://github.com/idoosmart/Flutter_Demo.git
-      ref: v1.0.0
-      path: ido_sdk_flutter/ido_sdk/protocol_sdk/plugins/alexa_net
-  alexa_channel:
-    git:
-      url: https://github.com/idoosmart/Flutter_Demo.git
-      ref: v1.0.0
-      path: ido_sdk_flutter/ido_sdk/protocol_sdk/plugins/alexa_channel
+    path: ../plugins/alexa_net
   ido_logger:
-    git:
-      url: https://github.com/idoosmart/Flutter_Demo.git
-      ref: v1.0.0
-      path: ido_sdk_flutter/ido_sdk/protocol_sdk/plugins/ido_logger
-
+    path: ../plugins/ido_logger/
+  native_channel:
+    path: ../plugins/native_channel/
   json_annotation: 4.8.0
 
 dev_dependencies:

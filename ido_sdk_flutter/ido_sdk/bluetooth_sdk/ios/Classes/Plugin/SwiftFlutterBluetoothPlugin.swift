@@ -14,6 +14,8 @@ public class SwiftFlutterBluetoothPlugin: NSObject, FlutterPlugin {
         
         eventChannel = FlutterEventChannel.init(name: "bluetoothState", binaryMessenger: registrar.messenger())
         eventChannel?.setStreamHandler(instance)
+        
+        let manager = BluetoothManager.singleton.manager;
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -45,7 +47,7 @@ public class SwiftFlutterBluetoothPlugin: NSObject, FlutterPlugin {
         case .state:
             let state = ["state" : NSNumber(value: BluetoothManager.singleton.manager.state.rawValue), "scanType" : NSNumber(value: BluetoothManager.singleton.manager.isScanning ? 0 : 1)]
             result(state)
-            writeLog("channel state");
+            writeLog("channel state = " + String(describing: state));
         case .getDeviceState:
             guard let arg = call.arguments as? [String: AnyObject], let device = arg.toModel(Device.self)  else {
                 writeLog("getDeviceState error format " + String(describing: call.arguments))
@@ -53,7 +55,7 @@ public class SwiftFlutterBluetoothPlugin: NSObject, FlutterPlugin {
             }
             let state = ["state" : NSNumber(value: BluetoothManager.singleton.deviceState(device).rawValue)]
             result(state)
-            writeLog("channel getDeviceState");
+            writeLog("channel getDeviceState =" + String(describing: state));
         case .sendData:
             guard let arg = call.arguments as?  Dictionary<String, Any>  else {
                 writeLog("sendData sendData error format " + String(describing: call.arguments))
@@ -61,7 +63,6 @@ public class SwiftFlutterBluetoothPlugin: NSObject, FlutterPlugin {
             }
             let message = WriteMessage.init(dict: arg)
             BluetoothManager.singleton.write(message)
-//             writeLog("channel sendData ");
         case .requestMacAddress:
             if let arg = call.arguments as? Dictionary<String,Any>, let uuid = arg["uuid"] as? String , let macAddress = arg["macAddress"] as? String{
                 BluetoothManager.singleton.requestMacAddress(uuid: uuid, macAddress: macAddress)

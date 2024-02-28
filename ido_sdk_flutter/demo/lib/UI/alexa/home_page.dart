@@ -141,7 +141,7 @@ class _AlexaTestHomePageState extends State<AlexaTestHomePage> {
       btnList.add(TextButton(
         child: const Text("拷贝并继续"),
         onPressed: () {
-          Clipboard.setData(ClipboardData(text: userCode));
+          Clipboard.setData(ClipboardData(text: userCode!));
           Navigator.pop(context);
           jumpDetail(verificationUri!);
         },

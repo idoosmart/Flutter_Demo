@@ -222,6 +222,20 @@ extension _IDODeviceBindExt on _IDODeviceBind {
       logger?.d('bind - get function table');
       final functionTable = await _libMgr.funTable.refreshFuncTable();
       if (functionTable != null) {
+        // 添加 获取三级版本号
+        if (_libMgr.funTable.getBtVersion) {
+          final devInfo = await libManager.deviceInfo.refreshFirmwareVersion();
+          if (devInfo == null) {
+            _isBinding = false;
+            if (_completerBind != null && !_completerBind!.isCompleted) {
+              logger?.d('bind - failed refreshFirmwareVersion');
+              _completerBind?.complete(BindStatus.failedOnGetFunctionTable);
+            } else {
+              logger?.d('bind - failed refreshFirmwareVersion completer is null');
+            }
+            return _completerBind!.future;
+          }
+        }
         funFunctionTable!(functionTable);
       } else {
         _isBinding = false;

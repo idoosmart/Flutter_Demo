@@ -130,7 +130,7 @@ open class SPPConnector(val deviceAddress: String?) {
         if (sppDataListener != null) {
             val temp = ByteArray(len)
             System.arraycopy(data, 0, temp, 0, len)
-            p("[SPPConnector] receive <= " + ByteDataConvertUtil.bytesToHexString(temp))
+//            p("[SPPConnector] receive <= " + ByteDataConvertUtil.bytesToHexString(temp))
             sppDataListener!!.onSPPReceive(temp, deviceAddress)
         }
     }
@@ -167,7 +167,7 @@ open class SPPConnector(val deviceAddress: String?) {
         if (data == null) {
             return false
         }
-        p("[SPPConnector] send[" + data.size + "] => " + ByteDataConvertUtil.bytesToHexString(data))
+//        p("[SPPConnector] send[" + data.size + "] => " + ByteDataConvertUtil.bytesToHexString(data))
         if (!isConnected) {
             e("[SPPConnector] write(). not connected.")
             return false

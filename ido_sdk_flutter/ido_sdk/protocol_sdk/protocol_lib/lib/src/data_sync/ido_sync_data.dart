@@ -156,6 +156,9 @@ abstract class IDOSyncData {
   /// 同步状态
   SyncStatus get syncStatus;
 
+  /// 监听同步状态
+  Stream<SyncStatus> listenSyncStatus();
+
   /// 开始同步所有数据
   Stream<bool> startSync({
     required CallbackSyncProgress funcProgress,
