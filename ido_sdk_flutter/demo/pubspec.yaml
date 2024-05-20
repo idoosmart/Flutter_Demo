@@ -38,7 +38,7 @@ dependencies:
   event_bus: 2.0.0
 
   flutter_cupertino_datetime_picker: ^3.0.0
-  connectivity_plus: 3.0.3
+  connectivity_plus: ^5.0.2
 
   flutter_localizations:
     sdk: flutter

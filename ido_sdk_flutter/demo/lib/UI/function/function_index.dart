@@ -1,6 +1,7 @@
 // 功能列表首页
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:demo/UI/function/control/function_sync.dart';
 import 'package:flutter/material.dart';
@@ -154,8 +155,13 @@ class _FunctionContentState extends State<FunctionContent> {
                 : IDOOtaType.none;
         final isBinded = await libManager.cache
             .loadBindStatus(macAddress: event.macAddress!);
+        var uniqueId = event.macAddress!;
+        // 获取设备uuid(只有ios)
+        if (Platform.isIOS && bluetoothManager.currentDevice?.uuid != null) {
+          uniqueId = bluetoothManager.currentDevice!.uuid!;
+        }
         await libManager.markConnectedDeviceSafe(
-            uniqueId: device.uuid ?? event.macAddress!,
+            uniqueId: uniqueId,
             otaType: otaType,
             isBinded: isBinded);
         isConnected = libManager.isConnected;
