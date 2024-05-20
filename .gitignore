@@ -12,13 +12,7 @@ migrate_working_dir/
 tmp_clib/
 build_ios
 build_android
-tmp_bak/
-tmp_bak_m/
 .gradle/
-
-*.xcframework
-*.framework
-*.so
 
 .android/
 .ios/
@@ -36,15 +30,6 @@ local.properties
 # VS Code which you may wish to be included in version control, so this line
 # is commented out by default.
 #.vscode/
-
-# Flutter/Dart/Pub related
-# Libraries should not include pubspec.lock, per https://dart.dev/guides/libraries/private-files#pubspeclock.
-/pubspec.lock
-**/doc/api/
-.dart_tool/
-.packages
-build/
-output/
 
 # Xcode
 #
@@ -117,3 +102,60 @@ iOSInjectionProject/
 pubspec.lock
 simulator_channel/example
 simulator_channel/test
+
+
+# Flutter/Dart/Pub related
+**/doc/api/
+.dart_tool/
+.packages
+build/
+output/
+# If you're building an application, you may want to check-in your pubspec.lock
+pubspec.lock
+
+# Directory created by dartdoc
+# If you don't generate documentation locally you can remove this line.
+doc/api/
+
+# dotenv environment variables file
+.env*
+
+.flutter-plugins
+.flutter-plugins-dependencies
+
+
+# Android 
+
+# Gradle files
+.gradle/
+build/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Log/OS Files
+*.log
+
+# Android Studio generated files and folders
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+output.json
+
+# IntelliJ
+*.iml
+.idea/
+misc.xml
+deploymentTargetDropDown.xml
+render.experimental.xml
+
+# Keystore files
+*.jks
+*.keystore
+
+# Google Services (e.g. APIs or Firebase)
+google-services.json
+
+# Android Profiling
+*.hprof
