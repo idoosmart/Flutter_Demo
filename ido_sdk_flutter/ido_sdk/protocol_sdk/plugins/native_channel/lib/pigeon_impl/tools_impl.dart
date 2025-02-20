@@ -15,6 +15,16 @@ abstract class ToolsImpl {
 
   /// 获取Native日志， 返回形如："2021-06-01 10:00:00.000000000 +0800"
   Stream<String> listenNativeLog();
+
+  /// 获取平台设备信息, 返回：
+  /// ```dart
+  /// {
+  ///   "model": "String",          手机型号
+  ///   "systemVersion": "String",  系统版本
+  ///   "isJailbroken": false       是否越狱
+  /// }
+  /// ```
+  Future<Map?> getPlatformDeviceInfo();
 }
 
 class _ToolsImpl extends ToolsDelegate implements ToolsImpl {
@@ -50,5 +60,10 @@ class _ToolsImpl extends ToolsDelegate implements ToolsImpl {
   @override
   Stream<String> listenNativeLog() {
     return _streamLog.stream;
+  }
+
+  @override
+  Future<Map?> getPlatformDeviceInfo() {
+    return tools.getPlatformDeviceInfo();
   }
 }

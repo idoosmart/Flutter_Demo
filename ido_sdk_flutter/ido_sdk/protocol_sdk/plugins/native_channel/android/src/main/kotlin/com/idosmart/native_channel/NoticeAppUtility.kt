@@ -23,6 +23,12 @@ interface LoadAppListener {
 
 }
 
+// 该值用于控制对外sdk编译时移除腾讯相关icon（应IDW19客户要求，无icon授权，不能使用）
+// 不要手动修改该修值，保持值为true，适用于标准化app
+//==============do not edit directly begin==============
+private const val kUseTencentIcon = true
+//==============do not edit directly end==============
+
 object NoticeAppUtility {
 
     /**
@@ -72,11 +78,19 @@ object NoticeAppUtility {
      * 生成app唯一整型类型值
      *
      * @param pkg
+     * @param name
      * @return
      */
-    private fun convertPkg2Type(pkg: String): Int {
+    private fun convertPkg2Type(pkg: String, name: String): Int {
         var value = 0
         value = convertPackageToNumber(pkg)
+        val pkgName = convertType2Pkg(value)
+        if (pkgName != null && pkgName != pkg) {
+            ///出现撞值 包名 + 应用名称再hash
+            val newPkgName = "$pkg$name"
+            NativeChannelPlugin.instance().androidLog("android packet name collision pkg1 == $pkg pkg2 == $pkgName value == $value")
+            value = convertPackageToNumber(newPkgName)
+        }
         allNoticeAppTypeBeans[value] = pkg
         return value
     }
@@ -138,7 +152,7 @@ object NoticeAppUtility {
             bean.appName = appInfo?.appName ?: ""
             bean.mIconFilePath = appInfo?.mIconFilePath ?: ""
             bean.pkgName = pkg
-            bean.type = convertPkg2Type(bean.pkgName)
+            bean.type = convertPkg2Type(bean.pkgName, bean.appName)
             //去重
             if (!allNoticeAppBeans.containsKey(bean.pkgName)) {
                  allNoticeAppBeans[bean.pkgName] = bean
@@ -168,7 +182,7 @@ object NoticeAppUtility {
                         //非系统程序
                         //本来是系统程序，被用户手动更新后，该系统程序也成为第三方应用程序了
                         bean = getAppInfo(context, app)
-                        bean.type = convertPkg2Type(bean.pkgName)
+                        bean.type = convertPkg2Type(bean.pkgName,bean.appName)
                         bean.group = NotificationGroup.THIRD_PARTY
                         allNoticeAppBeansWithoutCompose[bean.pkgName] = bean
                     }
@@ -206,10 +220,10 @@ object NoticeAppUtility {
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
-                        NativeChannelPlugin.instance().tools?.getNativeLog("android load icon failed == $e") {}
+                        NativeChannelPlugin.instance().androidLog("android load icon failed == $e")
                     }
                     bean.pkgName = pack
-                    bean.type = convertPkg2Type(pack)
+                    bean.type = convertPkg2Type(pack, bean.appName)
                     bean.group = NotificationGroup.DEFAULT
                     allNoticeAppBeansWithoutCompose[bean.pkgName] = bean
                 }
@@ -242,8 +256,27 @@ object NoticeAppUtility {
                 directory.mkdirs()
             }
             val filePath = directoryPath.plus(File.separatorChar).plus(app.packageName).plus(".png")
-            appInfo.mIconFilePath = filePath
-            saveDrawable(context,drawable = app.loadIcon(context.packageManager), filePath = appInfo.mIconFilePath)
+            if (kUseTencentIcon &&
+                (app.packageName == AppPackageNameConstant.wechat ||
+                app.packageName == AppPackageNameConstant.qq)) {
+                /// 微信和QQ图标特殊处理
+                val file = File(filePath)
+                if (file.exists() && file.isFile) {
+                    file.delete()
+                }
+                val outputStream = FileOutputStream(file)
+                val imageFile = context.assets.open("${app.packageName}.png")
+                val bitmap = BitmapFactory.decodeStream(imageFile)
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+                outputStream.flush()
+                outputStream.close()
+                bitmap.recycle()
+                appInfo.mIconFilePath = filePath
+                NativeChannelPlugin.instance().androidLog("qq and wechat icon file path == $filePath")
+            }else {
+                appInfo.mIconFilePath = filePath
+                saveDrawable(context,drawable = app.loadIcon(context.packageManager), filePath = appInfo.mIconFilePath)
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -312,10 +345,13 @@ object NoticeAppUtility {
         composeApps.add(AppPackageNameConstant.email)
         composeApps.add(AppPackageNameConstant.calendar)
         composeApps.add(AppPackageNameConstant.missCall)
-        //默认下发给设备的应用
-        mAllPresetApps.add(AppPackageNameConstant.wechat)
-        mAllPresetApps.add(AppPackageNameConstant.veryFit)
+
+        //微信、qq图标单独处理
         mAllPresetApps.add(AppPackageNameConstant.qq)
+        mAllPresetApps.add(AppPackageNameConstant.wechat)
+
+        //默认下发给设备的应用
+        mAllPresetApps.add(AppPackageNameConstant.veryFit)
         mAllPresetApps.add(AppPackageNameConstant.qq2)
         mAllPresetApps.add(AppPackageNameConstant.youtube)
         mAllPresetApps.add(AppPackageNameConstant.facebook)

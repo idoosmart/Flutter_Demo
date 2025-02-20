@@ -68,7 +68,7 @@ class HomePage extends StatelessWidget {
   Future<bool> checkLocationPermissionIfNeeded() async {
     if (Platform.isAndroid) {
       var androidInfo = await DeviceInfoPlugin().androidInfo;
-      if (androidInfo.version.sdkInt >= 31) {
+      if (androidInfo.version.sdkInt >= 29) {
         // 检查定位权限
         var status = await Permission.location.status;
         if (!status.isGranted) {

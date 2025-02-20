@@ -24,10 +24,22 @@ abstract class IDODeviceBind {
 
   /// 发起绑定
   /// osVersion: 系统版本 (取主版本号)
+  /// userId: 用户ID，最大14字节（超过14字节会提取后14字节）
   Stream<BindStatus> startBind(
       {required int osVersion,
       required BindValueCallback<IDODeviceInfo> deviceInfo,
-      required BindValueCallback<IDOFunctionTable> functionTable});
+      required BindValueCallback<IDOFunctionTable> functionTable,
+      String? userId});
+
+  /// 终止绑定操作（仅限sdk内部使用）
+  void stopBindIfNeed();
+
+  /// APP下发绑定结果(仅限需要app确认绑定结果的设备使用)
+  /// ```
+  /// 注：当startBind(...) 返回BindStatus.needAuthByApp 时，APP需要发送
+  /// CmdEvtType.sendBindResult指令，在调用成功后，再调用appMarkBindResult方法
+  /// ```
+  void appMarkBindResult({required bool success});
 
   /// 发起解绑
   ///

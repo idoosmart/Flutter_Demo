@@ -8,16 +8,18 @@
 import UIKit
 import CoreBluetooth
 
-func deviceStateData(_ peripheral: CBPeripheral?,_ errorState: ConnectError) -> Dictionary<String,Any>{
+func deviceStateData(_ peripheral: CBPeripheral?,_ errorState: ConnectError,_ platform: Int) -> Dictionary<String,Any>{
     if let p = peripheral {
         return ["uuid": p.identifier.uuidString,
                 "macAddress":"",
+                "platform": NSNumber(value: platform),
                 "state": NSNumber(value: p.state.rawValue),
                 "errorState": NSNumber(value: errorState.rawValue)
         ]
     }
     return ["uuid": "",
             "macAddress":"",
+            "platform": NSNumber(value: 0),
             "state": NSNumber(value: 0),
             "errorState": NSNumber(value: errorState.rawValue)
     ]
@@ -28,6 +30,7 @@ struct Device: SSCoadble {
     var rssi: Int?
     var name: String?
     var state: Int?
+    var platform: Int?
     var uuid: String? = ""
     var macAddress: String? = ""
     var serviceUUIDs: [String]? = []

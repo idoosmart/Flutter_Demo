@@ -33,6 +33,11 @@ typedef CallbackDataTranProgressCbHandle = void Function(int);
 /// typedef void (*data_tran_complete_cb_handle)(uint32_t error,uint32_t error_vale);
 typedef CallbackDataTranCompleteCbHandle = void Function(int, int);
 
+/// 回调处理函数, 设备->app 上报json
+///
+/// typedef void (*protocol_report_json_cb_handle)(char *json_str);
+typedef CallbackDataTranToAppReportJsonCbHandle = void Function(String);
+
 // ----------------------------------- V2同步 -----------------------------------
 
 /// 回调处理函数,同步v2活动数据进度回调
@@ -144,6 +149,8 @@ typedef CallbackAppTimerCreateSt = int Function(
 ///
 /// typedef void (*mp3tomp3_complete_cb_handle)(uint32_t error_code);
 typedef CallbackMp3ToMp3CompleteCbHandle = void Function(int);
+
+typedef CallbackAudioSRConversionProgressCbHandle = void Function(int);
 
 // ----------------------------------- Alexa -----------------------------------
 

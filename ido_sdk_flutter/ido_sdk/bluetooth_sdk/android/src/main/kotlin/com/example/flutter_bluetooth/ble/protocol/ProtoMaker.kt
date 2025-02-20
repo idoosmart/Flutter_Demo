@@ -7,10 +7,12 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothProfile
 import android.bluetooth.le.ScanResult
+import com.example.flutter_bluetooth.ble.config.BLEGattAttributes
 import com.example.flutter_bluetooth.utils.Constants
 import com.example.flutter_bluetooth.dfu.BleDFUState
 import com.example.flutter_bluetooth.dfu.parser.ScannerServiceParser
 import com.example.flutter_bluetooth.logger.Logger
+import java.util.*
 
 
 /**
@@ -22,13 +24,13 @@ import com.example.flutter_bluetooth.logger.Logger
 object ProtoMaker {
 
     @TargetApi(21)
-    fun makeScanResult(device: BluetoothDevice, scanResult: ScanResult): Map<String, Any?> {
+    fun makeScanResult(name:String,device: BluetoothDevice, scanResult: ScanResult): Map<String, Any?> {
         val scanRecord = scanResult.scanRecord
         val map = hashMapOf<String, Any?>()
         map["rssi"] = scanResult.rssi
         map["uuid"] = ""
         map["macAddress"] = device.address
-        map["name"] = scanRecord?.deviceName ?: ""
+        map["name"] = name
         scanRecord?.let {
             val bytes = it.bytes
             var temp: ByteArray? = byteArrayOf()
@@ -66,7 +68,8 @@ object ProtoMaker {
      * 设备连接状态
      */
     fun makeConnectState(
-        deviceAddress: String, status: Int, state: Int, error: Int = Constants.BleConnectFailedError.DEFAULT.ordinal
+        deviceAddress: String, status: Int, state: Int, error: Int = Constants.BleConnectFailedError.DEFAULT.ordinal,
+        platform: Int = 0
     ): Map<String, Any?> {
         val map = hashMapOf<String, Any?>()
         try {
@@ -80,6 +83,7 @@ object ProtoMaker {
             map["macAddress"] = deviceAddress
             map["state"] = resultState
             map["errorState"] = error
+            map["platform"] = platform
         } catch (e: Exception) {
             Logger.p("makeConnectState e: $e")
         }
@@ -108,7 +112,18 @@ object ProtoMaker {
         map["data"] = characteristic.value
         map["spp"] = false
         map["uuid"] = ""
+        map["platform"]= getPlatform(characteristic)
         return map
+    }
+
+    private fun getPlatform(characteristic: BluetoothGattCharacteristic) :Int {
+        return if(BLEGattAttributes.isHenxuanServiceData(characteristic)){
+            BLEGattAttributes.PLATFORM_HENXUAN
+        }else if(BLEGattAttributes.isVCServiceData(characteristic)){
+            BLEGattAttributes.PLATFORM_VC
+        }else {
+            BLEGattAttributes.PLATFORM_IDO
+        }
     }
 
     /**
@@ -122,6 +137,7 @@ object ProtoMaker {
         map["data"] = data
         map["spp"] = true
         map["uuid"] = ""
+        map["platform"]= BLEGattAttributes.platform
         return map
     }
 

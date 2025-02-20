@@ -42,6 +42,15 @@ enum MethodChannel: String {
     
     //DFU进度
     case dfuProgress
+    
+    /// 获取Document目录路径
+    case getDocumentPath
+    
+    /// 关闭通知服务
+    case setCloseNotify
+    
+    /// iPhone11及以下设备
+    case isIphone11OrLower
 }
 
 

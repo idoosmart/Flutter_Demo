@@ -13,6 +13,10 @@ dependencies:
     sdk: flutter
   async: ^2.9.0
   tuple: ^2.0.1
+  crypto: ^3.0.3
+  archive: 3.3.7
+  path: 1.8.2
+
   protocol_ffi:
     path: ../protocol_ffi/
   worker_manager_lite:
@@ -21,7 +25,6 @@ dependencies:
     path: ../plugins/ido_logger/
   native_channel:
     path: ../plugins/native_channel/
-  
   
 
 dev_dependencies:

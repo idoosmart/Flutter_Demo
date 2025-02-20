@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_bluetooth/ido_bluetooth.dart';
+import 'package:rxdart/rxdart.dart';
 import '../Tool/ido_bluetooth_tool.dart';
 import 'ido_bluetooth_timeout_mixin.dart';
 
@@ -112,7 +114,9 @@ class OpenANCSCommendHandler extends CommendHandler {
           uuid: device?.uuid,
           macAddress: device?.macAddress,
           state: IDOBluetoothDeviceStateType.connected,
-          errorState: IDOBluetoothDeviceConnectErrorType.none));
+          errorState: IDOBluetoothDeviceConnectErrorType.none,
+          platform: 0
+      ));
       bluetoothManager.addLog("openANCSCommend",
           className: 'OpenANCSCommendHa'
               'ndler',

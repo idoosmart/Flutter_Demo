@@ -5,6 +5,7 @@ class IDOBluetoothReceiveData {
   String? uuid;
   String? macAddress;
   bool? spp = false;
+  int? platform = 0;
 
   IDOBluetoothReceiveData({this.data, this.uuid, this.macAddress});
 
@@ -13,6 +14,7 @@ class IDOBluetoothReceiveData {
     uuid = json['uuid'];
     macAddress = json['macAddress'];
     spp = json['spp'];
+    platform = json['platform'] ?? 0;
   }
 
   Map<String, dynamic> toMap() {
@@ -21,6 +23,7 @@ class IDOBluetoothReceiveData {
     data['uuid'] = uuid;
     data['macAddress'] = macAddress;
     data['spp'] = spp;
+    data['platform'] = platform;
     return data;
   }
 }

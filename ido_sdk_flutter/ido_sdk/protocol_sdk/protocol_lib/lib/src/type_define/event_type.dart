@@ -159,6 +159,11 @@ enum CmdEvtType {
       evtBase: _VBusEvtBase.base_app_get,
       evtType: _VBusEvtType.app_get_encrypted_code),
 
+  /// APP下发配对结果
+  sendBindResult(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.app_send_bind_result),
+
   /// 获取设备升级状态
   getUpdateStatus(
       evtBase: _VBusEvtBase.base_app_get,
@@ -338,6 +343,12 @@ enum CmdEvtType {
       evtType: _VBusEvtType.func_flash_log_start
   ),
 
+  /// 停止获取flash log
+  getFlashLogStop(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.func_flash_log_stop
+  ),
+
   /// 获取电池日志
   getBatteryLog(
       evtBase: _VBusEvtBase.base_app_get,
@@ -350,7 +361,39 @@ enum CmdEvtType {
       evtType: _VBusEvtType.func_v3_get_bt_connect_phone_model
   ),
 
-  // ----------------------------------- 设置 -----------------------------------
+  /// app智能心率模式获取
+  getHeartRateModeSmart(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.vbus_evt_app_get_heart_rate_mode_smart
+  ),
+
+
+  /// 获取血氧开关
+  getSpo2Switch(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.vbus_evt_app_get_spo2
+  ),
+
+
+  /// 获取压力开关
+  getStressSwitch(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.vbus_evt_app_get_pressure
+  ),
+
+  /// 获取固件算法文件信息（ACC/GPS）
+  getAlgFile(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.vbus_evt_func_v3_get_operate_alg_file
+  ),
+
+  /// 支持获取运动记录的显示项配置
+  getSportRecordShowConfig(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.vbus_evt_func_v3_sport_record_show_config
+  ),
+
+// ----------------------------------- 设置 -----------------------------------
 
   /// app下发跑步计划(运动计划)
   setSendRunPlan(
@@ -507,7 +550,7 @@ enum CmdEvtType {
       evtBase: _VBusEvtBase.base_app_set,
       evtType: _VBusEvtType.app_set_v3_noise),
 
-  /// 设置心率模式
+  /// 设置心率模式 v3
   setHeartMode(
       evtBase: _VBusEvtBase.base_app_set,
       evtType: _VBusEvtType.func_v3_set_hr_mode),
@@ -930,6 +973,54 @@ enum CmdEvtType {
   setSyncContact(
       evtBase: _VBusEvtBase.base_app_set,
       evtType: _VBusEvtType.tran_json_sync_contact
+  ),
+
+  /// 日历提醒
+  setCalendarReminder(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.vbus_evt_func_v3_calendear_reminder
+  ),
+
+  /// 电子卡片
+  setEcardControl(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.vbus_evt_func_v3_ecard_control
+  ),
+
+  /// 语音备忘录
+  setVoiceMemo(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.vbus_evt_func_v3_voice_memo
+  ),
+
+  /// 晨报
+  setMorningEdition(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.vbus_evt_func_v3_morning_edition
+  ),
+
+  /// 设置默认的消息应用列表
+  setDefaultMsgList(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.vbus_evt_func_v3_config_mes_list
+  ),
+
+  /// 设置紧急联系人（ECI）方式
+  setECI(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.vbus_evt_func_v3_set_eci
+  ),
+
+  /// 手机app通过这个命令开关，设置固件版本信息
+  setVersionInfo(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.app_set_version_information
+  ),
+
+  /// 发送小程序操作
+  setAppletControl(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.vbus_evt_func_send_mini_program_control
   ),
 
   // ----------------------------------- 数据交换 -----------------------------------
@@ -1601,6 +1692,9 @@ abstract class _VBusEvtType {
   /// 设置来电快捷回复开关  struct protocol_set_call_quick_reply_on_off
   static const int app_set_call_quick_reply_on_off = 194;
 
+  /// 手机app通过这个命令开关，设置固件版本信息
+  static const int app_set_version_information = 195;
+
   /// 绑定	struct protocol_start_bind,struct protocol_start_bind_reply
   static const int app_bind_start = 200;
 
@@ -1618,6 +1712,9 @@ abstract class _VBusEvtType {
 
   /// 获取授权数据    04 06,protocol_start_aut_code_reply
   static const int app_get_encrypted_code = 205;
+
+  /// APP下发配对结果   04 07,struct protocol_app_send_bind_resulte
+  static const int app_send_bind_result = 206;
 
   /// 获得设备信息so临时保存
   static const int app_get_device_info_lin = 209;
@@ -2530,4 +2627,41 @@ abstract class _VBusEvtType {
   /// 获取固件spp mtu长度   新增  spp蓝牙专用
   static const int app_get_mtu_length_spp = 7951;
   static const int flutter_reply = 8000;
+
+  /// app智能心率模式获取
+  static const int vbus_evt_app_get_heart_rate_mode_smart = 343;
+
+  /// 获取血氧开关
+  static const int vbus_evt_app_get_spo2 = 344;
+
+  /// 获取压力开关
+  static const int vbus_evt_app_get_pressure = 345;
+
+  /// 日历提醒
+  static const int vbus_evt_func_v3_calendear_reminder = 5088;
+
+  /// 电子卡片
+  static const int vbus_evt_func_v3_ecard_control = 5085;
+
+  /// 语音备忘录
+  static const int vbus_evt_func_v3_voice_memo = 5086;
+
+  /// 晨报
+  static const int vbus_evt_func_v3_morning_edition = 5087;
+
+  /// 配置默认的消息应用列表
+  static const int vbus_evt_func_v3_config_mes_list = 5089;
+
+  /// 设置紧急联系人（ECI）方式
+  static const int vbus_evt_func_v3_set_eci = 5090;
+
+  /// 发送小程序操作
+  static const int vbus_evt_func_send_mini_program_control = 5078;
+
+  ///获取固件算法文件信息（ACC/GPS）
+  static const int vbus_evt_func_v3_get_operate_alg_file = 5522;
+
+  /// 支持获取运动记录的显示项配置
+  static const int vbus_evt_func_v3_sport_record_show_config = 5523;
+
 }

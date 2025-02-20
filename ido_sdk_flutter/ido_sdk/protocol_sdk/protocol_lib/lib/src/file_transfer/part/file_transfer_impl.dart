@@ -2,10 +2,17 @@ part of '../ido_file_transfer.dart';
 
 class _IDOFileTransfer implements IDOFileTransfer {
   static final _instance = _IDOFileTransfer._internal();
-  _IDOFileTransfer._internal();
   factory _IDOFileTransfer() => _instance;
+  _IDOFileTransfer._internal() {
+    IDOProtocolLibManager().listenConnectStatusChanged((isConnected) {
+      if (!isConnected) {
+        logger?.d("cleanFileTransType on disconnected");
+        _cleanFileTransType();
+      }
+    });
+  }
 
-  //late final _coreMgr = IDOProtocolCoreManager();
+  late final _coreMgr = IDOProtocolCoreManager();
   late final _libMgr = IDOProtocolLibManager();
 
   late final _subjectTranFileTypeChanged =
@@ -36,6 +43,10 @@ class _IDOFileTransfer implements IDOFileTransfer {
   Completer<List<bool>>? _completer;
 
   Timer? _timerCloseFastMode;
+
+  // 进度日志节流
+  var _lastLoggedProgress = 0.0;
+  final _progressThreshold = 0.01;
 
   // 当前传输的文件类型
   FileTransType? __fileTransType;
@@ -80,6 +91,7 @@ class _IDOFileTransfer implements IDOFileTransfer {
       required CallbackFileTransProgressMultiple funcProgress,
       CallbackFileTransErrorCode? funError,
       bool cancelPrevTranTask = false}) {
+    logger?.v("trans fileItems: ${fileItems.length} cancelPrevTranTask: $cancelPrevTranTask funError: $funError");
     // 取消前次操作
     if (cancelPrevTranTask) {
       _cancelPrevTranIfExists();
@@ -95,12 +107,12 @@ class _IDOFileTransfer implements IDOFileTransfer {
       _resultList.add(false);
     }
 
-    // 未标记连接，不执行传输
-    if (!_libMgr.isConnected) {
-      logger?.e('transfer - Unconnected calls are not supported');
-      funcStatus(0, FileTransStatus.error);
-      return Future(() => _resultList).asStream();
-    }
+    // // 未标记连接，不执行传输
+    // if (!_libMgr.isConnected) {
+    //   logger?.e('transfer - Unconnected calls are not supported');
+    //   funcStatus(0, FileTransStatus.error);
+    //   return Future(() => _resultList).asStream();
+    // }
 
     // 快速配置中，不执行传输
     if (_libMgr.isFastSynchronizing) {
@@ -166,6 +178,27 @@ class _IDOFileTransfer implements IDOFileTransfer {
 
   @override
   FileTransType? get transFileType => __fileTransType;
+
+  @override
+  void registerDeviceTranFileToApp(
+      void Function(DeviceFileToAppTask task) taskFunc) {
+    logger?.d("registerDeviceTranFileToApp");
+    _coreMgr.registerDeviceTranFileToApp(
+        requestCallback: (String json) {
+          final jsonMap = jsonDecode(json);
+          final item = DeviceTransItem.fromJson(jsonMap);
+          final task = DeviceFileToAppTask(item);
+          logger?.d("device file -> app item: ${item.toJson()}");
+          taskFunc(task);
+        });
+  }
+
+  @override
+  void unregisterDeviceTranFileToApp() {
+    logger?.d("unregisterDeviceTranFileToApp");
+    _coreMgr.unregisterDeviceTranFileToApp();
+  }
+
 }
 
 extension _IDOFileTransferExt on _IDOFileTransfer {
@@ -245,8 +278,10 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
     }
 
     try {
-      // 启用快速模式
-      await _openFastMode();
+      if (!_libMgr.deviceInfo.otaMode) {
+        // 启用快速模式
+        await _openFastMode();
+      }
     } catch (e) {
       logger?.e(e.toString());
     }
@@ -263,6 +298,7 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
         final tranFile = tranFileList[i];
         _currentTask = tranFile;
         _fileTransType = tranFile.type;
+        _lastLoggedProgress = 0.0;
         final rs = await tranFile.tranFile(); // 调用文件传输
         _resultList[i] = rs;
 
@@ -333,6 +369,8 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
       case FileTransType.bpbin:
       case FileTransType.gps:
       case FileTransType.watch:
+      case FileTransType.other:
+      case FileTransType.app:
         bf = NormalFile(type, item);
         break;
       case FileTransType.iwf_lz:
@@ -357,7 +395,11 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
         bf = SportFile(type, item);
         break;
       case FileTransType.epo:
-        bf = EpoFile(type, item);
+        if (item is NormalFileModel) {
+          bf = EpoFile(type, item, item.needCheckWriteFileComplete);
+        }else {
+          bf = EpoFile(type, item, true);
+        }
         break;
       case FileTransType.voice:
         bf = VoiceFile(type, item);
@@ -388,7 +430,6 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
     return Future(() => rs == 1);
   }
 
-  // 废弃（统一由固件管理）
   /// 关闭快速模式
   Future<bool> _closeFastMode() async {
     if (_libMgr.funTable.getDeviceControlFastModeAlone) {
@@ -496,7 +537,7 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
 
   /// 状态回调
   void _statusCallback(int error, int errorVal, int index) {
-    logger?.d('file transfer error: $error errorVal: $errorVal idx:$index');
+    logger?.d('file transfer error: $error errorVal: $errorVal idx:$index fileTransType: $__fileTransType');
     if (!_isCanceled) {
       final flag = [24, 25].contains(error);
       final newErrorVal = flag ? error : errorVal;
@@ -519,11 +560,14 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
   }
 
   /// 进度回调
-  void _progressCallback(int progress, index) {
-    logger?.d('progress: $progress index:$index');
+  void _progressCallback(double progress, index) {
+    if (progress == 1.0 || progress - _lastLoggedProgress >= _progressThreshold) {
+      logger?.d('progress: ${progress.toStringAsFixed(3)} index:$index');
+      _lastLoggedProgress = progress;
+    }
     _stopCloseFastModeTimer();
     if (!_isCanceled) {
-      final p = max(0.0, min(1.0, progress / 100.0));
+      final p = max(0.0, min(1.0, progress));
       _funcProgress!(index, tranFileItems.length, p, _progressTotal(p, index));
     } else {
       logger?.e('isCanceled ignore callback');

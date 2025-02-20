@@ -2,7 +2,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
+import 'package:crypto/crypto.dart';
 import 'package:native_channel/native_channel.dart';
 import 'package:protocol_core/protocol_core.dart';
 import 'package:protocol_lib/protocol_lib.dart';
@@ -18,6 +20,17 @@ import '../private/logger/logger.dart';
 import '../private/local_storage/local_storage.dart';
 
 part 'part/message_icon_impl.dart';
+
+/// 恒玄消息图标传输状态回调
+typedef SeCheFileTransStatus = void Function(bool isSuccess, String filePath);
+
+/// 恒玄消息图标传输全部完成回调
+typedef SeCheMessageIconComplete = void Function(bool complete);
+
+abstract class SeCheMessageIconDelegate {
+  /// 恒玄消息图标传输
+  void iconTransferFile(List<MessageFileModel> models, SeCheFileTransStatus status, SeCheMessageIconComplete complete);
+}
 
 abstract class IDOMessageIcon {
 
@@ -56,6 +69,9 @@ abstract class IDOMessageIcon {
   /// 注册监听更新消息图标(全局注册一次即可)
   void registerListenUpdate();
 
+  /// 设置默认app信息集合(支持的设备需要)
+  void setDefaultAppInfoList(List<IDOAppIconItemModel> models);
+
   /// 设备支持默认app信息集合
   /// ios 只有默认的包名
   /// android 会包含默认的event_type 如果已经安装的应用则包含图标地址
@@ -85,5 +101,8 @@ abstract class IDOMessageIcon {
 
   /// android 原生图标存放目录地址c
   Future<String> androidOriginalIconDirPath();
+
+  /// 注册恒玄图标传输
+  void addSeChe(SeCheMessageIconDelegate delegate);
 
 }

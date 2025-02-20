@@ -46,9 +46,6 @@ abstract class IDOFileTransfer {
   /// // 音乐
   /// fileItem = MusicFileModel(filePath: 'filePath/xx.mp3', fileName: 'xx', musicId: 1);
   ///
-  /// // 消息图标
-  /// fileItem = MessageFileModel(filePath: 'filePath', fileName: 'xx', evtType: 1, packName: 'packName');
-  ///
   /// // 运动图标
   /// fileItem = SportFileModel(filePath: 'filePath', fileName: 'xx', iconType: 1, sportType: 1, isSports: true);
   ///
@@ -84,9 +81,6 @@ abstract class IDOFileTransfer {
   /// // 音乐
   /// fileItem = MusicFileModel(filePath: 'filePath/xx.mp3', fileName: 'xx', musicId: 1);
   ///
-  /// // 消息图标
-  /// fileItem = MessageFileModel(filePath: 'filePath', fileName: 'xx', evtType: 1, packName: 'packName');
-  ///
   /// // 运动图标
   /// fileItem = SportFileModel(filePath: 'filePath', fileName: 'xx', iconType: 1, sportType: 1, isSports: true);
   ///
@@ -117,4 +111,14 @@ abstract class IDOFileTransfer {
   /// type 表盘类型 1 云表盘 ，2 壁纸表盘
   /// ```
   Future<int> iwfFileSize({required String filePath, required int type});
+
+  /// 注册 设备文件->app传输 (仅最后一次注册有效）
+  ///
+  /// ```dart
+  /// taskFunc 接收到的文件任务
+  /// ```
+  void registerDeviceTranFileToApp(void Function(DeviceFileToAppTask task) taskFunc);
+
+  /// 取消设备文件->app传输 注册
+  void unregisterDeviceTranFileToApp();
 }

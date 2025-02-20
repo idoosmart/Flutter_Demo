@@ -1,5 +1,4 @@
 
-import 'package:protocol_lib/protocol_lib.dart';
 import 'package:protocol_lib/src/private/logger/logger.dart';
 
 class IDOAppInfo {
@@ -77,7 +76,7 @@ class IDOAppIconItemModel extends IDOAppInfo {
   factory IDOAppIconItemModel.fromJson(Map<String, dynamic> json) {
    final model =  IDOAppIconItemModel(
       evtType: json['evt_type'] as int? ?? 0,
-      packName: json['pack_name_array'] as String? ?? '',
+      packName: (json['pack_name_array'] as String? ?? '').trim(),
       appName: json['app_name'] as String? ?? '',
       iconLocalPath: json['icon_local_path'] as String? ?? '',
       itemId: json['item_id'] as int?,
@@ -102,6 +101,13 @@ class IDOAppIconItemModel extends IDOAppInfo {
      model.isDownloadAppInfo = true;
      model.isUpdateAppIcon = state == 0 || state == 2;
      model.appName = 'Missed calls';
+   }else if (model.packName == 'others') { /// SKG 2021-07-30
+     //0：不需要更新 1：需要更新icon ，2：需要更新app名，3：icon和app都需要更新
+     final state = json['need_sync_icon'] as int?;
+     model.isUpdateAppName = true;
+     model.isDownloadAppInfo = true;
+     model.isUpdateAppIcon = true;
+     model.appName = 'Others';
    }else {
      if (model.packName == "com.ss.iphone.ugc.Ame") {
           /// tiktok老的包名强转新的包名

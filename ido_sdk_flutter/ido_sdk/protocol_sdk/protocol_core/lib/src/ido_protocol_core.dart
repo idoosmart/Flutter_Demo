@@ -9,6 +9,7 @@ import 'package:protocol_core/protocol_core.dart';
 import 'package:protocol_ffi/protocol_ffi.dart';
 import 'package:tuple/tuple.dart';
 import 'package:worker_manager_lite/worker_manager_lite.dart';
+import 'package:native_channel/native_channel.dart';
 
 import './task/cmd_task.dart';
 import './task/file_task.dart';
@@ -17,6 +18,7 @@ import './task/log_task.dart';
 import './logger/logger.dart';
 
 import './manager/manager_clib.dart';
+import 'spp/spp_trans_manager.dart';
 import 'task/base_task.dart';
 
 part 'part/protocol_core_impl.dart';
@@ -24,6 +26,8 @@ part 'part/protocol_core_impl.dart';
 /// protocol_core模块管理类
 abstract class IDOProtocolCoreManager {
   factory IDOProtocolCoreManager() => _IDOProtocolCoreManager();
+
+  SifliChannelImpl? get sifliChannel;
 
   /// 初始化c库
   Future<bool> initClib();
@@ -42,8 +46,9 @@ abstract class IDOProtocolCoreManager {
       Map<String, String>? cmdMap});
 
   /// 数据同步
-  CancelableOperation<CmdResponse> sync(
-      {required SyncType type,
+  CancelableOperation<CmdResponse> sync({
+    List<int> selectTypes = const [],
+    required SyncType type,
       required SyncProgressCallback progressCallback,
       required SyncDataCallback dataCallback});
 
@@ -68,6 +73,9 @@ abstract class IDOProtocolCoreManager {
   /// 发送蓝牙数据完成
   void writeDataComplete();
 
+  /// 发送SPP数据完成
+  void writeSppDataComplete();
+
   /// 写数据到蓝牙设备
   void writeDataToBle(void Function(CmdRequest data) func);
 
@@ -90,7 +98,7 @@ abstract class IDOProtocolCoreManager {
   void resume();
 
   /// 释放
-  void dispose();
+  void dispose({bool needKeepTransFileTask = false});
 
   /// c库队列清除  0 成功
   int cleanProtocolQueue();
@@ -176,6 +184,20 @@ abstract class IDOProtocolCoreManager {
   /// Tuple3(int code, int evtType, String json)
   StreamSubscription listenControlEvent(void Function(Tuple3 t3) func);
 
+  /// 注册设备传文件到app监听
+  void registerDeviceTranFileToApp({
+    required FileTranRequestCallback requestCallback
+  });
+
+  /// 取消设备传文件到app监听
+  void unregisterDeviceTranFileToApp();
+
+  /// 监听进度和结果
+  void listenDeviceTranFileToApp({
+    required FileTranProgressCallback progressCallback,
+    required FileTranStatusCallback statusCallback,
+  });
+
   /// 初始化log
   initLogs({bool outputToConsoleClib = false});
 
@@ -192,4 +214,11 @@ abstract class IDOProtocolCoreManager {
 
   /// 直接下发原始数据给固件
   int writeRawData({required Uint8List data});
+
+  // ----------------- 内部方法（外部不要调用） -----------------
+  /// 设备连接断开监听（内部方法）
+  StreamSubscription listenOnBeforeDeviceDisconnect(void Function(void) func);
+
+  /// 初始化思澈文件传输通道
+  void initSifliChannel();
 }

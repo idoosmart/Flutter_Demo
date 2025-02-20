@@ -20,7 +20,7 @@ class GetFileInfoImpl: ApiGetFileInfo {
        val file = File(path)
         if (file.exists() && file.isFile) {
             val map = GetFileInfoTool.getFileAttributes(path)
-            NativeChannelPlugin.instance().tools?.getNativeLog("android get file info == $map"){}
+            NativeChannelPlugin.instance().androidLog("android get file info == $map")
             callback(Result.success(map) as Result<Map<Any, Any?>?>)
         }else {
             callback(Result.success(mutableMapOf(

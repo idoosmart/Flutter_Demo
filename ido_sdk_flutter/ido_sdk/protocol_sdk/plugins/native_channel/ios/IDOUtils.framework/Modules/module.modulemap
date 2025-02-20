@@ -1,0 +1,6 @@
+framework module IDOUtils {
+  umbrella header "IDOUtils.h"
+  export *
+
+  module * { export * }
+}

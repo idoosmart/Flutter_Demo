@@ -31,6 +31,25 @@ enum BindStatus {
 
   /// 绑定失败（获取设备信息失败)
   failedOnGetDeviceInfo,
+
+  /// 绑定超时（支持该功能的设备专用）
+  timeout,
+
+  /// 新账户绑定，用户确定删除设备数据（支持该功能的设备专用）
+  agreeDeleteDeviceData,
+
+  /// 新账户绑定，用户不删除设备数据，绑定失败（支持该功能的设备专用）
+  denyDeleteDeviceData,
+
+  /// 新账户绑定，用户不选择，设备超时（支持该功能的设备专用）
+  timeoutOnNewAccount,
+
+  /// 设备同意配对(绑定)请求，等待APP下发配对结果
+  needConfirmByApp,
+
+  /// 失败，账户不一致（恒玄平台设备专用）
+  accountNotMatch,
+
 }
 
 class _IDODeviceBind implements IDODeviceBind {
@@ -56,7 +75,8 @@ class _IDODeviceBind implements IDODeviceBind {
   /// 绑定状态
   bool? _isBinded;
   bool _isBinding = false;
-
+  /// 待app确认绑定结果
+  bool _needAppConfirm = false;
   @override
   Future<bool> get isBinded async {
     return await _loadBindState();
@@ -113,18 +133,26 @@ class _IDODeviceBind implements IDODeviceBind {
   Stream<BindStatus> startBind(
       {required int osVersion,
       required BindValueCallback<IDODeviceInfo> deviceInfo,
-      required BindValueCallback<IDOFunctionTable> functionTable}) {
+      required BindValueCallback<IDOFunctionTable> functionTable,
+      String? userId}) {
     if (!IDOProtocolLibManager().isConnected) {
       _isBinding = false;
       //throw UnsupportedError('Unconnected calls are not supported');
       logger?.e('bind - Unconnected calls are not supported');
       return Stream.value(BindStatus.failed);
     }
+
+    if (_isBinding && _completerBind != null && _completerBind!.isCompleted) {
+      logger?.e('bind - The previous binding task is still running');
+      //_completerBind?.complete(BindStatus.canceled);
+    }
+
+    logger?.d('bind - startBind, before _isBinding:$_isBinding');
     _isBinding = true;
     funDeviceInfo = deviceInfo;
     funFunctionTable = functionTable;
     _completerBind = Completer();
-    CancelableOperation.fromFuture(_bindExec(osVersion), onCancel: () {
+    return CancelableOperation.fromFuture(_bindExec(osVersion, userId), onCancel: () {
       _isBinding = false;
       if (_completerBind != null && !_completerBind!.isCompleted) {
         logger?.d('bind - BindStatus.canceled');
@@ -132,8 +160,29 @@ class _IDODeviceBind implements IDODeviceBind {
       } else {
         logger?.d('bind - BindStatus.canceled _completer is null');
       }
-    });
-    return _completerBind!.future.asStream();
+      _completerBind = null;
+    }).asStream();
+    // return _completerBind!.future.asStream();
+  }
+
+  @override
+  void stopBindIfNeed() {
+    if(_isBinding && _completerBind != null && !_completerBind!.isCompleted) {
+      logger?.d('bind - stopBind');
+      _completerBind?.complete(BindStatus.failed);
+      _completerBind = null;
+      _isBinding = false;
+    }
+  }
+
+  @override
+  void appMarkBindResult({required bool success}) {
+    logger?.d('绑定 - APP确认绑定结果：$success _needAppConfirm:$_needAppConfirm');
+    if (success && _needAppConfirm) {
+      // 直接绑定
+      _markBindStateToClib(true);
+      _isBinding = false;
+    }
   }
 
   @override
@@ -173,7 +222,7 @@ class _IDODeviceBind implements IDODeviceBind {
         logger?.e('unbind online error：$e');
       }
     }
-    logger?.v('unbind online rs:${res.isOK}');
+    logger?.v('unbind online res:${res.isOK} rs:$rs');
     return rs;
   }
 
@@ -191,7 +240,7 @@ class _IDODeviceBind implements IDODeviceBind {
 }
 
 extension _IDODeviceBindExt on _IDODeviceBind {
-  Future<BindStatus> _bindExec(int osVersion) async {
+  Future<BindStatus> _bindExec(int osVersion, String? userId) async {
     // 清除指令队列 和 快速配置
     _libMgr.dispose();
     _coreMgr.stopSyncConfig();
@@ -204,7 +253,34 @@ extension _IDODeviceBindExt on _IDODeviceBind {
     final deviceInfo = await _libMgr.deviceInfo.refreshDeviceInfoBeforeBind();
     if (funDeviceInfo != null) {
       if (deviceInfo != null) {
-        funDeviceInfo!(deviceInfo);
+        // 恒玄平台需要提供user_id
+        if (userId != null && deviceInfo.isPersimwearPlatform()) {
+          // 0:成功/一致；1:失败；2:失败，账户不一致；3:失败，无账户
+          final code = await _setSystemVersion(userId, deviceInfo.deviceId);
+          if (code == 2) {
+            _isBinding = false;
+            if (_completerBind != null && !_completerBind!.isCompleted) {
+              logger?.d('bind - accountNotMatch');
+              _completerBind?.complete(BindStatus.accountNotMatch);
+            } else {
+              logger?.d('bind - accountNotMatch completer is null');
+            }
+            return _completerBind!.future;
+          }else if (code == 13) {
+            // 指令超时
+            _isBinding = false;
+            if (_completerBind != null && !_completerBind!.isCompleted) {
+              logger?.d('bind - _setSystemVersion timeout');
+              _completerBind?.complete(BindStatus.failed);
+            } else {
+              logger?.d('bind - _setSystemVersion completer is null');
+            }
+            return _completerBind!.future;
+          }
+          funDeviceInfo!(deviceInfo);
+        }else {
+          funDeviceInfo!(deviceInfo);
+        }
       } else {
         _isBinding = false;
         if (_completerBind != null && !_completerBind!.isCompleted) {
@@ -223,7 +299,7 @@ extension _IDODeviceBindExt on _IDODeviceBind {
       final functionTable = await _libMgr.funTable.refreshFuncTable();
       if (functionTable != null) {
         // 添加 获取三级版本号
-        if (_libMgr.funTable.getBtVersion) {
+        if (_libMgr.funTable.getBleAndBtVersion) {
           final devInfo = await libManager.deviceInfo.refreshFirmwareVersion();
           if (devInfo == null) {
             _isBinding = false;
@@ -265,6 +341,18 @@ extension _IDODeviceBindExt on _IDODeviceBind {
       }
     }
 
+    if (_completerBind == null) {
+      // skg支持绑定过程中取消绑定，如果是在调用绑定指令前取消，此处需要拦截绑定指令
+      logger?.d('bind - BindStatus.failed 269, cancel bind task');
+      return BindStatus.failed;
+    }
+
+    // 音乐控制需要依赖手机平台参数，应固件要求，需要在绑定前把手机平台发给设备
+    if (_libMgr.funTable.getSupportAppSendPhoneSystemInfo && !_libMgr.deviceInfo.isPersimwearPlatform()) {
+      await _setSystemVersion(null, _libMgr.deviceInfo.deviceId);
+      logger?.d("bind - call setAppOS");
+    }
+
     //logger?.d('绑定 - 发送绑定请求');
     final json = <String, dynamic>{
       'is_clean_data': 1,
@@ -272,6 +360,7 @@ extension _IDODeviceBindExt on _IDODeviceBind {
       'os_version': osVersion,
       'bind_version': 1
     };
+    _needAppConfirm = false;
     final rs = await _libMgr
         .send(evt: CmdEvtType.setBindStart, json: jsonEncode(json))
         .first;
@@ -280,6 +369,11 @@ extension _IDODeviceBindExt on _IDODeviceBind {
       final bindCode = map['bind_ret_code'] as int;
       final authLength = map['auth_length'] as int;
       // bindCode 0表示成功,1表示失败,2表示已经绑定
+      // 3：超时(GT5)
+      // 4：新账户绑定，用户确定删除设备数据(GT5)
+      // 5：新账户绑定，用户不删除设备数据，绑定失败(GT5)
+      // 6：新账户绑定，用户不选择，设备超时（GT5）
+      // 7：设备同意配对(绑定)请求，等待APP下发配对结果（GT5）
       if (bindCode == 0) {
         _checkAuthIfNeed(authLength, map);
       } else if (bindCode == 2) {
@@ -290,6 +384,52 @@ extension _IDODeviceBindExt on _IDODeviceBind {
           _completerBind?.complete(BindStatus.binded);
         } else {
           logger?.d('bind - BindStatus.binded 263 _completer is null');
+        }
+      } else if (bindCode == 3) {
+        // 超时(GT5)
+        _isBinding = false;
+        if (_completerBind != null && !_completerBind!.isCompleted) {
+          logger?.d('bind - BindStatus.timeout');
+          _completerBind?.complete(BindStatus.timeout);
+        } else {
+          logger?.d('bind - BindStatus.timeout completer is null');
+        }
+      } else if (bindCode == 4) {
+        // 4：新账户绑定，用户确定删除设备数据(GT5)
+        _isBinding = false;
+        if (_completerBind != null && !_completerBind!.isCompleted) {
+          logger?.d('bind - BindStatus.agreeDeleteDeviceData');
+          _completerBind?.complete(BindStatus.agreeDeleteDeviceData);
+        } else {
+          logger?.d('bind - BindStatus.agreeDeleteDeviceData completer is null');
+        }
+      } else if (bindCode == 5) {
+        // 5：新账户绑定，用户不删除设备数据，绑定失败(GT5)
+        _isBinding = false;
+        if (_completerBind != null && !_completerBind!.isCompleted) {
+          logger?.d('bind - BindStatus.denyDeleteDeviceData');
+          _completerBind?.complete(BindStatus.denyDeleteDeviceData);
+        } else {
+          logger?.d('bind - BindStatus.denyDeleteDeviceData completer is null');
+        }
+      } else if (bindCode == 6) {
+        // 新账户绑定，用户不选择，设备超时（GT5）
+        _isBinding = false;
+        if (_completerBind != null && !_completerBind!.isCompleted) {
+          logger?.d('bind - BindStatus.timeoutOnNewAccount');
+          _completerBind?.complete(BindStatus.timeoutOnNewAccount);
+        } else {
+          logger?.d('bind - BindStatus.timeoutOnNewAccount completer is null');
+        }
+      } else if (bindCode == 7) {
+        // 设备同意配对(绑定)请求，等待APP下发配对结果（GT5）
+        _needAppConfirm = true;
+        _isBinding = false;
+        if (_completerBind != null && !_completerBind!.isCompleted) {
+          logger?.d('bind - BindStatus.needConfirmByApp');
+          _completerBind?.complete(BindStatus.needConfirmByApp);
+        } else {
+          logger?.d('bind - BindStatus.needConfirmByApp completer is null');
         }
       } else {
         _isBinding = false;
@@ -522,5 +662,42 @@ extension _IDODeviceBindExt on _IDODeviceBind {
   Future<bool?> _saveBindState() async {
     _isBinded ??= false;
     return await storage?.saveBindStatus(_isBinded!);
+  }
+
+  /// 设置系统版本（仅限内部调用）
+  Future<int> _setSystemVersion(String? userId, int deviceId) async {
+    // 游客模式(-1)
+    if (userId == null || userId == '-1') {
+      final param = <String, dynamic>{
+        "system": Platform.isIOS ? 1 : 2
+      };
+      final rs = await _libMgr.send(evt: CmdEvtType.setAppOS, json: jsonEncode(param)).first;
+      return rs.code == 2 ? 1 : rs.code;
+    }
+
+    // 恒玄平台特殊处理
+    Future<int> doit({required bool useUserId}) async {
+      final param = <String, dynamic>{
+        "system": Platform.isIOS ? 1 : 2
+      };
+      final newUid = userId.length > 14 ? userId.substring(userId.length - 14) : userId;
+      if (useUserId) {
+        param['user_id'] = newUid;
+      }
+      final rs = await _libMgr.send(evt: CmdEvtType.setAppOS, json: jsonEncode(param)).first;
+      if (rs.code == 0 && rs.json != null && jsonDecode(rs.json!)["error_code"] == 2) {
+        return 2;
+      }
+      return rs.code == 2 ? 1 : rs.code;
+    }
+
+    final rs = await doit(useUserId: true);
+    // 7828设备超时时，尝试不带user_id再发一次
+    if (rs == 13 && deviceId == 7828) {
+      logger?.i("绑定时setAppOS超时，尝试不带user_id再发一次");
+      await Future.delayed(const Duration(seconds: 4));
+      return await doit(useUserId: false);
+    }
+    return rs;
   }
 }

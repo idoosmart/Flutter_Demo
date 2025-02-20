@@ -60,6 +60,8 @@ typedef void (*protocol_sync_v3_health_client_one_notice_complete_cb_handle)(uin
 typedef void (*protocol_report_progress_cb_handle)(uint8_t progress);
 //回调处理函数,上报完成
 typedef void (*protocol_report_complete_cb_handle)(uint32_t error_vale);
+//回调处理函数,上报json
+typedef void (*protocol_report_json_cb_handle)(char *json_str);
 
 //回调处理函数,app上报传输语音文件状态
 //status：
@@ -832,6 +834,15 @@ extern int mkEpoFile(char *file_path,char *save_file_name);
 extern int Png2Bmp(char *inname,char *outname,int format);
 
 /**
+ * @brief PNG图片32/24位转16位
+ * @param inname 用于转换的png路径(包含文件名及后缀)
+ * @param outname 转换完的png路径(包含文件名及后缀)
+ * @return:
+ *   SUCCESS(0) : 成功
+ */
+extern int PngConvert16bit(char *inname,char *outname);
+
+/**
  * @brief 制作壁纸图片文件
  * @param file_path 素材路径
  * @param save_file_path 输出文件名
@@ -861,6 +872,16 @@ extern char *mkConnactFile(const char * jsondata);
  * @return 0成功 非0失败 -1: 没有控件 -2: json文件加载失败
  */
 extern int mkSifliDialFile(const char *file_path);
+
+/**
+ * @brief 获取思澈表盘(.watch)文件占用空间大小，计算规则：
+ * nor方案：对表盘所有文件以4096向上取整  -98平台对应的项目，IDW27,205G Pro,IDW28,IDS05，DR03等
+ * nand方案：对表盘所有文件以2048向上取整 -99平台对应的项目，GTX12,GTX13,GTR1,TIT21
+ * @param file_path .watch文件路径，包含文件名
+ * @param platform 平台类型，目前有98(nor)，99(nand)平台
+ * @return size 文件占用磁盘的实际大小，-1:失败，文件路径访问失败，-2:失败，申请内存失败，-3:失败，读取文件失败，-4:失败，输入平台类型不支持
+ * */
+extern int getSifliDialSize(const char *file_path,int platform);
 
 /**
  * @brief 压缩png图片质量
@@ -974,6 +995,12 @@ extern char *simulatorReceiveBinary2Json(const char *data,int data_len);
  * @return 输出2个字节的CRC校验码
  */
 extern uint16_t getCrc16(const char *data,int data_len);
+
+/**
+ * @brief 获取是否支持断点续传的功能表
+ * @return 0不支持 1支持
+ * */
+extern int getIsSupportTranContinue(void);
 
 // ------------------------------ v2闹钟同步 ------------------------------
 
@@ -1188,6 +1215,70 @@ extern uint32_t SppDataTranCompleteCallbackReg(data_tran_complete_cb_handle func
 extern uint32_t SppDataTranProgressCallbackReg(data_tran_progress_cb_handle func);
 
 /**
+ * @brief:设备传输文件到APP的传输完成事件回调注册
+ * @param func 函数指针
+ * @return:SUCCESS(0)成功
+ * */
+extern uint32_t Device2AppDataTranCompleteCallbackReg(protocol_report_complete_cb_handle func);
+
+/**
+ * @brief:设备传输文件到APP的传输进度事件回调注册
+ * @param func 函数指针
+ * @return:SUCCESS(0)成功
+ * */
+extern uint32_t Device2AppDataTranProgressCallbackReg(protocol_report_progress_cb_handle func);
+
+/**
+ * @brief:APP回复设备传输文件到APP的请求
+ * @param error_code 0回复握手成功 非0失败，拒绝传输
+ * @return:SUCCESS(0)成功
+ * */
+extern uint32_t Device2AppDataTranRequestReply(uint32_t error_code);
+
+/**
+ * @brief:APP主动停止设备传输文件到APP
+ * @return:SUCCESS(0)成功
+ * */
+extern uint32_t Device2AppDataTranManualStop(void);
+
+/**
+ * @brief:设备传输文件到APP的传输请求事件回调注册
+ * json字符串内容:
+ * file_type 文件类型:
+ * typedef enum{
+ *   DATA_TRAN_FILE_TYPE_UNKNOWN,           //无效
+ *   DATA_TRAN_FILE_TYPE_FW,                //固件升级文件
+ *   DATA_TRAN_FILE_TYPE_FZBIN,             //图片资源升级
+ *   DATA_TYPE_FILE_TYPE_BIN,               //字库升级
+ *   DATA_TYPE_FILE_TYPE_LANG,              //语言包
+ *   DATA_TYPE_FILE_TYPE_BT,                //BT文件
+ *   DATA_TYPE_FILE_TYPE_IWF,               //云表盘文件
+ *   DATA_TYPE_FILE_TYPE_WALLPAPER,         //本地壁纸文件
+ *   DATA_TYPE_FILE_TYPE_ML,                //通讯录文件
+ *   DATA_TYPE_FILE_TYPE_UBX,               //AGPS文件
+ *   DATA_TYPE_FILE_TYPE_GPS,               //GPS文件
+ *   DATA_TYPE_FILE_TYPE_MP3,               //MP3文件
+ *   DATA_TYPE_FILE_TYPE_MESSAGE,           //消息图标
+ *   DATA_TYPE_FILE_TYPE_SPORT,             //运动图片 单图
+ *   DATA_TYPE_FILE_TYPE_MOVE_SPORTS,       //运动图片 多图
+ *   DATA_TYPE_FILE_TYPE_EPO,               //EPO文件
+ *   DATA_TYPE_FILE_TYPE_TONE,              //提示音
+ *   DATA_TYPE_FILE_TYPE_BP_CALIBRATE,      //血压校准文件
+ *   DATA_TYPE_FILE_TYPE_BP_ALGORITHM,      //血压模型算法文件
+ *   DATA_TYPE_FILE_TYPE_VOICE = 0x13       //语音备忘录文件
+ *  }TRAN_FILE_TYPE;
+ * file_size 文件大小
+ * file_compression_type 文件压缩类型 0不压缩
+ * file_name 文件名称
+ * file_path 文件路径
+ *
+ * @param func 函数指针
+ * @return:SUCCESS(0)成功
+ * 备注：收到回调后，10s没有使用该方法dev_2_app_tran_request_reply回复设备，会结束传输
+ * */
+extern uint32_t Device2AppDataTranRequestCallbackReg(protocol_report_json_cb_handle func);
+
+/**
  * @brief v3血压校准完成事件回调注册
  * @param func 函数指针
  * @return SUCCESS(0)成功
@@ -1215,6 +1306,55 @@ extern uint32_t SyncV3HealthDataCompleteCallbackReg(protocol_sync_v3_health_clie
  * */
 extern uint32_t SyncV3HealthDataOneNoticeCompleteCbReg(protocol_sync_v3_health_client_one_notice_complete_cb_handle func);
 
+/**
+ * @brief:同步v3健康数据的自定义一项
+ * @param data_type 数据同步类型
+ * 1 同步血氧
+ * 2 同步压力
+ * 3 同步心率(v3)
+ * 4 同步多运动数据(v3)
+ * 5 同步GPS数据(v3)
+ * 6 同步游泳数据
+ * 7 同步眼动睡眠数据
+ * 8 同步运动数据
+ * 9 同步噪音数据
+ * 10 同步温度数据
+ * 12 同步血压数据
+ * 14 同步呼吸频率数据
+ * 15 同步身体电量数据
+ * 16 同步HRV(心率变异性水平)数据
+ *
+ * @return:
+ * SUCCESS(0)成功 非0失败
+ * (ERROR_NOT_SUPPORTED(6) 不支持
+ * ERROR_INVALID_STATE(8) 非法状态
+ * )
+ * */
+extern uint32_t SyncV3HealthDataCustomResource(int data_type);
+
+/**
+ * @brief:查找输入的数据同步类型支不支持
+ * @param data_type 数据同步类型
+ * 1  同步血氧
+ * 2  同步压力
+ * 3  同步心率(v3)
+ * 4  同步多运动数据(v3)
+ * 5  同步GPS数据(v3)
+ * 6  同步游泳数据
+ * 7  同步眼动睡眠数据
+ * 8  同步运动数据
+ * 9  同步噪音数据
+ * 10 同步温度数据
+ * 12 同步血压数据
+ * 14 同步呼吸频率数据
+ * 15 同步身体电量数据
+ * 16 同步HRV(心率变异性水平)数据
+ *
+ * @return:
+ * true:支持 false:不支持
+ * 方法实现前需获取功能表跟初始化c库
+ */
+extern bool IsSupportSyncHealthDataType(int data_type);
 
 // ------------------------------ v2同步多运动、GPS数据进度回调注册 ------------------------------
 /**

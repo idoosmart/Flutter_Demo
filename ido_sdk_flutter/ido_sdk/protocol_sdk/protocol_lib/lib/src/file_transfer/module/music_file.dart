@@ -45,10 +45,10 @@ extension _MusicFileExt on MusicFile {
     }
 
     // 复制要处理的文件
-    await copyFileIfNeed(item.filePath, aFilePath);
+    await copyFileIfNeed(item.filePath, musicFilePath);
 
     // 转换文件
-    await _makeMp3FileIfNeed(aFilePath, musicFilePath, rootPath);
+    //await _makeMp3FileIfNeed(aFilePath, musicFilePath, rootPath);
 
     if (hasCleanTampFile) {
       // 删除副本数据

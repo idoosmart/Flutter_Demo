@@ -37,6 +37,20 @@ public class UUIDConfig {
     public static final UUID RX_SERVICE_UUID = UUID.fromString("00000af0-0000-1000-8000-00805f9b34fb");// 扫描
     public static final UUID TY206_SERVICE_UUID = UUID.fromString("0000FD50-0000-1000-8000-00805f9b34fb");//206涂鸦新增扫描
 
+    public static final UUID SERVICE_UUID_HENXUAN = UUID.fromString("00000800-0000-1000-8000-00805f9b34fb");//主服务(Characteristic的集合)
+    //恒玄平台
+    public static final UUID WRITE_UUID_HENXUAN = UUID.fromString("00000814-0000-1000-8000-00805f9b34fb");//发送正常数据
+    //恒玄平台
+    /** notify data except health data */
+    public static final UUID NOTIFY_UUID_HENXUAN = UUID.fromString("00000813-0000-1000-8000-00805f9b34fb");//接收正常数据
+
+    //韩国vc客户
+    public static final UUID SERVICE_UUID_VC = UUID.fromString("2D420001-6569-6464-6163-6563696F562D");//主服务(Characteristic的集合)
+    //恒玄平台
+    public static final UUID WRITE_UUID_VC = UUID.fromString("2D420003-6569-6464-6163-6563696F562D");//发送正常数据
+    //恒玄平台
+    /** notify data except health data */
+    public static final UUID NOTIFY_UUID_VC = UUID.fromString("2D420002-6569-6464-6163-6563696F562D");//接收正常数据
 
     //BOAT定制固件特有uuid
 //    public static final UUID SERVICE_UUID = UUID.fromString("00000aF4-0000-1000-8000-00805f9b34fb");//主服务(Characteristic的集合)

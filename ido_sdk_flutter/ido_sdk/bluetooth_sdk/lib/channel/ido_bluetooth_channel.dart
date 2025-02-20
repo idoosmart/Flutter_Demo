@@ -7,10 +7,14 @@ import 'package:flutter_bluetooth/ido_bluetooth.dart';
 import '../model/ido_bluetooth_dfu_config.dart';
 import '../model/ido_bluetooth_media_state.dart';
 part 'firmware_data_channel.dart';
+part 'spp_data_channel.dart';
 
 class IDOBluetoothChannel {
   final MethodChannel _channel = const MethodChannel('flutter_bluetooth_IDO');
   final MethodChannel _firmwareDataChannel = const MethodChannel('firmware_data');
+  final BasicMessageChannel _sppSendChannel = const BasicMessageChannel('send_spp_data',StandardMessageCodec());
+  final BasicMessageChannel _sppDataSendStateChannel = const BasicMessageChannel('send_spp_data_state',StandardMessageCodec());
+  final BasicMessageChannel _sppReceiveChannel = const BasicMessageChannel('receive_spp_data',StandardMessageCodec());
   final EventChannel _stateChannel = const EventChannel('bluetoothState');
   final EventChannel _deviceStateChannel = const EventChannel('deviceState');
 
@@ -20,6 +24,7 @@ class IDOBluetoothChannel {
   final sendStateSubject = PublishSubject<IDOBluetoothWriteState>();
   final receiveDataSubject = PublishSubject<IDOBluetoothReceiveData>();
   final sppStateSubject = PublishSubject<IDOBluetoothSPPStateType>();
+  final btStateSubject = PublishSubject<bool>();
   final writeSPPCompleteSubject = PublishSubject<String>();
   final logStateSubject = PublishSubject<Map>();
   final dfuStateSubject = PublishSubject<IDOBluetoothDfuState>();
@@ -42,6 +47,7 @@ class IDOBluetoothChannel {
     bluetoothState();
     if (Platform.isAndroid) {
       callHandleFirmwareData();
+      callHandleSppData();
       deviceStateChannel();
     }
   }
@@ -71,9 +77,7 @@ class IDOBluetoothChannel {
         } else if (call.method == "deviceState") {
           _deviceState(arguments);
         } else if (call.method == "isOtaWithServices") {
-          final uuids = arguments["servicesUUID"];
-          bool isOta = isOtaWithServices(uuids);
-          bluetoothManager.currentDevice?.isOta = isOta;
+          _checkOtaService(arguments);
         } else if (call.method == "pairState") {
           final value = call.arguments;
           final isPair = value["isPair"];
@@ -82,6 +86,7 @@ class IDOBluetoothChannel {
           }
           isPairList.forEach((element) => element.complete(isPair));
           isPairList.clear();
+          btStateSubject.add(isPair as bool);
         } else if (call.method == "SPPState") {
           sppStateSubject
               .add(IDOBluetoothSPPStateType.values[arguments['state']]);
@@ -111,6 +116,35 @@ class IDOBluetoothChannel {
     }
   }
 
+  /// 检查设备是否在 ota
+  void _checkOtaService(Map arguments) {
+    if (arguments.containsKey("servicesUUID")) {
+      List<String> uuids = arguments['servicesUUID'] != null ? arguments['servicesUUID'].cast<String>() : [];
+      bluetoothManager.addLog("_checkOtaService, uuids: $uuids",
+          method: "_checkOtaService");
+      bool isOta = isOtaWithServices(uuids);
+      if (uuids.isNotEmpty) {
+        //包含思澈主服务，但不包含爱都主服务，处于 ota 模式中
+        bool containIdoMainService = uuids
+            .map((e) =>
+                idoMainServiceUUID.toLowerCase().contains(e.toLowerCase()))
+            .firstWhere((contain) => contain, orElse: () => false);
+        print("是否包含爱都服务：$containIdoMainService");
+        if (!containIdoMainService) {
+          isOta = uuids
+              .map((e) =>
+                  siceMainService.toLowerCase().contains(e.toLowerCase()))
+              .firstWhere((contain) => contain, orElse: () => false);
+          if (isOta) {
+            print("思澈 ota 中");
+            bluetoothManager.addLog("思澈98平台ota模式", method: "_checkOtaService");
+          }
+        }
+      }
+      bluetoothManager.currentDevice?.isOta = isOta;
+    }
+  }
+
   bluetoothState() {
     _stateChannel.receiveBroadcastStream().listen((event) {
       final value = event as Map;
@@ -121,7 +155,7 @@ class IDOBluetoothChannel {
   deviceStateChannel(){
     _deviceStateChannel.receiveBroadcastStream().listen((event) {
       final value = event as Map;
-      _deviceState(value);;
+      _deviceState(value);
     }, onError: (dynamic error) {}, cancelOnError: true);
   }
 
@@ -158,7 +192,7 @@ extension InvokeChannel on IDOBluetoothChannel {
   ///UUID:iOS为实现
   startScan([String? macAddress]) {
     _channel.invokeMethod(
-        "startScan", {"UUID": servicesUUID, "macAddress": macAddress});
+        "startScan", {"UUID": servicesUUID, "macAddress": macAddress ?? ""});
   }
 
   stopScan() {
@@ -172,11 +206,13 @@ extension InvokeChannel on IDOBluetoothChannel {
       macAddress: device.macAddress ?? "",
       state: IDOBluetoothDeviceStateType.connecting,
       errorState: IDOBluetoothDeviceConnectErrorType.none,
+      platform: 0
     ));
     if (bluetoothManager.currentDevice?.macAddress == device.macAddress) {
       isConnecting = true;
     }
     _channel.invokeMethod("connect", {
+      "platform":device.platform,
       "uuid": device.uuid,
       "macAddress": device.macAddress,
       "CharacteristicsUUID": characteristicUUID
@@ -194,7 +230,8 @@ extension InvokeChannel on IDOBluetoothChannel {
         bluetoothManager.addDeviceState(IDOBluetoothDeviceStateModel(
             macAddress: macAddress,
             state: IDOBluetoothDeviceStateType.disconnected,
-            errorState: IDOBluetoothDeviceConnectErrorType.none));
+            errorState: IDOBluetoothDeviceConnectErrorType.none,
+            platform: 0));
         return;
       }
       _channel.invokeMethod("cancelConnect", deviceMap);
@@ -213,6 +250,10 @@ extension InvokeChannel on IDOBluetoothChannel {
   Future<Map?> deviceState(IDOBluetoothDeviceModel device) async {
     final value = await _channel.invokeMethod("getDeviceState", device.toMap());
     return value;
+  }
+
+  closeNotify(IDOBluetoothDeviceModel device) {
+    _channel.invokeMethod("setCloseNotify", device.toMap());
   }
 
   writeData(Map data) {
@@ -237,6 +278,17 @@ extension InvokeChannel on IDOBluetoothChannel {
       "uuid": device.uuid,
       "macAddress": device.macAddress,
       "btMacAddress": device.btMacAddress
+    }).then((value) {
+      if (bluetoothManager.currentDevice != null && value) {
+        bluetoothManager.currentDevice!.isPair = false;
+        for (var element in isPairList) {
+          element.complete(IDOBluetoothPairType.cancel);
+        }
+        isPairList.clear();
+      }
+      if (value) {
+        btStateSubject.add(false);
+      }
     });
   }
 
@@ -247,11 +299,13 @@ extension InvokeChannel on IDOBluetoothChannel {
       macAddress: device.macAddress ?? "",
       state: IDOBluetoothDeviceStateType.connecting,
       errorState: IDOBluetoothDeviceConnectErrorType.none,
+      platform: 0
     ));
     if (bluetoothManager.currentDevice?.macAddress == device.macAddress) {
       isConnecting = true;
     }
     _channel.invokeMethod("autoConnect", {
+      "platform":device.platform,
       "uuid": device.uuid,
       "macAddress": device.macAddress,
       "btMacAddress": device.btMacAddress,
@@ -269,6 +323,10 @@ extension InvokeChannel on IDOBluetoothChannel {
 
   startNordicDFU(IDOBluetoothDfuConfig config) {
     _channel.invokeMethod("startNordicDFU", config.toJson());
+  }
+
+  Future<bool> isIphone11OrLower() async {
+    return await _channel.invokeMethod("isIphone11OrLower") ?? false;
   }
 }
 
@@ -298,6 +356,20 @@ extension DeviceStateChannel on IDOBluetoothChannel {
         {"btMac": btMac})??{};
     return IDOBluetoothMediaState.fromJson(value);
   }
+
+  Future<bool> getSppState(String btMac) async {
+    if (Platform.isAndroid) {
+      try {
+        final value =
+            await _channel.invokeMethod<bool>("getSppState", {"btMac": btMac}) ??
+                false;
+        return value;
+      } catch (e) {
+        print(e);
+      }
+    }
+    return false;
+  }
 }
 
 extension ScanResultChannel on IDOBluetoothChannel {
@@ -317,5 +389,12 @@ extension ScanResultChannel on IDOBluetoothChannel {
     }
     deviceMap[key] = device;
     scanSubject.add(deviceMap.values.toList());
+  }
+}
+
+extension ToolMethod on IDOBluetoothChannel {
+  Future<String?> getDocumentPath() async {
+    final value = await _channel.invokeMethod("getDocumentPath");
+    return value;
   }
 }

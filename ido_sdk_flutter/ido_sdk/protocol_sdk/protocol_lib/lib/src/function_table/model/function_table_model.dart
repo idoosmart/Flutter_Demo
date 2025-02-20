@@ -552,6 +552,8 @@ class FunctionTableModel {
   final bool? langFrench;
   @JsonKey(name: 'lang_german')
   final bool? langGerman;
+  @JsonKey(name: 'lang_hebrew')
+  final bool? langHebrew;
   @JsonKey(name: 'lang_italian')
   final bool? langItalian;
   @JsonKey(name: 'lang_japanese')
@@ -564,6 +566,8 @@ class FunctionTableModel {
   final bool? langNorwegian;
   @JsonKey(name: 'lang_persia')
   final bool? langPersia;
+  @JsonKey(name: 'lang_serbian')
+  final bool? langSerbian;
   @JsonKey(name: 'lang_spanish')
   final bool? langSpanish;
   @JsonKey(name: 'level5_hr_interval')
@@ -584,6 +588,10 @@ class FunctionTableModel {
   @JsonKey(name: 'night_auto_brightness')
   final bool? nightAutoBrightness;
   final bool? noShowHRInterval;
+  @JsonKey(name: 'noise_support_set_notify_flag')
+  final bool? noiseSupportSetNotifyFlag;
+  @JsonKey(name: 'noise_support_set_overwarning')
+  final bool? noiseSupportSetOverwarning;
   @JsonKey(name: 'not_support_app_send_run_plan')
   final bool? notSupportAppSendRunPlan;
   @JsonKey(name: 'not_support_delete_add_sport_sort')
@@ -669,6 +677,8 @@ class FunctionTableModel {
   final bool? pilates;
   @JsonKey(name: 'pool_swim')
   final bool? poolSwim;
+  @JsonKey(name: 'protocol_v3_sport_record_show_config')
+  final bool? protocolV3SportRecordShowConfig;
   @JsonKey(name: 'pull_up')
   final bool? pullUp;
   final bool? realtimeData;
@@ -761,6 +771,8 @@ class FunctionTableModel {
   final bool? standingWaterSkiing;
   final bool? staticHR;
   final bool? stepCalculation;
+  @JsonKey(name: 'support_achieved_remind_on_off')
+  final bool? supportAchievedRemindOnOff;
   @JsonKey(name: 'support_activity_exchange_set_gps_coordinates')
   final bool? supportActivityExchangeSetGpsCoordinates;
   @JsonKey(name: 'support_alipay')
@@ -777,20 +789,30 @@ class FunctionTableModel {
   final bool? supportBleToAppDailChange;
   @JsonKey(name: 'support_blood_pressure_model_file_update')
   final bool? supportBloodPressureModelFileUpdate;
+  @JsonKey(name: 'support_calendar_reminder')
+  final bool? supportCalendarReminder;
   @JsonKey(name: 'support_call_list')
   final bool? supportCallList;
   @JsonKey(name: 'support_calling_quick_reply')
   final bool? supportCallingQuickReply;
   @JsonKey(name: 'support_compass')
   final bool? supportCompass;
+  @JsonKey(name: 'support_config_default_meg_application_list')
+  final bool? supportConfigDefaultMegApplicationList;
   @JsonKey(name: 'support_control_mini_program')
   final bool? supportControlMiniProgram;
   @JsonKey(name: 'support_dial_frame_encode_format_argb6666')
   final bool? supportDialFrameEncodeFormatArgb6666;
   @JsonKey(name: 'support_dingtalk')
   final bool? supportDingtalk;
+  @JsonKey(name: 'support_display_nap_sleep')
+  final bool? supportDisplayNapSleep;
   @JsonKey(name: 'support_douyin')
   final bool? supportDouyin;
+  @JsonKey(name: 'support_drink_plan')
+  final bool? supportDrinkPlan;
+  @JsonKey(name: 'support_e_card_operate')
+  final bool? supportECardOperate;
   @JsonKey(name: 'support_eleme')
   final bool? supportEleme;
   @JsonKey(name: 'support_encrypted_code_resend_04_05')
@@ -807,10 +829,18 @@ class FunctionTableModel {
   final bool? supportGetFlashLogSize;
   @JsonKey(name: 'support_get_peripherals_info')
   final bool? supportGetPeripheralsInfo;
+  @JsonKey(name: 'support_get_pressure_switch_info')
+  final bool? supportGetPressureSwitchInfo;
+  @JsonKey(name: 'support_get_protocol_v3_operate_alg_file')
+  final bool? supportGetProtocolV3OperateAlgFile;
   @JsonKey(name: 'support_get_set_max_items_num')
   final bool? supportGetSetMaxItemsNum;
+  @JsonKey(name: 'support_get_smart_heart_rate')
+  final bool? supportGetSmartHeartRate;
   @JsonKey(name: 'support_get_sn_info')
   final bool? supportGetSnInfo;
+  @JsonKey(name: 'support_get_spo2_switch_info')
+  final bool? supportGetSpo2SwitchInfo;
   @JsonKey(name: 'support_get_unit')
   final bool? supportGetUnit;
   @JsonKey(name: 'support_get_v3_device_algorithm_version')
@@ -829,8 +859,12 @@ class FunctionTableModel {
   final bool? supportLoudspeaker;
   @JsonKey(name: 'support_lvgl_dial_frame')
   final bool? supportLvglDialFrame;
+  @JsonKey(name: 'support_make_watch_dial_deocde_jpg')
+  final bool? supportMakeWatchDialDeocdeJpg;
   @JsonKey(name: 'support_meituan')
   final bool? supportMeituan;
+  @JsonKey(name: 'support_morning_edition')
+  final bool? supportMorningEdition;
   @JsonKey(name: 'support_onekey_double_contact')
   final bool? supportOnekeyDoubleContact;
   @JsonKey(name: 'support_over_find_phone')
@@ -859,12 +893,20 @@ class FunctionTableModel {
   final bool? supportSendScalesModelMapTable;
   @JsonKey(name: 'support_set_call_quick_reply_on_off')
   final bool? supportSetCallQuickReplyOnOff;
+  @JsonKey(name: 'support_set_ecg_reminder')
+  final bool? supportSetEcgReminder;
+  @JsonKey(name: 'support_set_eci_reminder')
+  final bool? supportSetEciReminder;
   @JsonKey(name: 'support_set_fast_mode_when_sync_config')
   final bool? supportSetFastModeWhenSyncConfig;
   @JsonKey(name: 'support_set_fitness_guidance')
   final bool? supportSetFitnessGuidance;
+  @JsonKey(name: 'support_set_game_time_reminder')
+  final bool? supportSetGameTimeReminder;
   @JsonKey(name: 'support_set_historical_menstruation_use_version2')
   final bool? supportSetHistoricalMenstruationUseVersion2;
+  @JsonKey(name: 'support_set_list_style')
+  final bool? supportSetListStyle;
   @JsonKey(name: 'support_set_menstrual_reminder_on_off')
   final bool? supportSetMenstrualReminderOnOff;
   @JsonKey(name: 'support_set_menu_list_type_measure')
@@ -885,10 +927,16 @@ class FunctionTableModel {
   final bool? supportSetV3WeatcherAddSnowfall;
   @JsonKey(name: 'support_set_v3_weatcher_send_struct_version_04')
   final bool? supportSetV3WeatcherSendStructVersion04;
+  @JsonKey(name: 'support_set_version_information')
+  final bool? supportSetVersionInformation;
   @JsonKey(name: 'support_set_voice_assistant_status')
   final bool? supportSetVoiceAssistantStatus;
+  @JsonKey(name: 'support_set_weather_history_future_aqi')
+  final bool? supportSetWeatherHistoryFutureAqi;
   @JsonKey(name: 'support_six_axis_sensor')
   final bool? supportSixAxisSensor;
+  @JsonKey(name: 'support_sleep_plan')
+  final bool? supportSleepPlan;
   @JsonKey(name: 'support_smart_competitor')
   final bool? supportSmartCompetitor;
   @JsonKey(name: 'support_sync_activity_data_3d_distance_speed')
@@ -909,6 +957,12 @@ class FunctionTableModel {
   final bool? supportSyncActivityGetRopeInfo;
   @JsonKey(name: 'support_sync_activity_get_running_power_info')
   final bool? supportSyncActivityGetRunningPowerInfo;
+  @JsonKey(name: 'support_sync_activity_type_treadmills_show_step')
+  final bool? supportSyncActivityTypeTreadmillsShowStep;
+  @JsonKey(name: 'support_sync_ecg')
+  final bool? supportSyncEcg;
+  @JsonKey(name: 'support_sync_health_hr_use_version_compatible')
+  final bool? supportSyncHealthHrUseVersionCompatible;
   @JsonKey(name: 'support_sync_health_swim_get_avg_frequency')
   final bool? supportSyncHealthSwimGetAvgFrequency;
   @JsonKey(name: 'support_sync_health_swim_get_avg_speed')
@@ -939,6 +993,8 @@ class FunctionTableModel {
   final bool? supportV3SleepHealthSyncAddSleepAvgRespirRate;
   @JsonKey(name: 'support_v3_sleep_health_sync_add_sleep_avg_spo2')
   final bool? supportV3SleepHealthSyncAddSleepAvgSpo2;
+  @JsonKey(name: 'support_voice_memo_operate')
+  final bool? supportVoiceMemoOperate;
   @JsonKey(name: 'support_walk_goal_steps')
   final bool? supportWalkGoalSteps;
   @JsonKey(name: 'support_warm_up_before_running')
@@ -1386,12 +1442,14 @@ class FunctionTableModel {
     this.langFinland,
     this.langFrench,
     this.langGerman,
+    this.langHebrew,
     this.langItalian,
     this.langJapanese,
     this.langKhmer,
     this.langMalay,
     this.langNorwegian,
     this.langPersia,
+    this.langSerbian,
     this.langSpanish,
     this.level5HrInterval,
     this.liftingWristBacklight,
@@ -1406,6 +1464,8 @@ class FunctionTableModel {
     this.multiDial,
     this.nightAutoBrightness,
     this.noShowHRInterval,
+    this.noiseSupportSetNotifyFlag,
+    this.noiseSupportSetOverwarning,
     this.notSupportAppSendRunPlan,
     this.notSupportDeleteAddSportSort,
     this.notSupportIndoorRunGetVo2max,
@@ -1455,6 +1515,7 @@ class FunctionTableModel {
     this.pickleball,
     this.pilates,
     this.poolSwim,
+    this.protocolV3SportRecordShowConfig,
     this.pullUp,
     this.realtimeData,
     this.rower,
@@ -1506,6 +1567,7 @@ class FunctionTableModel {
     this.standingWaterSkiing,
     this.staticHR,
     this.stepCalculation,
+    this.supportAchievedRemindOnOff,
     this.supportActivityExchangeSetGpsCoordinates,
     this.supportAlipay,
     this.supportAppSendPhoneSystemInfo,
@@ -1514,13 +1576,18 @@ class FunctionTableModel {
     this.supportBleControlPhotograph,
     this.supportBleToAppDailChange,
     this.supportBloodPressureModelFileUpdate,
+    this.supportCalendarReminder,
     this.supportCallList,
     this.supportCallingQuickReply,
     this.supportCompass,
+    this.supportConfigDefaultMegApplicationList,
     this.supportControlMiniProgram,
     this.supportDialFrameEncodeFormatArgb6666,
     this.supportDingtalk,
+    this.supportDisplayNapSleep,
     this.supportDouyin,
+    this.supportDrinkPlan,
+    this.supportECardOperate,
     this.supportEleme,
     this.supportEncryptedCodeResend0405,
     this.supportExchangeActivityGetAltitudeRiseLoss,
@@ -1529,8 +1596,12 @@ class FunctionTableModel {
     this.supportFastrackReflexWorld,
     this.supportGetFlashLogSize,
     this.supportGetPeripheralsInfo,
+    this.supportGetPressureSwitchInfo,
+    this.supportGetProtocolV3OperateAlgFile,
     this.supportGetSetMaxItemsNum,
+    this.supportGetSmartHeartRate,
     this.supportGetSnInfo,
+    this.supportGetSpo2SwitchInfo,
     this.supportGetUnit,
     this.supportGetV3DeviceAlgorithmVersion,
     this.supportGetV3DeviceBtConnectPhoneModel,
@@ -1540,7 +1611,9 @@ class FunctionTableModel {
     this.supportLoopsFit,
     this.supportLoudspeaker,
     this.supportLvglDialFrame,
+    this.supportMakeWatchDialDeocdeJpg,
     this.supportMeituan,
+    this.supportMorningEdition,
     this.supportOnekeyDoubleContact,
     this.supportOverFindPhone,
     this.supportPerMinuteOne,
@@ -1555,9 +1628,13 @@ class FunctionTableModel {
     this.supportSendOriginalSize,
     this.supportSendScalesModelMapTable,
     this.supportSetCallQuickReplyOnOff,
+    this.supportSetEcgReminder,
+    this.supportSetEciReminder,
     this.supportSetFastModeWhenSyncConfig,
     this.supportSetFitnessGuidance,
+    this.supportSetGameTimeReminder,
     this.supportSetHistoricalMenstruationUseVersion2,
+    this.supportSetListStyle,
     this.supportSetMenstrualReminderOnOff,
     this.supportSetMenuListTypeMeasure,
     this.supportSetNoticeMessageStateUseVersion0x20,
@@ -1568,8 +1645,11 @@ class FunctionTableModel {
     this.supportSetV3WeatcherAddSnowDepth,
     this.supportSetV3WeatcherAddSnowfall,
     this.supportSetV3WeatcherSendStructVersion04,
+    this.supportSetVersionInformation,
     this.supportSetVoiceAssistantStatus,
+    this.supportSetWeatherHistoryFutureAqi,
     this.supportSixAxisSensor,
+    this.supportSleepPlan,
     this.supportSmartCompetitor,
     this.supportSyncActivityData3dDistanceSpeed,
     this.supportSyncActivityDataAltitudeInfo,
@@ -1580,6 +1660,9 @@ class FunctionTableModel {
     this.supportSyncActivityGetRealTimePhysicalExertion,
     this.supportSyncActivityGetRopeInfo,
     this.supportSyncActivityGetRunningPowerInfo,
+    this.supportSyncActivityTypeTreadmillsShowStep,
+    this.supportSyncEcg,
+    this.supportSyncHealthHrUseVersionCompatible,
     this.supportSyncHealthSwimGetAvgFrequency,
     this.supportSyncHealthSwimGetAvgSpeed,
     this.supportTaobao,
@@ -1595,6 +1678,7 @@ class FunctionTableModel {
     this.supportV3SleepHealthSyncAddSleepAvgHr,
     this.supportV3SleepHealthSyncAddSleepAvgRespirRate,
     this.supportV3SleepHealthSyncAddSleepAvgSpo2,
+    this.supportVoiceMemoOperate,
     this.supportWalkGoalSteps,
     this.supportWarmUpBeforeRunning,
     this.supportWeibo,

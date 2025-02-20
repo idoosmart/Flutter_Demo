@@ -197,6 +197,32 @@ public class ByteDataConvertUtil {
     }
 
     /**
+     * byte数组转换成16进制字符串
+     *
+     * @param src
+     * @param length 限制转换的长度, -1不限制
+     * @return
+     */
+    public static String bytesToHexString(byte[] src, int length) {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (src == null || src.length <= 0) {
+            return null;
+        }
+        int maxLength = length <= 0 ? src.length : Math.min(length, src.length);
+        for (int i = 0; i < maxLength; i++) {
+            int v = src[i] & 0xFF;
+            String hv = Integer.toHexString(v);
+
+            if (hv.length() < 2) {
+                stringBuilder.append(0);
+            }
+            stringBuilder.append(hv);
+            stringBuilder.append(" ");
+        }
+        return stringBuilder.toString().toUpperCase()+(src.length > maxLength ? "" : "...");
+    }
+
+    /**
      * byte数组转换成16进制字符数组
      * 
      * @param src

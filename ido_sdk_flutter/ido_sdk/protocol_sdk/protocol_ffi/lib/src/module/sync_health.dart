@@ -53,4 +53,54 @@ extension IDOProtocolAPIExtSyncHealthData on IDOProtocolAPI {
   int stopSyncV3HealthData() {
     return bindings.stopSyncV3HealthData();
   }
+
+  /// 同步v3健康数据的自定义一项
+  /// @param data_type 数据同步类型
+  /// 1 同步血氧
+  /// 2 同步压力
+  /// 3 同步心率(v3)
+  /// 4 同步多运动数据(v3)
+  /// 5 同步GPS数据(v3)
+  /// 6 同步游泳数据
+  /// 7 同步眼动睡眠数据
+  /// 8 同步运动数据
+  /// 9 同步噪音数据
+  /// 10 同步温度数据
+  /// 12 同步血压数据
+  /// 14 同步呼吸频率数据
+  /// 15 同步身体电量数据
+  /// 16 同步HRV(心率变异性水平)数据
+  ///
+  /// @return:
+  /// SUCCESS(0)成功 非0失败
+  /// (ERROR_NOT_SUPPORTED(6) 不支持
+  /// ERROR_INVALID_STATE(8) 非法状态
+  /// )
+  int syncV3HealthDataCustomResource(int dataType) {
+    return bindings.SyncV3HealthDataCustomResource(dataType);
+  }
+
+  /// 查找输入的数据同步类型支不支持
+  /// @param data_type 数据同步类型
+  /// 1  同步血氧
+  /// 2  同步压力
+  /// 3  同步心率(v3)
+  /// 4  同步多运动数据(v3)
+  /// 5  同步GPS数据(v3)
+  /// 6  同步游泳数据
+  /// 7  同步眼动睡眠数据
+  /// 8  同步运动数据
+  /// 9  同步噪音数据
+  /// 10 同步温度数据
+  /// 12 同步血压数据
+  /// 14 同步呼吸频率数据
+  /// 15 同步身体电量数据
+  /// 16 同步HRV(心率变异性水平)数据
+  ///
+  /// @return:
+  /// true:支持 false:不支持
+  /// 方法实现前需获取功能表跟初始化c库
+  int isSupportSyncHealthDataType(int dataType) {
+    return bindings.IsSupportSyncHealthDataType(dataType);
+  }
 }

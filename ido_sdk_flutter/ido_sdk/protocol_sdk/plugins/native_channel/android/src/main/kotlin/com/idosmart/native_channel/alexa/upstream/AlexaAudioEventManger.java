@@ -189,7 +189,7 @@ public class AlexaAudioEventManger implements UpStream {
                         try {
                             bytes = IOUtils.toByteArray(body.byteStream());
                             String responseString = new String(bytes);
-                            AlexaLogUtil.p("sendRecord responseString = " + responseString, TAG);
+                            //AlexaLogUtil.p("sendRecord responseString = " + responseString, TAG); //有流数据，不适合打印到文件
                             if (callback != null) {
                                 callback.success(requestId, bytes);
                             }

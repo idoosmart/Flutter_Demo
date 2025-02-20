@@ -201,6 +201,29 @@ extension IDOProtocolAPIExtTran on IDOProtocolAPI {
     return bindings.sppTranDataSetPRN(num);
   }
 
+  /// 获取是否支持断点续传的功能表
+  bool getIsSupportTranContinue() {
+    return bindings.getIsSupportTranContinue() == 1;
+  }
+
+// ------------------------------ 设备传输文件到APP ------------------------------
+
+
+  /// APP回复设备传输文件到APP的请求
+  /// ```dart
+  /// errorCode 0回复握手成功 非0失败，拒绝传输
+  /// @return:SUCCESS(0)成功
+  /// ```
+  int device2AppDataTranRequestReply(int errorCode) {
+    return bindings.Device2AppDataTranRequestReply(errorCode);
+  }
+
+  /// APP主动停止设备传输文件到APP
+  ///
+  /// @return:SUCCESS(0)成功
+  int device2AppDataTranManualStop() {
+    return bindings.Device2AppDataTranManualStop();
+  }
 
 }
 

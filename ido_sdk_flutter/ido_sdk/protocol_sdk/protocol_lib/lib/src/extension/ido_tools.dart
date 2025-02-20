@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:protocol_core/protocol_core.dart';
 import 'package:archive/archive_io.dart';
@@ -11,7 +12,14 @@ import 'package:image/image.dart';
 
 import '../device_info/model/device_info_ext_model.dart';
 import '../private/local_storage/local_storage.dart';
+import '../private/isolate/isolate_manager.dart';
+import 'package:image/image.dart' as img;
 
+enum SifliSFBoardType {
+  x55,
+  x56,
+  x52,
+}
 
 /// c库工具
 class IDOTool {
@@ -44,14 +52,35 @@ class IDOTool {
         inputFilePath: inputFilePath, outputFilePath: outputFilePath);
   }
 
+  /// PNG图片32位转24位
+  /// ```dart
+  /// inputFilePath 用于转换的png路径(包含文件名及后缀)
+  /// outputFilePath 转换完的png路径(包含文件名及后缀)
+  /// 返回 0 成功
+  /// ```
+  Future<int> pngTo24bit({required String inputFilePath, required String outputFilePath}) async {
+    if (!File(inputFilePath).existsSync()) {
+      logger?.e("pngTo24bit inputFilePath:$inputFilePath 文件不存在");
+      return -1;
+    }
+
+    int execute(dynamic i)  {
+      int result = _convertPngTo24Bit(inputFilePath,outputFilePath);
+      return result;
+    }
+    return await IsolateManager.instance.handleFunctionInIsolate(execute,1);
+  }
+
   /// 创建EPO.DAT文件
   /// ```dart
   /// dirPath 存放要制作epo文件的目录
   /// epoFilePath 制作的epo文件存放路径（epoFilePath不该在dirPath目录内）
+  /// fileCount 制作epo所需的文件数量
   /// ```
   Future<bool> makeEpoFile({
     required String dirPath,
     required String epoFilePath,
+    required int fileCount
   }) async {
     if (epoFilePath.startsWith(dirPath)) {
       throw UnsupportedError(
@@ -69,7 +98,7 @@ class IDOTool {
     }
 
     // 制作epo文件
-    int rs = _coreMgr.makeEpoFile(filePath: dirPath, saveFileName: fileName);
+    int rs = _coreMgr.makeEpoFile(filePath: dirPath, saveFileName: fileName, fileCount: fileCount);
     if (rs == 0 && await tmpFile.exists()) {
       await tmpFile.rename(epoFilePath); // rename
       if (await File(epoFilePath).exists()) {
@@ -93,7 +122,7 @@ class IDOTool {
     required String inputFilePath,
     required String fileName,
     required  String outputFilePath}) async {
-    if (outputFilePath.startsWith(inputFilePath)) {
+    if (inputFilePath.startsWith(outputFilePath)) {
       throw UnsupportedError(
           'outputFilePath不该在inputFilePath目录内，请修改');
     }
@@ -114,6 +143,37 @@ class IDOTool {
     logger?.e('mkSifliDialFile file rename failed, rs: $code');
     return code;
   }
+
+  /// 获取思澈表盘(.watch)文件占用空间大小，计算规则：
+  /// ```dart
+  /// nor方案：对表盘所有文件以4096向上取整  -98平台对应的项目，IDW27,205G Pro,IDW28,IDS05，DR03等
+  /// nand方案：对表盘所有文件以2048向上取整 -99平台对应的项目，GTX12,GTX13,GTR1,TIT21
+  /// filePath .watch文件路径，包含文件名
+  /// platform 平台类型，目前支持：98(nor)，99(nand)平台
+  /// @return size 文件占用磁盘的实际大小(字节)，-1:失败，文件路径访问失败，-2:失败，申请内存失败，-3:失败，读取文件失败，-4:失败，输入平台类型不支持
+  /// ```
+  int getSifliDialSize({required String filePath, required int platform}) {
+    if ([98, 99].contains(platform)) {
+      return _coreMgr.getSifliDialSize(filePath: filePath, platform: platform);
+    }
+    logger?.e("getSifliDialSize 不支持的平台类型:$platform");
+    return -1;
+  }
+
+
+  /// 将png格式文件序列转为ezipBin类型。转换失败返回nil。V2.2
+  /// ```dart
+  /// pngDatas png文件数据序列数组 （如果数组是多张图片，则会几张图片组合拼接成一张图片）
+  /// eColor 颜色字符串 color type as below: rgb565, rgb565A, rbg888, rgb888A
+  /// eType eizp类型 0 keep original alpha channel;1 no alpha chanel
+  /// binType bin类型 0 to support rotation; 1 for no rotation
+  /// boardType 主板芯片类型 @See SFBoardType 0:55x 1:56x  2:52x
+  /// @return ezip or apng result, nil for fail
+  /// ```
+  Future<Uint8List?> sifliEBinFromPng(Uint8List pngDatas, String eColor, int type, int binType, SifliSFBoardType boardType) async {
+    return SifliChannelImpl().sifliHost.sifliEBinFromPng(pngDatas, eColor, type, binType, IDOSFBoardType.values[boardType.index]);
+  }
+
 
   /// 设置流数据是否输出开关
   ///
@@ -166,7 +226,8 @@ class IDOTool {
   /// 字符串按最大字节截取
   /// input：字符串
   /// maxByteLen：最大字节长度
-  String truncateString(String input,int maxByteLen) {
+  @Deprecated("有bug，废弃")
+  String truncateString2(String input,int maxByteLen) {
     if (input == null || input.isEmpty) {
       return '';
     }
@@ -192,6 +253,27 @@ class IDOTool {
     }
     return input.substring(0, charIndex);
   }
+
+  /// 字符串按最大字节截取
+  /// input：字符串
+  /// maxByteLen：最大字节长度
+  String truncateString(String s, int maxBytes) {
+    var bytes = utf8.encode(s);
+    if (bytes.length <= maxBytes) return s;
+
+    int charLength = 0;
+    int byteLength = 0;
+
+    while (byteLength < maxBytes) {
+      int charBytes = utf8.encode(s[charLength]).length;
+      if (byteLength + charBytes > maxBytes) break;
+      byteLength += charBytes;
+      charLength++;
+    }
+
+    return s.substring(0, charLength);
+  }
+
 
   /// 图片格式转换 png 添加透明背景色
   /// src: 原图片
@@ -239,6 +321,46 @@ class IDOTool {
           "outFileExists:$outFileExists");
     }
     return pngImage;
+  }
+
+  /// 获取mp3音频采样率
+  /// ```dart
+  /// mp3FilePath 输入带路径MP3文件名
+  /// return int 输入的MP3文件的采样率如：441000， 异常返回-1
+  /// ```
+  int mp3SamplingRate({required String mp3FilePath}) {
+    if (!File(mp3FilePath).existsSync()) {
+      logger?.e("audioGetMp3SamplingRate mp3FilePath:$mp3FilePath 文件不存在");
+      return -1;
+    }
+    return _coreMgr.audioGetMp3SamplingRate(mp3FilePath: mp3FilePath);
+  }
+
+  /// 音频采样率转化
+  /// ```dart
+  /// audioRate 音频采样率 (目前只支持44.1khz)
+  /// inPath   音频输入文件绝对路径
+  /// outPath  音频输出文件绝对路径
+  /// progressFunc    进度回调
+  /// return   0 成功
+  /// ```
+  Future<int> audioSamplingRateConversion({
+    IDOAudioRate audioRate = IDOAudioRate.rate44_1kHz,
+        required String inPath,
+        required outPath,
+        void Function(double progress)? progressFunc}) async {
+    final inputFile = File(inPath);
+    if (!inputFile.existsSync()) {
+      logger?.e("audioSamplingRateConversion inPath:$inPath 文件不存在");
+      return -1;
+    }
+    final fileSize = await inputFile.length();
+    if(progressFunc != null) {
+      _coreMgr.registerAudioSRConversionProgress((progress) {
+        progressFunc(progress / 100.0);
+      });
+    }
+    return Future(() => _coreMgr.audioSamplingRateConversion(inPath: inPath, outPath: outPath, fileSize: fileSize));
   }
 
 }
@@ -303,6 +425,7 @@ class IDOCallNotice {
 /// 协议库缓存
 class IDOCache {
 
+  CancellerFlashLog? _cancellerFlashLog;
   /// 协议库log配置 （重启生效）
   ///
   /// fileSize 单日志文件大小（接近该值），单位字节，默认为5MB, 取值范围 1MB ~ 30MB
@@ -322,6 +445,9 @@ class IDOCache {
     await storage?.saveLogConfigClib(saveDay);
   }
 
+  void writeLog(String log) {
+    logger?.d("writeLog: $log");
+  }
 
   /// 获取log根路径
   Future<String> logPath() async {
@@ -349,10 +475,14 @@ class IDOCache {
   /// 导出日志 返回压缩后日志zip文件绝对路径
   Future<String?> exportLog() async {
     final pathSDK = await LocalStorage.pathSDKStatic();
-    //return await compute(_doZip, "$pathSDK/logs");
     final info = _ExportInfo("$pathSDK/logs", "$pathSDK/protocol_logs.zip");
-    return _innerDoZip(info);
-    //return await compute(_doZip, info);
+
+    /// 打包zip文件
+    Future<String?> execute(dynamic obj) async {
+      String? path = await _innerDoZip(obj);
+      return path;
+    }
+    return await IsolateManager.instance.handleFunctionInIsolate(execute, info);
   }
 
   /// 导出消息图标 返回压缩后日志zip文件绝对路径
@@ -363,23 +493,30 @@ class IDOCache {
       logger?.e("get pathMessageIcon is null");
       return null;
     }
-    //return await compute(_doZip, "$pathSDK/logs");
     final info = _ExportInfo(msgIconPath, "$pathSDK/message_icon.zip");
-    return _innerDoZip(info);
-    //return await compute(_doZip, info);
+
+    /// 打包zip文件
+    Future<String?> execute(dynamic obj) async {
+      String? path = await _innerDoZip(obj);
+      return path;
+    }
+    return await IsolateManager.instance.handleFunctionInIsolate(execute, info);
   }
 
   /// 导出flash日志 返回压缩后日志zip文件绝对路径
   ///
   /// timeOut 最大获取日志时长 (单位秒，默认60秒)
   Future<String?> exportLogFlash({int timeOut = 60,
-    void Function(int progress)? progressCallback}) async {
+    void Function(int progress)? progressCallback,
+    CancellerFlashLog? canceller}) async {
+    logger?.d("call exportLogFlash");
     final path =  await storage?.pathDeviceLog();
     if (path == null) {
       logger?.e("get pathDeviceLog is null");
       return null;
     }
 
+    _cancellerFlashLog = canceller;
     final outputFile = "$path/flash_logs.zip";
 
     /// 删除原来的压缩文件
@@ -392,12 +529,47 @@ class IDOCache {
     final rs = await libManager.deviceLog.startGet(types:[IDOLogType.general],
         timeOut: timeOut,
         progressCallback: progressCallback).first;
+    _cancellerFlashLog?._isCancelled = true;
     if (rs) {
       final logPath = await libManager.deviceLog.logDirPath;
       final info = _ExportInfo("$logPath/flash", outputFile);
-      // final filePath = await compute(_doZip, info);
-      // return filePath;
-      return _innerDoZip(info);
+
+      /// 打包zip文件
+      Future<String?> execute(dynamic obj) async {
+        String? path = await _innerDoZip(obj);
+        return path;
+      }
+      return await IsolateManager.instance.handleFunctionInIsolate(execute, info);
+    }
+    return null;
+  }
+
+  /// 压缩flash日志 返回压缩后日志zip文件绝对路径
+  Future<String?> zipLogFlash() async {
+    final path =  await storage?.pathDeviceLog();
+    if (path == null) {
+      logger?.e("get pathDeviceLog is null");
+      return null;
+    }
+
+    final outputFile = "$path/flash_logs2.zip";
+
+    /// 删除原来的压缩文件
+    final zipFile = File(outputFile);
+    if (zipFile.existsSync()) {
+      zipFile.deleteSync();
+    }
+
+    final logPath = await libManager.deviceLog.logDirPath;
+    if (Directory(logPath).listSync().isNotEmpty) {
+      final info = _ExportInfo("$logPath/flash", outputFile);
+
+      /// 打包zip文件
+      Future<String?> execute(dynamic obj) async {
+        String? path = await _innerDoZip(obj);
+        return path;
+      }
+      return await IsolateManager.instance.handleFunctionInIsolate(execute, info);
     }
     return null;
   }
@@ -432,7 +604,10 @@ class IDOCache {
   /// 获取最后连接的设备
   Future<DeviceInfoExtModel?> lastConnectDevice() async {
     final list = await storage?.loadDeviceExtListByDisk();
-    return Future(() => list?.first);
+    if (list != null && list.isNotEmpty) {
+      return list.first;
+    }
+    return null;
   }
 
   /// 获取连接过的设备列表
@@ -440,6 +615,13 @@ class IDOCache {
       {bool sortDesc = true}) async {
     return storage?.loadDeviceExtListByDisk(sortDesc: sortDesc);
   }
+
+  /// 获取连接过的设备信息列表
+  Future<List<DeviceInfoModel>?> loadDeviceInfoListByDisk(
+      {bool sortDesc = true}) async {
+    return storage?.loadDeviceInfoListByDisk(sortDesc: sortDesc);
+  }
+
 
   /// 记录原生层log（内部使用）
   void recordNativeLog(String msg) {
@@ -511,4 +693,55 @@ class _ExportInfo {
   final String outputFilePath;
 
   _ExportInfo(this.inputPath, this.outputFilePath);
+}
+
+class CancellerFlashLog {
+   var _isCancelled = false;
+
+  void cancel() async {
+    if (_isCancelled || this != libManager.cache._cancellerFlashLog) {
+        return;
+    }
+    
+    _isCancelled = true;
+    await libManager.send(evt: CmdEvtType.getFlashLogStop).timeout(const Duration(seconds: 2)).first;
+    libManager.deviceLog.cancel();
+  }
+}
+
+int _convertPngTo24Bit(String inputPath, String outputPath) {
+  // 读取 32 位 PNG 图像
+  final bytes = File(inputPath).readAsBytesSync();
+  img.Image? image = img.decodeImage(bytes);
+
+  if (image == null) {
+    logger?.e("err:failed to decode image");
+    return ErrorCode.failed;
+  }
+
+  // 创建新的图像，使用 RGB565 格式
+  img.Image newImage = img.Image(width:image.width, height:image.height);
+  // 将 32 位颜色转换为 16 位
+  for (int y = 0; y < image.height; y++) {
+    for (int x = 0; x < image.width; x++) {
+      final pixel = image.getPixel(x, y);
+      // 提取 RGB 组件
+      int r = pixel.r.toInt();  // 8 bits
+      int g = pixel.g.toInt();  // 8 bits
+      int b = pixel.b.toInt();  // 8 bits
+
+      // // 转换为 16 位 RGB565
+      // int r16 = r & 0xF8;    // 5 bits
+      // int g16 = g & 0xFC;    // 6 bits
+      // int b16 = b & 0xF8;    // 5 bits
+
+      newImage.setPixelRgb(x, y, r, g, b);
+    }
+  }
+
+  // 编码为 PNG 并保存
+  final pngBytes = img.encodePng(newImage);
+  File(outputPath).writeAsBytesSync(pngBytes);
+
+  return ErrorCode.success;
 }

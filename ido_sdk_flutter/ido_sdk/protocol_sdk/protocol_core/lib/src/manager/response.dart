@@ -1,4 +1,5 @@
 import 'type_define.dart';
+import '../logger/logger.dart';
 
 /// 指令响应
 class CmdResponse {
@@ -42,9 +43,11 @@ class CmdResponse {
   /// -1 取消
   /// -2 失败
   /// -3 指令已存在队列中
-  /// -4 设备断线
-  /// -5 ota模式
+  /// -4 执行快速配置中，指令忽略
+  /// -5 设备处于ota模式
   /// -6 未连接设备
+  /// -7 执行中的指令被中断(由于发出的指令不能被实际取消，故存在修改指令被中断后可能还会导致设备修改生效的情况)
+  /// -8 异常数据无法解析
   /// ```
   final int code;
 
@@ -72,6 +75,9 @@ class CmdResponse {
       this.json,
       this.macAddress}) {
     msg ?? cmdCode.name;
+    if (code != 0) {
+      logger?.d("res set code: $code");
+    }
   }
 
   /// 映射常用错误码

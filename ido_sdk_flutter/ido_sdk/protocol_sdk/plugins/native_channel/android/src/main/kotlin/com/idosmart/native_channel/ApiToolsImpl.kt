@@ -7,6 +7,8 @@ import com.idosmart.native_channel.pigeon_generate.api_tools.ApiTools
 import io.flutter.BuildConfig
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import java.util.TimeZone
+import android.os.Build
+import java.io.File
 
 class ApiToolsImpl : ApiTools {
 
@@ -34,7 +36,7 @@ class ApiToolsImpl : ApiTools {
         if (applicationInfo != null) {
             appName = packageManager.getApplicationLabel(applicationInfo).toString()
         }
-        NativeChannelPlugin.instance().tools?.getNativeLog("android getAppName: $appName"){}
+        NativeChannelPlugin.instance().androidLog("android getAppName: $appName")
         return appName ?: "-"
     }
 
@@ -45,5 +47,48 @@ class ApiToolsImpl : ApiTools {
 
     override fun getDocumentPath(): String? {
         return _context?.filesDir?.parent
+    }
+
+    override fun getPlatformDeviceInfo(): Map<Any, Any?>? {
+        val devInfo = DeviceInfoManager.getDeviceInfo()
+        return mapOf("model" to devInfo.model, "systemVersion" to devInfo.systemVersion, "isRooted" to devInfo.isRooted)
+    }
+}
+
+private data class DeviceInfo(
+    val model: String,
+    val systemVersion: String,
+    val isRooted: Boolean
+)
+
+private object DeviceInfoManager {
+     fun getDeviceInfo(): DeviceInfo {
+        val model = Build.MODEL
+        val systemVersion = Build.VERSION.RELEASE
+        val isRooted = checkRoot()
+
+        return DeviceInfo(model, systemVersion, isRooted)
+    }
+
+    private fun checkRoot(): Boolean {
+        val paths = arrayOf(
+            "/system/app/Superuser.apk",
+            "/sbin/su",
+            "/system/bin/su",
+            "/system/xbin/su",
+            "/data/local/xbin/su",
+            "/data/local/bin/su",
+            "/system/sd/xbin/su",
+            "/system/bin/failsafe/su",
+            "/data/local/su"
+        )
+
+        for (path in paths) {
+            if (File(path).exists()) {
+                return true
+            }
+        }
+
+        return false
     }
 }

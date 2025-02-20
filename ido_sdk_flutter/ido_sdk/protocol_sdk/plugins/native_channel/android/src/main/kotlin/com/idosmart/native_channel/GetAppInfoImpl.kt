@@ -27,14 +27,14 @@ class GetAppInfoImpl: ApiGetAppInfo {
         force: Boolean,
         callback: (Result<List<Map<Any, Any?>>>) -> Unit
     ) {
-        NativeChannelPlugin.instance().tools?.getNativeLog("android read install app info list") {}
+        NativeChannelPlugin.instance().androidLog("android read install app info list")
          if (NoticeAppUtility.loadFinish && !force) {
-             NativeChannelPlugin.instance().tools?.getNativeLog("android load icon finish 1") {}
+             NativeChannelPlugin.instance().androidLog("android load icon finish 1")
              callback(Result.success(readInstalledAppList()))
          }else {
              NoticeAppUtility.setLoadAppListener(object : LoadAppListener{
                  override fun loadFinish() {
-                     NativeChannelPlugin.instance().tools?.getNativeLog("android load icon finish 2") {}
+                     NativeChannelPlugin.instance().androidLog("android load icon finish 2")
                      callback(Result.success(readInstalledAppList()))
                      NoticeAppUtility.setLoadAppListener(null)
                  }
@@ -43,7 +43,7 @@ class GetAppInfoImpl: ApiGetAppInfo {
                  NoticeAppUtility.init(_context!!,true)
              }else {
                  callback(Result.success(readInstalledAppList()))
-                 NativeChannelPlugin.instance().tools?.getNativeLog("android load icon finish 3") {}
+                 NativeChannelPlugin.instance().androidLog("android load icon finish 3")
              }
          }
     }
@@ -136,6 +136,7 @@ class GetAppInfoImpl: ApiGetAppInfo {
         val appInfo = mutableMapOf<Any, Any>()
         val list = NoticeAppUtility.getInstalledAppList()
         val defaultList = NoticeAppUtility.getDefaultApp()
+        var isExist = false
         if (list.isNotEmpty()) {
             for (itemAppInfo in list) {
                 if (itemAppInfo.type == type) {
@@ -145,8 +146,13 @@ class GetAppInfoImpl: ApiGetAppInfo {
                     appInfo["appName"] = itemAppInfo.appName
                     appInfo["pkgName"] = itemAppInfo.pkgName
                     appInfo["isDefault"] = isDefault
+                    isExist = true
                 }
             }
+        }
+        if (!isExist) {
+            NativeChannelPlugin.instance().androidLog("android readOneAppInfo ont exist type == $type")
+            NativeChannelPlugin.instance().androidLog("android all app list == ${list.joinToString(separator = "\n"){"pkgName:${it.pkgName},type:${it.type},appName:${it.appName}"}}")
         }
         return appInfo
     }

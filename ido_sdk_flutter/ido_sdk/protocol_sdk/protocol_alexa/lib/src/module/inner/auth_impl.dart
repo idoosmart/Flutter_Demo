@@ -157,8 +157,11 @@ class _Auth implements Auth {
 
   @override
   String? get accessToken {
-    assert(_authModel != null && _authModel!.isOK, 'has login first');
+    //assert(_authModel != null && _authModel!.isOK, 'has login first');
     //logger?.v('accessToken: ${_authModel?.accessToken}');
+    if (_authModel == null || !_authModel!.isOK) {
+      logger?.e("has login first");
+    }
     return _authModel?.accessToken;
   }
 

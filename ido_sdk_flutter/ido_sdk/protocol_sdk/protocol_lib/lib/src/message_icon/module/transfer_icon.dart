@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:image/image.dart' as pkg_img;
 import 'package:protocol_core/protocol_core.dart';
 import 'package:protocol_lib/protocol_lib.dart';
+import 'package:protocol_lib/src/message_icon/ido_message_icon.dart';
 
 import '../../private/logger/logger.dart';
 
@@ -22,12 +23,18 @@ abstract class TransferIcon {
 
   /// 裁剪图片和文件传输
   Stream<bool>tailorAndTransfer(IDOAppIconInfoModel model);
+
+  /// 注册思澈图标传输
+  void addSeChe(SeCheMessageIconDelegate? delegate);
 }
 
 class _TransferIcon implements TransferIcon {
 
   late final _coreMgr = IDOProtocolCoreManager();
   late final _libMgr = IDOProtocolLibManager();
+
+  /// 思澈消息图标代理对象
+  SeCheMessageIconDelegate? _scDelegate;
 
   Completer<bool>? _completer;
   /// 图标宽度
@@ -59,6 +66,11 @@ class _TransferIcon implements TransferIcon {
     return stream;
   }
 
+  @override
+  void addSeChe(SeCheMessageIconDelegate? delegate) {
+    _scDelegate = delegate;
+  }
+
 }
 
 extension _TransferIconExt on _TransferIcon {
@@ -75,7 +87,7 @@ extension _TransferIconExt on _TransferIcon {
     List<Future> futures = <Future>[];
     items.forEach((element) {
       if ((element.iconLocalPath??'').isNotEmpty) {
-        final filePath = "$dirPath/${element.packName}${'_46'}.png";
+        final filePath = "$dirPath/${element.packName}${'_$_iconWidth'}.png";
         final filePng = File(filePath);
         if (filePng.existsSync()) { /// 图片文件存在不再处理
           logger?.d('file presence no longer needs to be clipped => ${element.packName}');
@@ -98,26 +110,30 @@ extension _TransferIconExt on _TransferIcon {
               /// 图片裁圆
               var circleImage =  pkg_img.copyCropCircle(pngImage ?? image!,radius: noTranWidth~/2);
               logger?.d("android crop circle icon == ${circleImage.isNotEmpty}");
+              /// 图片缩放
+              var resizeImage = pkg_img.copyResize(circleImage!, width:_iconWidth ?? 46, height:_iconHeight ?? 46,interpolation: pkg_img.Interpolation.cubic);
               /// 写入文件
-              return File(filePath).writeAsBytes(pkg_img.encodePng(circleImage)).then((file1){
+              return File(filePath).writeAsBytes(pkg_img.encodePng(resizeImage)).then((file1){
                 logger?.d("android picture redrawing");
-               return canvasImage(file1).then((file2){
-                 /// 画圆裁剪图标
-                 var canvasImage = pkg_img.decodeImage(file2.readAsBytesSync());
-                 var resizeImage = pkg_img.copyResize(canvasImage!, width:_iconWidth ?? 46, height:_iconHeight ?? 46,interpolation: pkg_img.Interpolation.cubic);
-                 logger?.d("android resize icon == ${resizeImage.isNotEmpty}");
-                 return File(filePath).writeAsBytes(pkg_img.encodePng(resizeImage)).then((file3){
-                   ///图片压缩
-                   logger?.d('icon file start compress => ${element.packName}');
-                   _coreMgr.compressToPNG(inputFilePath: file3.path, outputFilePath: file3.path);
-                   ///赋值裁剪后地址
-                   element.iconLocalPath = file3.path;
-                   return Future(() => true);
-                 });
-                }).onError((error, stackTrace) {
-                 logger?.d("android picture redrawing failed error == ${error.toString()} file path == $filePath");
-                  return Future(() => false);
-                });
+               // return canvasImage(file1).then((file2){
+               //   /// 画圆裁剪图标
+               //   var canvasImage = pkg_img.decodeImage(file2.readAsBytesSync());
+               //   var resizeImage = pkg_img.copyResize(canvasImage!, width:_iconWidth ?? 46, height:_iconHeight ?? 46,interpolation: pkg_img.Interpolation.cubic);
+               //   logger?.d("android resize icon == ${resizeImage.isNotEmpty}");
+               //   return File(filePath).writeAsBytes(pkg_img.encodePng(resizeImage)).then((file3){
+               //     ///图片压缩 （暂时不压缩图片）
+               //     logger?.d('icon file start compress => ${element.packName}');
+               //     // _coreMgr.compressToPNG(inputFilePath: file3.path, outputFilePath: file3.path);
+               //     ///赋值裁剪后地址
+               //     element.iconLocalPath = file3.path;
+               //     return Future(() => true);
+               //   });
+               //  }).onError((error, stackTrace) {
+               //   logger?.d("android picture redrawing failed error == ${error.toString()} file path == $filePath");
+               //    return Future(() => false);
+               //  });
+                element.iconLocalPath = file1.path;
+                return Future(() => true);
               }).onError((error, stackTrace) {
                 logger?.d("android write icon file failed error == ${error.toString()} file path == $filePath");
                 return Future(() => false);
@@ -221,8 +237,8 @@ extension _TransferIconExt on _TransferIcon {
     _iconWidth = dic['icon_width'] as int? ?? 0;
     _iconHeight = dic['icon_height'] as int? ?? 0;
     if (_iconWidth == 0 || _iconHeight == 0) {
-      _iconWidth = 60;
-      _iconHeight = 60;
+        _iconWidth = 60;
+        _iconHeight = 60;
     }
     logger?.d('icon width == ${_iconWidth!} icon height == ${_iconHeight!}');
     /// 裁剪图标
@@ -278,7 +294,7 @@ extension _TransferIconExt on _TransferIcon {
       return _completer!.future;
     }
 
-    logger?.d('need transfer icon items length == ${items?.length}');
+    logger?.d('need transfer icon items length == ${fileItems?.length}');
 
     return _transferIcon(fileItems);
   }
@@ -289,21 +305,38 @@ extension _TransferIconExt on _TransferIcon {
       logger?.d('transfer icon file path == ${element.filePath} package name == ${element.packName} event type == ${element.evtType}');
     }
 
-    _libMgr.transFile.transferMultiple(fileItems: fileItems, funcStatus:
-        (index, status) {
-      if (status == FileTransStatus.busy) {
-        final item = fileItems[index];
-        final packName = item.packName;
-        final path = item.filePath;
-        logger?.d('transfer file busy pack name == $packName file path == $path');
-      }
-    }, funcProgress: (currentIndex, totalCount, currentProgress, totalProgress){
+     if (_libMgr.deviceInfo.platform == 97) {
+       logger?.d('transfer icon file siche protocol delegate == $_scDelegate');
+       if (_scDelegate != null) {
+         _scDelegate?.iconTransferFile(fileItems, (isSuccess, filePath) {
+           logger?.d('siche transfer icon file path == $filePath state == $isSuccess');
+         }, (complete) {
+           logger?.d('siche _transfer message icon complete == $complete');
+           _completer?.complete(complete);
+           _completer = null;
+         });
+       }else {
+         _completer?.complete(false);
+         _completer = null;
+       }
+     }else {
+       logger?.d('transfer icon file ido protocol');
+       _libMgr.transFile.transferMultiple(fileItems: fileItems, funcStatus:
+           (index, status) {
+         if (status == FileTransStatus.busy) {
+           final item = fileItems[index];
+           final packName = item.packName;
+           final path = item.filePath;
+           logger?.d('transfer file busy pack name == $packName file path == $path');
+         }
+       }, funcProgress: (currentIndex, totalCount, currentProgress, totalProgress){
 
-    }).listen((event) {
-      logger?.d('_transfer message icon complete == ${event}');
-      _completer?.complete(event.last);
-      _completer = null;
-    });
+       }).listen((event) {
+         logger?.d('_transfer message icon complete == ${event}');
+         _completer?.complete(event.last);
+         _completer = null;
+       });
+     }
     return _completer!.future;
   }
 

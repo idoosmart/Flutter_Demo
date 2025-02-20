@@ -106,8 +106,10 @@ typedef CallbackSyncProgress = void Function(double progress);
 /// -1 取消
 /// -2 失败
 /// -3 指令已存在队列中
-/// -4 设备断线
-/// -5 ota模式
+/// -4 执行快速配置中，指令忽略
+/// -5 设备处于ota模式
+/// -6 未连接设备
+/// -7 执行中的指令被中断(由于发出的指令不能被实际取消，故存在修改指令被中断后可能还会导致设备修改生效的情况)
 /// ```
 typedef CallbackSyncData = void Function(SyncDataType type,String jsonStr,int errorCode);
 /// 所有数据同步完成
@@ -144,8 +146,10 @@ typedef CallbackSyncData = void Function(SyncDataType type,String jsonStr,int er
 /// -1 取消
 /// -2 失败
 /// -3 指令已存在队列中
-/// -4 设备断线
-/// -5 ota模式
+/// -4 执行快速配置中，指令忽略
+/// -5 设备处于ota模式
+/// -6 未连接设备
+/// -7 执行中的指令被中断(由于发出的指令不能被实际取消，故存在修改指令被中断后可能还会导致设备修改生效的情况)
 /// ```
 typedef CallbackSyncCompleted = void Function(int errorCode);
 
@@ -159,8 +163,11 @@ abstract class IDOSyncData {
   /// 监听同步状态
   Stream<SyncStatus> listenSyncStatus();
 
-  /// 开始同步所有数据
+  /// 开始同步数据
+  ///
+  /// 注：不指定types时同步所有数据
   Stream<bool> startSync({
+    List<SyncDataType>? types,
     required CallbackSyncProgress funcProgress,
     required CallbackSyncData funcData,
     required CallbackSyncCompleted funcCompleted
@@ -169,4 +176,157 @@ abstract class IDOSyncData {
   /// 停止同步所有数据
   void stopSync();
 
+  /// 获取支持的同步数据类型
+  List<SyncDataType> getSupportSyncDataTypeList();
+
 }
+
+/// SyncDataType映射到单项数据同步类型
+extension SyncDataTypeExt on List<SyncDataType> {
+  /// 1 同步血氧
+  /// 2 同步压力
+  /// 3 同步心率(v3)
+  /// 4 同步多运动数据(v3)
+  /// 5 同步GPS数据(v3)
+  /// 6 同步游泳数据
+  /// 7 同步眼动睡眠数据
+  /// 8 同步运动数据
+  /// 9 同步噪音数据
+  /// 10 同步温度数据
+  /// 12 同步血压数据
+  /// 14 同步呼吸频率数据
+  /// 15 同步身体电量数据
+  /// 16 同步HRV(心率变异性水平)数据
+  List<int> get mappingValues {
+    final list = <int>[];
+    for (var element in this) {
+      switch (element) {
+        case SyncDataType.nullType:
+          break;
+        case SyncDataType.stepCount:
+          list.add(8); // 8 同步运动数据
+          break;
+        case SyncDataType.heartRate:
+          list.add(3); // 3 同步心率(v3)
+          break;
+        case SyncDataType.sleep:
+          list.add(7); // 7 同步眼动睡眠数据
+          break;
+        case SyncDataType.bloodPressure:
+          list.add(12); // 12 同步血压数据
+          break;
+        case SyncDataType.bloodOxygen:
+          list.add(1); // 1 同步血氧
+          break;
+        case SyncDataType.pressure:
+          list.add(2); // 2 同步压力
+          break;
+        case SyncDataType.noise:
+          list.add(9); // 9 同步噪音数据
+          break;
+        case SyncDataType.piven:
+          list.add(10); // 10 同步温度数据
+          break;
+        case SyncDataType.respirationRate:
+          list.add(14); // 14 同步呼吸频率数据
+          break;
+        case SyncDataType.bodyPower:
+          list.add(15); // 15 同步身体电量数据
+          break;
+        case SyncDataType.HRV:
+          list.add(16); // 16 同步HRV(心率变异性水平)数据
+          break;
+        case SyncDataType.activity:
+          list.add(4); // 4 同步多运动数据(v3)
+          break;
+        case SyncDataType.GPS:
+          list.add(5); // 5 同步GPS数据(v3)
+          break;
+        case SyncDataType.swim:
+          list.add(6); // 6 同步游泳数据
+          break;
+        case SyncDataType.v2StepCount:
+          break;
+        case SyncDataType.v2Sleep:
+          break;
+        case SyncDataType.v2HeartRate:
+          break;
+        case SyncDataType.v2BloodPressure:
+          break;
+        case SyncDataType.v2GPS:
+          break;
+        case SyncDataType.v2Activity:
+          break;
+      }
+    }
+    return list;
+  }
+}
+
+/// 单项数据同步类型映射到SyncDataType
+extension IntToSyncDataTypeExt on List<int> {
+  /// 1 同步血氧
+  /// 2 同步压力
+  /// 3 同步心率(v3)
+  /// 4 同步多运动数据(v3)
+  /// 5 同步GPS数据(v3)
+  /// 6 同步游泳数据
+  /// 7 同步眼动睡眠数据
+  /// 8 同步运动数据
+  /// 9 同步噪音数据
+  /// 10 同步温度数据
+  /// 12 同步血压数据
+  /// 14 同步呼吸频率数据
+  /// 15 同步身体电量数据
+  /// 16 同步HRV(心率变异性水平)数据
+  List<SyncDataType> get mappingValues {
+    final list = <SyncDataType>[];
+    for (var e in this) {
+      switch (e) {
+        case 8:
+          list.add(SyncDataType.stepCount); // 8 同步运动数据
+          break;
+        case 3:
+          list.add(SyncDataType.heartRate); // 3 同步心率(v3)
+          break;
+        case 7:
+          list.add(SyncDataType.sleep); // 7 同步眼动睡眠数据
+          break;
+        case 12:
+          list.add(SyncDataType.bloodPressure); // 12 同步血压数据
+          break;
+        case 1:
+          list.add(SyncDataType.bloodOxygen); // 1 同步血氧
+          break;
+        case 2:
+          list.add(SyncDataType.pressure); // 2 同步压力
+          break;
+        case 9:
+          list.add(SyncDataType.noise); // 9 同步噪音数据
+          break;
+        case 10:
+          list.add(SyncDataType.piven); // 10 同步温度数据
+          break;
+        case 14:
+          list.add(SyncDataType.respirationRate); // 14 同步呼吸频率数据
+          break;
+        case 15:
+          list.add(SyncDataType.bodyPower); // 15 同步身体电量数据
+          break;
+        case 16:
+          list.add(SyncDataType.HRV); // 16 同步HRV(心率变异性水平)数据
+          break;
+        case 4:
+          list.add(SyncDataType.activity); // 4 同步多运动数据(v3)
+          break;
+        case 5:
+          list.add(SyncDataType.GPS); // 5 同步GPS数据(v3)
+          break;
+        case 6:
+          list.add(SyncDataType.swim); // 6 同步游泳数据
+      }
+    }
+    return list;
+  }
+}
+

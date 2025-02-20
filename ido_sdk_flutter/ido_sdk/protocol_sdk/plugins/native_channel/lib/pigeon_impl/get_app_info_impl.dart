@@ -1,6 +1,7 @@
 
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:native_channel/pigeon_generate/get_app_info.g.dart';
 
 abstract class GetAndroidAppInfo {
@@ -15,6 +16,8 @@ abstract class GetAndroidAppInfo {
 
   /// 读取 Android 默认的APP信息
   /// Map => {type: $type, iconFilePath: $iconFilePath, appName: $appName, pkgName: $pkgName}
+  /// 读取 ios 默认的APP信息
+  /// Map => {type: $type, iconFilePath: $iconFilePath, appName: $appName, pkgName: $pkgName, scheme: $scheme}
   /// 邮件、未接电话、日历、短信 （名称使用默认英语）
   Future<List<Map?>> getDefaultAppInfoList();
 
@@ -50,6 +53,8 @@ class GetAppInfoImpl extends ApiGetAppInfo implements GetAndroidAppInfo {
 
   /// 读取 Android 所有安装的APP信息
   /// Map => {type: $type, iconFilePath: $iconFilePath, appName: $appName, pkgName: $pkgName}
+  /// 读取 ios 默认的APP信息
+  /// Map => {type: $type, iconFilePath: $iconFilePath, appName: $appName, pkgName: $pkgName, scheme: $scheme}
   /// 邮件、未接电话、日历、短信 （名称使用默认英语）
   @override
   Future<List<Map?>> getInstallAppInfoList({bool force = false}) {
@@ -117,7 +122,13 @@ class GetAppInfoImpl extends ApiGetAppInfo implements GetAndroidAppInfo {
      if (!Platform.isIOS) {
        return Future(() => false);
      }
-     return _getAppInfo.copyAppIcon();
+     try {
+       final rs = _getAppInfo.copyAppIcon();
+       return rs;
+     } catch (e) {
+       debugPrint("copyAppIcon error: $e");
+       return Future(() => false);
+     }
   }
 
 }

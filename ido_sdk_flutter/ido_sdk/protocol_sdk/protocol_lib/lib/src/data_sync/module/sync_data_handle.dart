@@ -15,8 +15,9 @@ abstract class AbstractSyncData {
   final SyncProgressCallback funcProgress;
   final SyncDataCallback funcData;
   final SyncCompletedCallback funcCompleted;
+  final List<int>? types;
 
-  AbstractSyncData(this.needSyncActivity, this.needSyncGps, this.funcProgress,
+  AbstractSyncData(this.types, this.needSyncActivity, this.needSyncGps, this.funcProgress,
       this.funcData, this.funcCompleted);
 
   /// 开始同步所有数据
@@ -33,7 +34,7 @@ class SyncDataHandle extends AbstractSyncData {
   StreamSubscription? _syncStreamSubscription;
   late Completer<bool>? _completer;
 
-  SyncDataHandle(super.needSyncActivity, super.needSyncGps, super.funcProgress,
+  SyncDataHandle(super.types, super.needSyncActivity, super.needSyncGps, super.funcProgress,
       super.funcData, super.funcCompleted);
 
   @override
@@ -43,7 +44,7 @@ class SyncDataHandle extends AbstractSyncData {
 
   @override
   void stop() {
-    funcCompleted(ErrorCode.success);
+    funcCompleted(ErrorCode.canceled);
     _completer?.complete(true);
     _completer = null;
     _syncStreamSubscription?.cancel();
@@ -127,6 +128,7 @@ extension _IDOSyncDataExt on SyncDataHandle {
     else if (_isNeedSyncV3Data()) {
       final v3DataStream = _coreMgr
           .sync(
+          selectTypes: types ?? [],
               type: SyncType.v3Data,
               progressCallback: (progress, type) {
                 if (funcProgress != null) {

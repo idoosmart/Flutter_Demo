@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:protocol_ffi/protocol_ffi.dart';
 import '../manager/response.dart';
@@ -12,6 +13,9 @@ class SyncTask extends BaseTask {
   final SyncType syncType;
   final SyncProgressCallback? progressCallback;
   final SyncDataCallback? dataCallback;
+  List<int>? selectTypes;
+  late final Queue<int> _queueTypes = Queue();
+  Completer<bool>? _completerSingleSync;
 
   Completer<CmdResponse>? _completer;
 
@@ -30,6 +34,9 @@ class SyncTask extends BaseTask {
       final res = SyncResponse(code: ErrorCode.canceled);
       _completer!.complete(res);
       _completer = null;
+    }
+    if (_completerSingleSync != null && !_completerSingleSync!.isCompleted) {
+      _completerSingleSync = null;
     }
     _stopSync();
   }
@@ -183,7 +190,7 @@ extension _SyncTask on SyncTask {
   }
 
   //同步v3数据
-  _syncV3Data() {
+  _syncV3Data() async {
     //v3进度
     coreManager.cLib.registerSyncV3HealthDataProgressCallbackReg(func:(int progress){
       if (_status == TaskStatus.canceled) {
@@ -199,6 +206,17 @@ extension _SyncTask on SyncTask {
       if (_status == TaskStatus.canceled) {
         return;
       }
+      if (_isSingleSync()) {
+        logger?.v("单项同步 - 剩余 ${_queueTypes.length} 项 errorCode: $errorCode");
+        if (_completerSingleSync != null && !_completerSingleSync!.isCompleted) {
+          _completerSingleSync?.complete(errorCode == 0);
+          _completerSingleSync = null;
+        }
+        // 队列未空，不触发完成回调 return
+        if (_queueTypes.isNotEmpty) {
+          return;
+        }
+      }
       _status = TaskStatus.finished;
       final res = SyncResponse(code: errorCode, syncType: SyncType.v3Data);
       _completer?.complete(res);
@@ -209,6 +227,7 @@ extension _SyncTask on SyncTask {
     //v3数据回调
     coreManager.cLib.registerV3SyncHealthJsonDataCbHandle(func:(String json,int type,int errorCode){
       if (_status == TaskStatus.canceled) {
+        logger?.d('canceled ignore. sync data type: $type data: $json error code: $errorCode');
         return;
       }
       SyncJsonType dataType = SyncJsonType.values[0];
@@ -247,7 +266,23 @@ extension _SyncTask on SyncTask {
           dataCallback!(dataType,json,errorCode);
       }
     });
-    coreManager.cLib.startSyncV3HealthData();
+
+    if (_isSingleSync()) {
+      _queueTypes.clear();
+      _queueTypes.addAll(selectTypes!);
+      do {
+        if (_status == TaskStatus.canceled) {
+          logger?.d("单项同步 - 同步取消");
+          break;
+        }
+        final type = _queueTypes.removeFirst();
+        logger?.v("单项同步 - 开始 type: $type");
+        await _doSingleSync(type);
+        logger?.v("单项同步 - 结束 type: $type");
+      } while(_queueTypes.isNotEmpty);
+    }else {
+      coreManager.cLib.startSyncV3HealthData();
+    }
   }
 
   //停止同步数据
@@ -267,5 +302,19 @@ extension _SyncTask on SyncTask {
         break;
       default:
     }
+  }
+
+  /// 同步指定项
+  Future<bool> _doSingleSync(int type) async {
+    _completerSingleSync = Completer();
+    Future(() {
+      coreManager.cLib.syncV3HealthDataCustomResource(type);
+    });
+    return _completerSingleSync!.future;
+  }
+
+  /// 单项同步
+  bool _isSingleSync() {
+      return syncType == SyncType.v3Data && selectTypes != null && selectTypes!.isNotEmpty;
   }
 }

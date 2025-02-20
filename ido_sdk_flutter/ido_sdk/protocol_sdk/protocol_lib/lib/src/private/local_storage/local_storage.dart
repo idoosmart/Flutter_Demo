@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -6,9 +7,9 @@ import 'package:get_storage_lite/get_storage.dart';
 import 'package:native_channel/native_channel.dart';
 
 import '../../function_table/model/function_table_model.dart';
-import '../../device_info/model/device_info_model.dart';
 import '../../device_info/model/firmware_version_model.dart';
 import '../../device_info/model/device_info_ext_model.dart';
+import '../../sub_modules/model/device_ota_info.dart';
 import '../logger/logger.dart';
 
 part 'part/local_storage_impl.dart';
@@ -103,6 +104,12 @@ abstract class LocalStorage {
   /// ```
   Future<String> pathCLibFuncTable();
 
+  /// ota缓存目录
+  /// ```
+  /// 返回：/xx/../ido_sdk/devices/ota
+  /// ```
+  Future<String> pathOTA();
+
   /// 创建目录
   Future<bool> createDir({required String absoluteDirPath});
   /// 删除目录（同时删除目录下所有内容）
@@ -132,6 +139,7 @@ abstract class LocalStorage {
   // 设备信息
   Future<DeviceInfoModel?> loadDeviceInfoByDisk();
   Future<bool> saveDeviceInfoToDisk(DeviceInfoModel deviceInfoModel);
+  Future<List<DeviceInfoModel>> loadDeviceInfoListByDisk({bool sortDesc = true});
 
   // 固件三级版本
   Future<FirmwareVersionModel?> loadFirmwareVersionByDisk();
@@ -163,9 +171,18 @@ abstract class LocalStorage {
   Future<bool> cleanIconInfoData(String macAddress);
   Future<bool> removeIconDir(String dirPath);
 
+  // 用户设置的默认消息图标
+  Future<IDOAppIconInfoModel?> loadUserDefaultMsgIconByDisk();
+  Future<bool> saveUserDefaultMsgIconToDisk(IDOAppIconInfoModel model);
+  Future<bool> cleanUserMsgDefaultIcon();
+
   // 日志文件保存策略
   Future<Map<String, dynamic>?> loadLogConfigProtocol();
   Future<int?> loadLogConfigClib();
   Future<bool> saveLogConfigProtocol(int fileSize, fileCount);
   Future<bool> saveLogConfigClib(int saveDay);
+
+  Future<IDODeviceOtaInfo?> loadOtaInfoByDisk();
+  Future<bool> saveOtaInfoToDisk(IDODeviceOtaInfo otaInfo);
+  Future<bool> removeOtaInfo(String macAddress);
 }

@@ -16,6 +16,8 @@ export 'src/ido_protocol_core.dart';
 export 'src/extension/tools.dart';
 export 'src/extension/sport.dart';
 export 'src/extension/alexa.dart';
+export 'src/extension/device2app.dart';
+export 'src/extension/sync_data.dart';
 
 export 'src/manager/response.dart';
 export 'src/manager/request.dart';

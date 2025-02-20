@@ -183,6 +183,45 @@ class IDOV3ExchangeModel {
   int? gpsCount;
   /// gps数据详情集合 [{'latitude':0,'longitude':0}]
   List<Map<String,dynamic>>? gpsData = [];
+  /// 分段数据个数
+  int? segmentItemNum;
+  /// 分段数据总时间 单位秒
+  int? segmentTotalTime;
+  /// 分段数据总距离 单位米
+  int? segmentTotalDistance;
+  /// 分段数据总配速 单位秒/百米
+  int? segmentTotalPace;
+  ///分段数据总平均心率
+  int? segmentTotalAvgHr;
+  /// 分段数据总步频 单位次/分
+  int? segmentTotalAvgStepFrequency;
+  /// 区间配速
+  /// 高强度间歇配速 单位秒/百米
+  int? paceHiit;
+  /// 区间配速
+  /// 无氧配速
+  /// 单位秒/百米
+  int? paceAnaerobic;
+  /// 区间配速
+  /// 乳酸阈配速
+  /// 单位秒/百米
+  int? paceLacticAcidThreshold;
+  /// 区间配速
+  /// 马拉松配速
+  /// 单位秒/百米
+  int? paceMarathon;
+  /// 区间配速
+  /// 轻松跑配速
+  /// 单位秒/百米
+  int? paceEasyRun;
+  /// 分段数据详情
+  /// index ：分段序号
+  /// time: 用时 单位秒
+  /// distance: 距离 单位米
+  /// pace: 配速 单位秒/百米
+  /// avg_hr: 平均心率 单位次/分
+  /// avg_step_frequency: 平均步频 单位次/分
+  List<Map<String, dynamic>>? segmentItems = [];
 
   IDOV3ExchangeModel({
     this.year= 0,
@@ -267,7 +306,19 @@ class IDOV3ExchangeModel {
     this.realSpeeds= const [],
     this.intervalSecond= 0,
     this.gpsCount= 0,
-    this.gpsData = const []
+    this.gpsData = const [],
+    this.segmentItemNum = 0,
+    this.segmentTotalTime = 0,
+    this.segmentTotalDistance = 0,
+    this.segmentTotalPace = 0,
+    this.segmentTotalAvgHr = 0,
+    this.segmentTotalAvgStepFrequency = 0,
+    this.paceHiit = 0,
+    this.paceAnaerobic = 0,
+    this.paceLacticAcidThreshold = 0,
+    this.paceMarathon = 0,
+    this.paceEasyRun = 0,
+    this.segmentItems = const [],
   });
 
   factory IDOV3ExchangeModel.fromJson(Map<String, dynamic> json) =>

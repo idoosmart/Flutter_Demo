@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:path/path.dart' as path;
 
 import 'package:protocol_core/protocol_core.dart';
 import 'package:protocol_lib/protocol_lib.dart';
@@ -59,6 +60,10 @@ extension _WatchFileExt on WatchFile {
     // 解压缩
     await unzipFileIfNeed(item.filePath, unzipDir);
 
+    // 由于制作表盘人员并不一定会按照表盘的目录格式进行压缩，因此需要做兼容处理
+    // 在解压缩后的目录下，递归找到iwf.json所在目录即可
+    final newUnzipDir = (await findIwfJsonDirectory(unzipDir)) ?? unzipDir;
+
     // 表盘信息
     final json = await _getWatchDialInfoIfNeed();
     int format = json['format'] as int;
@@ -66,7 +71,7 @@ extension _WatchFileExt on WatchFile {
 
     // 制作.iwf.lz文件
     final originalSize = await _makeIwfLzIfNeed(
-        unzipDir, 'dial.iwf', format, blockSize, iwfLzFilePath);
+        newUnzipDir, 'dial.iwf', format, blockSize, iwfLzFilePath);
 
     newItem.originalFileSize = originalSize;
     // 保存文件大小
@@ -210,6 +215,23 @@ extension _WatchFileIwfLz on WatchFile {
     }
     return Future.value(originalSize);
   }
+
+  /// 获取.iwf.json文件目录
+  Future<String?> findIwfJsonDirectory(String startPath) async {
+    final dir = Directory(startPath);
+    try {
+      await for (final entity in dir.list(recursive: true)) {
+        if (entity is File && path.basename(entity.path) == 'iwf.json') {
+          return "${path.dirname(entity.path)}/";
+        }
+      }
+    } catch (e) {
+      logger?.e('findIwfJsonDirectory: $e');
+    }
+
+    return null;
+  }
+
 }
 
 extension _WatchFileWallpaperZ on WatchFile {

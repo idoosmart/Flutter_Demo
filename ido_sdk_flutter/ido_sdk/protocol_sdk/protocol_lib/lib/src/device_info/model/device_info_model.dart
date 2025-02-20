@@ -34,6 +34,8 @@ class DeviceInfoModel {
   @JsonKey(name: 'user_defined_dial_main_version')
   final int? userDefinedDialMainVersion;
   dynamic sn;
+  @JsonKey(name: "gps_platform")
+  final int? gpsPlatform;
 
   DeviceInfoModel({
     this.battStatus,
@@ -53,7 +55,8 @@ class DeviceInfoModel {
     this.shape,
     this.showBindChoiceUi,
     this.userDefinedDialMainVersion,
-    this.sn
+    this.sn,
+    this.gpsPlatform
   });
 
   factory DeviceInfoModel.fromJson(Map<String, dynamic> json) =>

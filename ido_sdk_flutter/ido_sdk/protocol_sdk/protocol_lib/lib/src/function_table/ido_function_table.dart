@@ -454,6 +454,7 @@ class BaseFunctionTable {
   ///匹克球
   bool get sportPickleBall => ft?.pickleball ?? false;
 
+
   // ------------------ 获取 ------------------
 
   /// 获取实时数据
@@ -560,7 +561,8 @@ class BaseFunctionTable {
 
   /// 支持获取固件歌曲名和文件夹指令下发和固件回复使用协议版本号0x10
   bool get getSupportGetBleMusicInfoVerV3 => ft?.v3SupportGetBleMusicInfoVersion0x10 ?? false;
-
+  
+  @Deprecated("已废弃，请使用getBleAndBtVersion")
   /// 获得固件三级版本和BT的三级版本
   bool get getBtVersion => ft?.v3V202EbFirmwareBtVersion01Create ?? false;
 
@@ -752,6 +754,36 @@ class BaseFunctionTable {
 
   /// 勿扰支持事件范围开关和重复
   bool get getSupportDisturbHaveRangRepeat => ft?.disturbHaveRangRepeat ?? false;
+
+  /// 日历提醒
+  bool get getSupportCalendarReminder => ft?.supportCalendarReminder ?? false;
+
+  /// 表盘传输需要对应的传输原始的没有压缩的大小给固件,增加字段watch_file_size
+  bool get getWatchDailSetAddSize => ft?.v3WatchDailSetAddSize ?? false;
+
+  /// 支持同步过高过低时心率数据
+  bool get getSupportSyncOverHighLowHeartData => ft?.v3SupportSyncOverHighLowHeartData ?? false;
+
+  /// 间隔一分钟同步新增（206设备）
+  bool get getSupportPerMinuteOne => ft?.supportPerMinuteOne ?? false;
+
+  /// 支持全天步数目标达成提醒开关
+  bool get getSupportAchievedRemindOnOff => ft?.supportAchievedRemindOnOff ?? false;
+
+  /// 支持喝水计划
+  bool get getSupportDrinkPlan => ft?.supportDrinkPlan ?? false;
+
+  /// 支持表盘包打包jpg图片
+  bool get getSupportMakeWatchDialDecodeJpg => ft?.supportMakeWatchDialDeocdeJpg ?? false;
+
+  /// 支持睡眠计划
+  bool get getSupportSleepPlan => ft?.supportSleepPlan ?? false;
+
+  /// 支持获取设备算法文件
+  bool get getSupportDeviceOperateAlgFile => ft?.supportGetProtocolV3OperateAlgFile ?? false;
+
+  /// 支持获取运动记录的显示项配置
+  bool get getSupportSportRecordShowConfig => ft?.protocolV3SportRecordShowConfig ?? false;
 
   // ------------------ 设置 ------------------
 
@@ -1051,6 +1083,75 @@ class BaseFunctionTable {
   /// 支持屏蔽跑步计划入口
   bool get getNotSupportAppSendRunPlan => ft?.notSupportAppSendRunPlan ?? false;
 
+  /// 支持APP展示零星小睡睡眠数据
+  bool get getSupportDisplayNapSleep => ft?.supportDisplayNapSleep ?? false;
+
+  /// 支持app获取智能心率
+  bool get getSupportGetSmartHeartRate => ft?.supportGetSmartHeartRate ?? false;
+
+  /// 支持app获取压力开关
+  bool get getSupportGetPressureSwitchInfo => ft?.supportGetPressureSwitchInfo ?? false;
+
+  /// 支持电子卡片功能
+  bool get getSupportECardOperate => ft?.supportECardOperate ?? false;
+
+  /// 支持语音备忘录功能
+  bool get getSupportVoiceMemoOperate => ft?.supportVoiceMemoOperate ?? false;
+
+  /// 支持晨报功能
+  bool get getSupportMorningEdition => ft?.supportMorningEdition ?? false;
+
+  /// 支持app获取血氧饱和度开关
+  bool get getSupportGetSpo2SwitchInfo => ft?.supportGetSpo2SwitchInfo ?? false;
+
+  /// 支持同步心率使用version字段兼容
+  bool get getSupportSyncHealthHrUseVersionCompatible => ft?.supportSyncHealthHrUseVersionCompatible ?? false;
+
+  /// v3天气设置增加下发48小时天气数据
+  bool get getSupportSetV3Add48HourWeatherData => ft?.v3SupportSetV3Add48HourWeatherData ?? false;
+
+  /// 功能表开启后,室内跑步不支持获取最大摄氧量,app室内跑步不展示此数据
+  bool get getNotSupportIndoorRunGetVo2max => ft?.notSupportIndoorRunGetVo2max ?? false;
+
+  /// 支持app设置心电图测量提醒
+  bool get getSupportSetEcgReminder => ft?.supportSetEcgReminder ?? false;
+
+  /// 支持同步心电图(ecg)数据
+  bool get getSupportSyncEcg => ft?.supportSyncEcg ?? false;
+
+  /// 支持游戏时间设置
+  bool get getSupportSetGameTimeReminder => ft?.supportSetGameTimeReminder ?? false;
+
+  /// 支持配置默认的消息应用列表
+  bool get getSupportConfigDefaultMegApplicationList => ft?.supportConfigDefaultMegApplicationList ?? false;
+
+  /// 支持app设置eci
+  bool get getSupportSetEciReminder => ft?.supportSetEciReminder ?? false;
+
+  /// 环境音量支持设置通知类型
+  bool get setSupportNoiseSetNotifyFlag => ft?.noiseSupportSetNotifyFlag ?? false;
+
+  /// 环境音量支持设置过高提醒
+  bool get setSupportNoiseSetOverWarning => ft?.noiseSupportSetOverwarning ?? false;
+
+  /// 支持设置版本信息
+  bool get setSupportSetVersionInformation => ft?.supportSetVersionInformation ?? false;
+
+  /// 支持小程序操作
+  bool get setSupportControlMiniProgram => ft?.supportControlMiniProgram ?? false;
+
+  /// 支持下发未来和历史空气质量数据
+  bool get getSupportSetWeatherHistoryFutureAqi => ft?.supportSetWeatherHistoryFutureAqi ?? false;
+
+  // ///
+  // bool get getSupportSetV3Add48HourWeatherDataOrCityName => ft?.v3SupportSetV3Add48HourWeatherDataOrCityname ?? false;
+
+  /// 支持设置亮屏亮度时间
+  bool get setBrightScreenTime => ft?.v2SupportSetBrightScreenTime ?? false;
+
+  /// 支持设置心率过高过低提醒
+  bool get setHeartSetRateModeCustom => ft?.v3HeartSetRateModeCustom ?? false;
+
   // ------------------ 语言 ------------------
 
   /// 中文
@@ -1169,6 +1270,12 @@ class BaseFunctionTable {
 
   ///巴西葡语
   bool get languageBrazilianPortuguese => ft?.langBrazilianPortuguese ?? false;
+
+  /// 希伯来语
+  bool get languageHebrew => ft?.langHebrew ?? false;
+
+  /// 塞尔维亚语
+  bool get languageSerbian => ft?.langSerbian ?? false;
 // ------------------ 同步 ------------------
 
   /// v3 心率
@@ -1255,7 +1362,7 @@ class BaseFunctionTable {
 // ------------------ 闹钟 ------------------
 
   /// 闹钟个数
-  int get alarmCount => ft?.alarmCount ?? 0;
+  int get alarmCount => ft?.alarmCount ?? 10;
 
   /// 刷牙
   bool get alarmBrushTeeth => ft?.alarmBrushTeeth ?? false;
@@ -1386,7 +1493,7 @@ class IDOFunctionTable extends BaseFunctionTable {
         if (notTelink) {
           storage?.saveFunctionTableToDisk(_ft!);
         }
-        statusNotification
+        statusSdkNotification
             ?.add(IDOStatusNotification.functionTableUpdateCompleted);
         return this;
       }

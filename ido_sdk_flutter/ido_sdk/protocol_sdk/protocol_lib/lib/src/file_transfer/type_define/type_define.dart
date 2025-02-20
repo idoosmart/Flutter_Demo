@@ -57,12 +57,14 @@ typedef CallbackFileTransStatusMultiple = void Function(
 ///  24 空间够但需要整理
 ///  25 空间整理中
 ///
-///  sdk扩展补充:
+///  当指令发出前异常时:
 /// -1 取消
 /// -2 失败
 /// -3 指令已存在队列中
-/// -4 设备断线
-/// -5 ota模式
+/// -4 执行快速配置中，指令忽略
+/// -5 设备处于ota模式
+/// -6 未连接设备
+/// -7 执行中的指令被中断(由于发出的指令不能被实际取消，故存在修改指令被中断后可能还会导致设备修改生效的情况)
 /// ```
 typedef CallbackFileTransErrorCode = void Function(
     int index, int errorCode, int errorCodeFromDevice, int finishingTime);
@@ -70,7 +72,7 @@ typedef CallbackFileTransErrorCode = void Function(
 /// 传输文件类型
 enum FileTransType {
   /// 固件升级
-  fw({'.fw'}),
+  fw({'.fw', '.bin', '.zip'}),
 
   /// 图片资源升级 (不指定后缀即不限后缀)
   fzbin({}),
@@ -91,7 +93,7 @@ enum FileTransType {
   watch({}),
 
   /// 壁纸表盘
-  wallpaper_z({'.jpg', '.png', '.bmp'}),
+  wallpaper_z({'.jpg', '.png', '.webp'}),
 
   /// 通讯录文件
   ml({'.json'}),
@@ -126,7 +128,17 @@ enum FileTransType {
   voice({'.mp3', '.pcm'}),
 
   /// 提示音
-  ton({'.ton'});
+  ton({'.ton'}),
+
+  /// 小程序
+  app({'.app'}),
+
+  /// 其它类型：不限后缀，不对文件二次加工，直接上传到设备
+  /// ```
+  /// hid: 检测引导程序hid更新(android专用)
+  /// xx: xxxxx
+  /// ```
+  other({});
 
   const FileTransType(this.typeNameSet);
   final Set<String> typeNameSet;

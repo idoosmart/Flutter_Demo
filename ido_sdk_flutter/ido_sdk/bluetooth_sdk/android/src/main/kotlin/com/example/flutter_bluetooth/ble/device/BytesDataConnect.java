@@ -24,17 +24,24 @@ public abstract class BytesDataConnect extends BaseConnect {
 
     private static final int WHAT_SEND_NO_ANSWER_TIMEOUT = 1;
 
+    private static final int WHAT_SEND_ERROR = 2;
+
+
+    private static final int WHAT_SEND_Next = 3;
+
     /**
      * 发送过去之后，无响应的超时时间
      */
     private static final long TIME_SEND_TIMEOUT = 3000;
 
-    private static final int MAX_CMD_QUEUE_SIZE = 10;
+    private static final int MAX_CMD_QUEUE_SIZE = 30;
     /**
      * 待发送数据命令 队列
      */
-    private final LinkedList<byte[]> mCmdDataQueue = new LinkedList<>();
+    private final LinkedList<ByteDataRequest> mCmdDataQueue = new LinkedList<>();
 
+    private final Object mLock = new Object();
+    ByteDataRequest currentByteDataRequest;
     /**
      * 是否正在发送数据
      */
@@ -51,6 +58,8 @@ public abstract class BytesDataConnect extends BaseConnect {
 
     private BluetoothGattCharacteristic mWriteNormalGattCharacteristic;
     private BluetoothGattCharacteristic mWriteHealthGattCharacteristic;
+    private BluetoothGattCharacteristic mWriteHenxuanGattCharacteristic;
+    private BluetoothGattCharacteristic mWriteVCGattCharacteristic;
 
     private final Handler mHandler = new Handler(Looper.getMainLooper()) {
         @Override
@@ -64,6 +73,12 @@ public abstract class BytesDataConnect extends BaseConnect {
                     Logger.e("[BytesDataConnect] no respond on last cmd, send next ...");
                     sendNextCmdData();
                 }
+            }else if(msg.what == WHAT_SEND_ERROR){
+                Logger.e("[BytesDataConnect]  send error  delay send ...");
+                mIsSendingCmdData = false;
+                sendNextCmdData();
+            }else if(msg.what == WHAT_SEND_Next){
+                sendNextCmdData();
             }
         }
     };
@@ -98,10 +113,11 @@ public abstract class BytesDataConnect extends BaseConnect {
         }
 
         mWriteDataFailedCount++;
-        if (mWriteDataFailedCount > 10) {
+        if (mWriteDataFailedCount > MAX_CMD_QUEUE_SIZE) {
             Logger.e("[BytesDataConnect] handleWriteFailedStatus, mSendFailedCount > 10, clear and disconnect");
             clearQueueAndDisconnect();
             mIsReSendData = false;
+            mIsSendingCmdData = false;
             mWriteDataFailedCount = 0;
             return;
         }
@@ -109,14 +125,23 @@ public abstract class BytesDataConnect extends BaseConnect {
         //有的时候写入过快，会导致失败，所以这里重发
         //重发时必须要保证顺序不能变（像文件传输相关命令，不能错乱，错乱了就会导致传输失败）
         //只重发“文件传输相关的命令” + Alexa语音命令
-        if (isFileTranCmd(failedData) || isSendAlexaVoiceCmd(failedData)) {
-            mIsReSendData = true;
-            Logger.e("[BytesDataConnect] isFileTranCmd  mIsReSendData:" + mIsReSendData);
-            resendData(failedData);
+       if (isFileTranCmd(failedData) || isSendAlexaVoiceCmd(failedData)) {
+           synchronized (mLock){
+               mIsReSendData = true;
+               mCmdDataQueue.addFirst(currentByteDataRequest);
+               Logger.e("[BytesDataConnect] isFileTranCmd  mIsReSendData:"+mIsReSendData);
+               resendData(failedData);
+           }
         } else {
-            mIsSendingCmdData = false;
-            sendNextCmdData();
+           mHandler.sendEmptyMessageDelayed(WHAT_SEND_ERROR,200);
         }
+    /*    mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mIsSendingCmdData  = false;
+                sendNextCmdData();
+            }
+        }, 200);*/
     }
 
     private synchronized void sendNextCmdData() {
@@ -135,9 +160,17 @@ public abstract class BytesDataConnect extends BaseConnect {
         }
         mIsSendingCmdData = true;
 
-        final byte[] data = mCmdDataQueue.poll();
-        if (data == null) {
+        currentByteDataRequest = getDataFromQueue();
+        if (currentByteDataRequest == null || currentByteDataRequest.getSendData() == null ) {
             Logger.e("[BytesDataConnect] sendNextCmdData data is null");
+            mIsSendingCmdData = false;
+            sendNextCmdData();
+            return;
+        }
+
+        //防止不支持kr3 的设备，然后初始化了恒玄的导致指令发送异常
+        if(currentByteDataRequest.getPlatform() == ByteDataRequest.TYPE_HENXUAN && platform != ByteDataRequest.TYPE_HENXUAN){
+            Logger.e("[BytesDataConnect] 当前设备不支持 恒玄平台发送数据");
             mIsSendingCmdData = false;
             sendNextCmdData();
             return;
@@ -150,7 +183,17 @@ public abstract class BytesDataConnect extends BaseConnect {
             return;
         }
 
-        sendData(data);
+        if(platform==ByteDataRequest.TYPE_HENXUAN){
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    sendData();
+                }
+            }, 10);
+
+        }else {
+            sendData();
+        }
 
 //        boolean result = writeBytes(data);
 //        if (!result){
@@ -170,64 +213,74 @@ public abstract class BytesDataConnect extends BaseConnect {
 
     }
 
+    private  ByteDataRequest getDataFromQueue() {
+        synchronized (mLock) {
+            return mCmdDataQueue.poll();
+        }
+    }
+
     private void resendData(final byte[] data) {
         //post到队列里，延时一会
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                mIsReSendData = true;
-                Logger.e("[BytesDataConnect] retry send => " + ByteDataConvertUtil.bytesToHexString(data));
-                sendData(data);
+                Logger.e("[BytesDataConnect] retry send => " + ByteDataConvertUtil.bytesToHexString(data, 30));
+                mIsReSendData = false;
+                mIsSendingCmdData = false;
+                sendNextCmdData();
             }
-        }, 300);
+        }, 200);
 
     }
 
-    private void sendData(byte[] data) {
-        boolean result = writeBytes(data);
+    private void sendData() {
+        boolean result = writeBytes();
         if (!result) {
-//            if (isFileTranCmd(data)) {
-//                handleFileTranDataFailedStatus(data);
-//            }else {
-//                mIsSendingCmdData = false;
-//                sendNextCmdData();
-//            }
-
-            handleFileTranDataFailedStatus(data);
+            handleFileTranDataFailedStatus(currentByteDataRequest.getSendData());
             return;
         }
         //只要有一次写入成功，就清零
         mWriteDataFailedCount = 0;
         //只要重发(写入)没有成功，就不会走到这里来
         mIsReSendData = false;
-        if (isNoNeedWaitResponseCmd(data)) {
+        mHandler.sendEmptyMessageDelayed(WHAT_SEND_NO_ANSWER_TIMEOUT, TIME_SEND_TIMEOUT);
+       /* if (isNoNeedWaitResponseCmd(data)) {
             mIsSendingCmdData = false;
             sendNextCmdData();
         } else {
             mHandler.sendEmptyMessageDelayed(WHAT_SEND_NO_ANSWER_TIMEOUT, TIME_SEND_TIMEOUT);
-        }
+        }*/
     }
 
     private BluetoothGatt getRealGatt() {
         return getGatt();
     }
 
-    @SuppressLint("MissingPermission")
-    private boolean writeBytes(byte[] data) {
-        final BluetoothGattCharacteristic characteristic = getGattCharacteristic(getRealGatt(), data);
-        if (characteristic != null && (BluetoothGattCharacteristic.PROPERTY_WRITE & characteristic.getProperties()) > 0) {
-            characteristic.setValue(data);
-
-            if (isNoNeedWaitResponseCmd(data)) {
+    private boolean writeBytes() {
+        final BluetoothGattCharacteristic characteristic = getGattCharacteristic(getRealGatt(), currentByteDataRequest);
+        Logger.e("[BytesDataConnect] sendata: "+ByteDataConvertUtil.bytesToHexString(currentByteDataRequest.getSendData(), 30));
+        if(characteristic==null){
+            if(getRealGatt()==null){
+                Logger.e("[BytesDataConnect] send(),getRealGatt:  null");
+            }
+            Logger.e("[BytesDataConnect] send(),characteristic:  null-- platform"+currentByteDataRequest.getPlatform());
+            mIsReSendData = false;
+            sendNextCmdData();
+            return true;
+        }
+        if (characteristic != null ){
+            characteristic.setValue(currentByteDataRequest.getSendData());
+            // characteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
+            if (currentByteDataRequest.getPlatform()== ByteDataRequest.TYPE_HENXUAN || isNoNeedWaitResponseCmd(currentByteDataRequest.getSendData()) ){
                 characteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
-            } else {
+            }else {
                 characteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
             }
 //            if (BluetoothGattSettingListener.getBluetoothGattSettingListener() != null){
 //                BluetoothGattSettingListener.getBluetoothGattSettingListener().addParaToCharacteristic(characteristic);
 //            }
-        } else {
-            Logger.e("[BytesDataConnect] send(), characteristic error!");
+        }else {
+            Logger.e("[BytesDataConnect] send(), characteristic errorddd!");
             return false;
         }
 
@@ -238,19 +291,20 @@ public abstract class BytesDataConnect extends BaseConnect {
             return false;
         }
 
-        if (getRealGatt() == null) {//防止蓝牙断开后，被清除了
+        if(getRealGatt()==null){//防止蓝牙断开后，被清除了
             Logger.e("[BytesDataConnect] send(), getRealGatt == null");
             return false;
         }
         boolean result = false;
         try {
             result = getRealGatt().writeCharacteristic(characteristic);//之前的写法，当读写操作频繁时，容易报 [BytesDataConnect] send(), writeCharacteristic() error!
+            Logger.e("[BytesDataConnect] send(), write data  result:"+result);
             //result = writeCharacteristic(characteristic);
             if (!result) {
                 Logger.e("[BytesDataConnect] send(), writeCharacteristic() error!");
             }
-        } catch (Exception e) {
-            Logger.e("[BytesDataConnect] send(), writeCharacteristic() Exception!");
+        }catch (Exception e){
+            Logger. e("[BytesDataConnect] send(), writeCharacteristic() Exception!");
         }
 
         return result;
@@ -303,17 +357,26 @@ public abstract class BytesDataConnect extends BaseConnect {
         return field.get(object);
     }
 
-    private BluetoothGattCharacteristic getGattCharacteristic(BluetoothGatt gatt, byte[] data) {
-        if (isHealthCmd(data)) {
-            if (mWriteHealthGattCharacteristic == null) {
+    private BluetoothGattCharacteristic getGattCharacteristic(BluetoothGatt gatt, ByteDataRequest byteDataRequest) {
+        if(byteDataRequest.getPlatform() == ByteDataRequest.TYPE_HENXUAN){
+            if (mWriteHenxuanGattCharacteristic == null){
+                mWriteHenxuanGattCharacteristic = BLEGattAttributes.getHenxuanWriteCharacteristic(gatt);
+            }
+            return mWriteHenxuanGattCharacteristic;
+        }else if(byteDataRequest.getPlatform() == ByteDataRequest.TYPE_VC){
+            if (mWriteVCGattCharacteristic == null){
+                mWriteVCGattCharacteristic = BLEGattAttributes.getVCWriteCharacteristic(gatt);
+            }
+            return mWriteVCGattCharacteristic;
+        } else if (isHealthCmd(byteDataRequest.getSendData())){
+            if (mWriteHealthGattCharacteristic == null){
                 mWriteHealthGattCharacteristic = BLEGattAttributes.getHealthWriteCharacteristic(gatt);
             }
             return mWriteHealthGattCharacteristic;
-        } else {
-            if (mWriteNormalGattCharacteristic == null) {
+        }else {
+            if (mWriteNormalGattCharacteristic == null){
                 mWriteNormalGattCharacteristic = BLEGattAttributes.getNormalWriteCharacteristic(gatt);
             }
-
             return mWriteNormalGattCharacteristic;
         }
     }
@@ -325,22 +388,6 @@ public abstract class BytesDataConnect extends BaseConnect {
     private boolean isNoNeedWaitResponseCmd(byte[] cmd) {
         //针对Agps文件的协议、Alexa语音
         return (cmd[0] & 0xff) == 0xD1 || (cmd[0] & 0xff) == 0x13;
-    }
-
-
-    private BluetoothGattCharacteristic getGattCharacteristic(
-            BluetoothGatt gatt, Constants.CommandType commandType) {
-        if (isHealthCmd(commandType)) {
-            if (mWriteHealthGattCharacteristic == null) {
-                mWriteHealthGattCharacteristic = BLEGattAttributes.getHealthWriteCharacteristic(gatt);
-            }
-            return mWriteHealthGattCharacteristic;
-        } else {
-            if (mWriteNormalGattCharacteristic == null) {
-                mWriteNormalGattCharacteristic = BLEGattAttributes.getNormalWriteCharacteristic(gatt);
-            }
-            return mWriteNormalGattCharacteristic;
-        }
     }
 
     private boolean isNoNeedWaitResponseCmd(Constants.WriteType writeType) {
@@ -373,38 +420,38 @@ public abstract class BytesDataConnect extends BaseConnect {
     }
 
     private void receiverDeviceData(byte[] values) {
-//        Logger.p("[BytesDataConnect] receive <= " + ByteDataConvertUtil.bytesToHexString(values));
+       Logger.e("[BytesDataConnect] receive <= " + ByteDataConvertUtil.bytesToHexString(values, 30));
     }
 
-    protected void addCmdData(byte[] cmd, boolean isForce) {
-        if (cmd == null || cmd.length == 0) {
+    protected void addCmdData(ByteDataRequest request, boolean isForce) {
+        if (request == null || request.getSendData() == null){
             Logger.e("[BytesDataConnect] onAddCmd() ignore, data is null");
             return;
         }
-
-//        Logger.p("[BytesDataConnect] addCmdData( " + ByteDataConvertUtil.bytesToHexString(cmd) + ")");
-
-
-        if (isForce) {
-            mCmdDataQueue.addFirst(cmd);
-        } else {
-            mCmdDataQueue.add(cmd);
+        int size = mCmdDataQueue.size();
+        Logger.e("[BytesDataConnect] addCmdData( " + ByteDataConvertUtil.bytesToHexString(request.getSendData(), 30) + "---+platform" +request.getPlatform());
+        if(isSendTimeCmd(request.getSendData(),request.getPlatform())){
+            isForce = true;
+            Logger.e("[BytesDataConnect] addCmdData isforce ");
         }
-
-        Logger.p("[BytesDataConnect] addCmdData que size = " + mCmdDataQueue.size());
-
-        sendNextCmdData();
-    }
-
-    private void handleCmdDataQueue() {
-        //如果待发送cmd数量超过最大限值，则移除前面的，保留最新的5个
-        if (mCmdDataQueue.size() > MAX_CMD_QUEUE_SIZE) {
-            Logger.e("[BytesDataConnect] cmd queue is out of max size, handle it...");
-            for (int i = 0; i < MAX_CMD_QUEUE_SIZE - 5; i++) {
-                mCmdDataQueue.pollFirst();
+        synchronized (mLock){
+            if (isForce){
+                mCmdDataQueue.addFirst(request);
+            }else {
+                mCmdDataQueue.add(request);
             }
         }
+        Logger.e("[BytesDataConnect] addCmdData que size = " + mCmdDataQueue.size() );
+
+        if(size <2 ){
+            mHandler.sendEmptyMessage(WHAT_SEND_Next);
+        }
     }
+
+    private boolean isSendTimeCmd(byte[] cmd,int platform){
+        return (cmd[0]&0xff) == 0x03 && (cmd[1]&0xff) == 0x01 && platform == ByteDataRequest.TYPE_IDO;
+    }
+
 
     @Override
     protected void connect(String mac) {
@@ -440,9 +487,9 @@ public abstract class BytesDataConnect extends BaseConnect {
 
     private void deviceResponseOnLastSend(byte[] values, int status) {
         if (status == BluetoothGatt.GATT_SUCCESS) {
-            Logger.p("[BytesDataConnect] onDeviceResponseOnLastSend( " + ByteDataConvertUtil.bytesToHexString(values) + ")");
+            Logger.p("[BytesDataConnect] onDeviceResponseOnLastSend( " + ByteDataConvertUtil.bytesToHexString(currentByteDataRequest.getSendData(), 30) + ")");
         } else {
-            Logger.e("[BytesDataConnect] onDeviceResponseOnLastSend[failed]( " + ByteDataConvertUtil.bytesToHexString(values) + ")");
+            Logger.e("[BytesDataConnect] onDeviceResponseOnLastSend[failed]( " + ByteDataConvertUtil.bytesToHexString(values, 30) + ")");
         }
 
         mIsSendingCmdData = false;
@@ -465,7 +512,7 @@ public abstract class BytesDataConnect extends BaseConnect {
     }
 
     @Override
-    public void callOnConnectBreakByGATT(int status, int newState) {
+    public void callOnConnectBreakByGATT(int status, int newState,int platform) {
         destroy();
     }
 

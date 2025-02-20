@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:path/path.dart' as libpath;
 import 'package:protocol_ffi/protocol_ffi.dart';
 import 'package:protocol_core/protocol_core.dart';
 import 'package:native_channel/native_channel.dart';
@@ -58,30 +58,38 @@ extension _CommandTask on LogTask {
   }
 
   /// 删除过期文件
-  Future<bool>_deleteFileExpiration(String path) {
+  Future<bool>_deleteFileExpiration(String path) async {
     final directory = Directory(path);
     if (directory.existsSync()) {
-       directory.listSync(recursive: true).forEach((fileSystemEntity) {
-        if (fileSystemEntity is File) {
-           if (   fileSystemEntity.existsSync()
-               && FileSystemEntity.isFileSync(fileSystemEntity.path)) {
+      try {
+        for (FileSystemEntity fileSystemEntity in directory.listSync(recursive: true)) {
+          if (fileSystemEntity is File) {
+            if (libpath.basename(fileSystemEntity.path).endsWith("_history.log")) {
+              continue;
+            }
+            if (fileSystemEntity.existsSync() && FileSystemEntity.isFileSync(fileSystemEntity.path)) {
               /// 文件存在才操作
-              GetFileInfo().readFileInfo(fileSystemEntity.path).then((value) {
-                 final create = changeType(value?["createSeconds"]);
-                 int timestamp = DateTime.now().millisecondsSinceEpoch~/1000;
-                 logger?.d("device log name create time == $create file path == ${fileSystemEntity.path}");
-                 if (timestamp - create >= _durationDay) {
-                   logger?.d("the log file exceeds 7 days, need to delete it file path == ${fileSystemEntity.path}");
-                   /// 超过7天的文件删除
-                    fileSystemEntity.deleteSync();
-                 }
-              });
-           }
+              final value = await GetFileInfo().readFileInfo(fileSystemEntity.path);
+              final create = changeType(value?["createSeconds"]);
+              int timestamp = DateTime.now().millisecondsSinceEpoch~/1000;
+              logger?.d("flashLog - device log name create time == $create file path == ${fileSystemEntity.path}");
+              if (timestamp - create >= _durationDay) {
+                logger?.d("flashLog - the log file exceeds 7 days, need to delete it file path == ${fileSystemEntity.path}");
+                final historyFilePath = "${directory.path}/${libpath.basename(fileSystemEntity.path).split('.').first}_history.log";
+                fileSystemEntity.absolute.copySync(historyFilePath); // 先备份
+                /// 超过7天的文件删除
+                fileSystemEntity.deleteSync();
+              }
+            }
+          }
         }
-      });
-       return Future(() => true);
+        return Future(() => true);
+      } catch (e) {
+        logger?.e("flashLog - delete file error == $e");
+        return Future(() => false);
+      }
     } else {
-       return Future(() => false);
+      return Future(() => false);
     }
   }
 
@@ -151,7 +159,7 @@ extension _CommandTask on LogTask {
     _completer = null;
     _rebootTimer?.cancel();
     _rebootTimer = null;
-    logger?.d('get reboot log complete error code: $errorCode');
+    logger?.d('flashLog - get reboot log complete error code: $errorCode');
   }
 
   _startRebootLog() {
@@ -182,7 +190,7 @@ extension _CommandTask on LogTask {
     _status = TaskStatus.running;
     _completer = Completer<CmdResponse>();
     if (logType == LogType.reboot) {
-      logger?.d("start get old reboot log");
+      logger?.d("flashLog - start get old reboot log");
       _file = await _rebootFileInit() as File;
       coreManager.cLib.registerResponseRawData(func: (Uint8List data, int len) {
         if (_status != TaskStatus.running) {
@@ -210,7 +218,7 @@ extension _CommandTask on LogTask {
              || logType == LogType.hardware
              || logType == LogType.algorithm ) {
       /// falsh 日志全放在一起
-      logger?.d("start get flash general log");
+      logger?.d("flashLog - start get flash general log");
       _file = await _flashFileInit('general') as File;
       /// flash获取完成回调
       coreManager.cLib.registerFlashLogTranCompleteCbHandle(func:(int errorCode){
@@ -218,11 +226,11 @@ extension _CommandTask on LogTask {
         final res = LogResponse(code: errorCode, logType: LogType.general, logPath: _file?.path);
         _completer?.complete(res);
         _completer = null;
-        logger?.d('get flash general log complete');
+        logger?.d('flashLog - get flash general log complete');
       });
       /// flash获取进度回调
       coreManager.cLib.registerFlashLogTranProgressCallbackReg(func: (int progress) {
-          logger?.d('flash log progress == $progress');
+          logger?.d('flashLog - flash log progress == $progress');
           if (progressCallback != null) {
               progressCallback!(progress > 100 ? 100 : progress);
           }
@@ -275,7 +283,7 @@ extension _CommandTask on LogTask {
       coreManager.cLib.startGetFlashLog(type:4, fileName: _file?.path ?? '');
     }*/
     else if (logType == LogType.battery) {
-      logger?.d("start get device battery log");
+      logger?.d("flashLog - start get device battery log");
       _file = await _batteryFileInit() as File;
       coreManager.cLib.registerBatteryLogGetCompletedCallbackReg(func:(String json, int errorCode) {
         if (errorCode == 0) {
@@ -284,11 +292,11 @@ extension _CommandTask on LogTask {
         final res = LogResponse(code: errorCode, logType: LogType.battery, logPath: _file?.path, json: json);
         _completer?.complete(res);
         _completer = null;
-        logger?.d('get battery log complete error code:$errorCode');
+        logger?.d('flashLog - get battery log complete error code:$errorCode');
       });
       coreManager.cLib.getBatteryLogInfo();
     }else if (logType == LogType.heat) {
-      logger?.d("start get device heat log");
+      logger?.d("flashLog - start get device heat log");
       _file = await _heatFileInit() as File;
       coreManager.cLib.registerHeatLogGetCompletCallbackReg(func: (String json, int errorCode) {
         if (errorCode == 0) {
@@ -297,7 +305,7 @@ extension _CommandTask on LogTask {
         final res = LogResponse(code: errorCode, logType: LogType.heat, logPath: _file?.path, json: json);
         _completer?.complete(res);
         _completer = null;
-        logger?.d('get heat log complete error code:$errorCode');
+        logger?.d('flashLog - get heat log complete error code:$errorCode');
       });
       coreManager.cLib.getHeatLogInfo();
     }

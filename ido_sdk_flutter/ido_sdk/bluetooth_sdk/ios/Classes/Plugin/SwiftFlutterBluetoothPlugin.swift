@@ -23,9 +23,16 @@ public class SwiftFlutterBluetoothPlugin: NSObject, FlutterPlugin {
         switch method{
         case .getPlatformVersion:
             result("iOS " + UIDevice.current.systemVersion)
+        case .isIphone11OrLower:
+            result(isDeviceIPhone11OrLowerOrSameGenerationIPad())
         case .startScan:
             writeLog("channel startScan");
-            BluetoothManager.singleton.scan()
+            guard let arg = call.arguments as? Dictionary<String, Any> else {
+                writeLog("startScan error format" + String(describing: call.arguments))
+                return
+            }
+            let macAddress = arg["macAddress"] as? String
+            BluetoothManager.singleton.scan(macAddress)
         case .stopScan:
             writeLog("channel stopScan");
             BluetoothManager.singleton.stopScan()
@@ -74,6 +81,17 @@ public class SwiftFlutterBluetoothPlugin: NSObject, FlutterPlugin {
                 IDOUpdateFirmwareManager.singleton.startNordicDFU(manager: BluetoothManager.singleton.manager, target: BluetoothManager.singleton.peripheralDic[uuid] , filePath: filePath)
             }
             writeLog("channel startNordicDFU");
+        case .getDocumentPath:
+            let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first
+            result(path)
+            writeLog("channel getDocumentPath");
+        case .setCloseNotify:
+            guard let arg = call.arguments as? Dictionary<String, Any>, let device = arg.toModel(Device.self)  else {
+                writeLog("setCloseNotify error format " + String(describing: call.arguments))
+                return
+            }
+            BluetoothManager.singleton.setCloseNotifyCharacteristic(device)
+            writeLog("channel setCloseNotify");
         default:
             writeLog("Undefined method  " + call.method)
         }
@@ -101,4 +119,44 @@ extension SwiftFlutterBluetoothPlugin: FlutterStreamHandler{
         eventSink = nil
         return nil
     }
+}
+
+
+fileprivate var _isIphone11OrLower: Bool?
+fileprivate func isDeviceIPhone11OrLowerOrSameGenerationIPad() -> Bool {
+    guard _isIphone11OrLower == nil else {
+        return _isIphone11OrLower!
+    }
+    let deviceModel = getModeName()
+    // print("deviceModel:\(deviceModel)")
+    
+    // 使用正则表达式提取设备型号的数字部分
+    let pattern = "\\d+"
+    let regex = try? NSRegularExpression(pattern: pattern, options: [])
+    let range = NSRange(location: 0, length: deviceModel.utf16.count)
+    guard let match = regex?.firstMatch(in: deviceModel, options: [], range: range),
+          let modelNumberRange = Range(match.range, in: deviceModel) else {
+        _isIphone11OrLower = false
+        return _isIphone11OrLower!
+    }
+    
+    guard let modelNumber = Int(deviceModel[modelNumberRange]) else {
+        _isIphone11OrLower = false
+        return _isIphone11OrLower!
+    }
+    
+    // iPhone 11 和同代 iPad 的型号数字为 12
+    _isIphone11OrLower = modelNumber <= 12
+    return _isIphone11OrLower!
+}
+
+fileprivate func getModeName() -> String {
+    var systemInfo = utsname()
+    uname(&systemInfo)
+    let machineMirror = Mirror(reflecting: systemInfo.machine)
+    let identifier = machineMirror.children.reduce("") { identifier, element in
+        guard let elementValue = element.value as? Int8, elementValue != 0 else { return identifier }
+        return identifier + String(UnicodeScalar(UInt8(elementValue)))
+    }
+    return identifier
 }

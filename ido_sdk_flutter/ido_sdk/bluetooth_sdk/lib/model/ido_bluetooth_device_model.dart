@@ -1,63 +1,256 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter_bluetooth/Tool/ido_bluetooth_tool.dart';
+import 'package:flutter_bluetooth/ido_bluetooth_manager.dart';
+import 'package:flutter/foundation.dart';
 
 import '../source/ido_bluetooth_enum.dart';
 import '../source/ido_bluetooth_source.dart';
 
-class IDOBluetoothDeviceModel {
-  //信号量
-  int rssi = -1;
-  //设备名称;
-  String? name;
-  //设备状态
-  IDOBluetoothDeviceStateType? state;
-  //ios macAddress或uuid必传一个
-  String? uuid = "";
-  //Android必传
-  String? macAddress = "";
-  //ota
-  String? otaMacAddress;
-  //bt
-  String? btMacAddress;
-  //设备id
-  int? deviceId;
-  /// 设备类型 0:无效 1: 手表 2: 手环
-  int? deviceType;
-  //是否在ota
-  bool isOta = false;
-  //是否泰凌微ota
-  bool isTlwOta = false;
-  //是否xx升级中
-  bool isInDfu = false;
-  //平台
-  int platform = -1;
-  //bt版本（不保证准确）
-  int? bltVersion;
+class IDOBluetoothDeviceModel extends ChangeNotifier {
+  // 信号量
+  int _rssi = -1;
 
-  // bool isConnect = false;
-  //首次绑定获取mac地址 （ios）
-  bool isNeedGetMacAddress = true;
-  //配对状态（Android）
-  bool isPair = false;
-  //广播包
-  Uint8List? dataManufacturerData;
+  /// 获取信号量
+  int get rssi => _rssi;
 
-  IDOBluetoothDeviceModel(
-      { // this.distance,
-        this.isInDfu = false,
-        this.platform = -1,
-      this.name,
-      this.state,
-      this.uuid,
-      this.macAddress,
-      this.otaMacAddress,
-      this.btMacAddress,
-      this.bltVersion,
-      this.deviceId,
-      this.deviceType,
-      this.isNeedGetMacAddress = true});
+  /// 设置信号量
+  set rssi(int value) {
+    _rssi = value;
+    notifyListeners();
+  }
+
+  // 设备名称
+  String? _name;
+
+  /// 获取设备名称
+  String? get name => _name;
+
+  /// 设置设备名称
+  set name(String? value) {
+    _name = value;
+    notifyListeners();
+  }
+
+  // 设备状态
+  IDOBluetoothDeviceStateType? _state;
+
+  /// 获取设备状态
+  IDOBluetoothDeviceStateType? get state => _state;
+
+  /// 设置设备状态
+  set state(IDOBluetoothDeviceStateType? value) {
+    _state = value;
+    notifyListeners();
+  }
+
+  // iOS macAddress 或 uuid 必传一个
+  String? _uuid = "";
+
+  /// 获取 iOS macAddress 或 uuid
+  String? get uuid => _uuid;
+
+  /// 设置 iOS macAddress 或 uuid
+  set uuid(String? value) {
+    _uuid = value;
+    notifyListeners();
+  }
+
+  // Android 必传
+  String? _macAddress = "";
+
+  /// 获取 Android macAddress
+  String? get macAddress => _macAddress;
+
+  /// 设置 Android macAddress
+  set macAddress(String? value) {
+    if (value?.isEmpty ?? false) {
+      bluetoothManager.addLog('set macAddress = ${value} ${StackTrace.current}', method: 'set macAddress');
+    }
+    _macAddress = value;
+    notifyListeners();
+  }
+
+  // OTA
+  String? _otaMacAddress;
+
+  /// 获取 OTA macAddress
+  String? get otaMacAddress => _otaMacAddress;
+
+  /// 设置 OTA macAddress
+  set otaMacAddress(String? value) {
+    _otaMacAddress = value;
+    notifyListeners();
+  }
+
+  // BT
+  String? _btMacAddress;
+
+  /// 获取 BT macAddress
+  String? get btMacAddress => _btMacAddress;
+
+  /// 设置 BT macAddress
+  set btMacAddress(String? value) {
+    _btMacAddress = value;
+    notifyListeners();
+  }
+
+  // 设备 ID
+  int? _deviceId;
+
+  /// 获取设备 ID
+  int? get deviceId => _deviceId;
+
+  /// 设置设备 ID
+  set deviceId(int? value) {
+    _deviceId = value;
+    notifyListeners();
+  }
+
+  // 设备类型 0: 无效 1: 手表 2: 手环
+  int? _deviceType;
+
+  /// 获取设备类型
+  int? get deviceType => _deviceType;
+
+  /// 设置设备类型
+  set deviceType(int? value) {
+    _deviceType = value;
+    notifyListeners();
+  }
+
+  // 是否在 OTA
+  bool _isOta = false;
+
+  /// 获取是否在 OTA
+  bool get isOta => _isOta;
+
+  /// 设置是否在 OTA
+  set isOta(bool value) {
+    _isOta = value;
+    notifyListeners();
+  }
+
+  // 是否泰凌微 OTA
+  bool _isTlwOta = false;
+
+  /// 获取是否泰凌微 OTA
+  bool get isTlwOta => _isTlwOta;
+
+  /// 设置是否泰凌微 OTA
+  set isTlwOta(bool value) {
+    _isTlwOta = value;
+    notifyListeners();
+  }
+
+  // 是否 XX 升级中
+  bool _isInDfu = false;
+
+  /// 获取是否 XX 升级中
+  bool get isInDfu => _isInDfu;
+
+  /// 设置是否 XX 升级中
+  set isInDfu(bool value) {
+    _isInDfu = value;
+    notifyListeners();
+  }
+
+  // 平台
+  int _platform = -1;
+
+  /// 获取平台
+  int get platform => _platform;
+
+  /// 设置平台
+  set platform(int value) {
+    _platform = value;
+    notifyListeners();
+  }
+
+  // BT 版本（不保证准确）
+  int? _bltVersion;
+
+  /// 获取 BT 版本
+  int? get bltVersion => _bltVersion;
+
+  /// 设置 BT 版本
+  set bltVersion(int? value) {
+    _bltVersion = value;
+    notifyListeners();
+  }
+
+  // 首次绑定获取 mac 地址（iOS）
+  bool _isNeedGetMacAddress = true;
+
+  /// 获取首次绑定获取 mac 地址（iOS）
+  bool get isNeedGetMacAddress => _isNeedGetMacAddress;
+
+  /// 设置首次绑定获取 mac 地址（iOS）
+  set isNeedGetMacAddress(bool value) {
+    _isNeedGetMacAddress = value;
+    notifyListeners();
+  }
+
+  // 配对状态（Android）
+  bool _isPair = false;
+
+  /// 获取配对状态（Android）
+  bool get isPair => _isPair;
+
+  /// 设置配对状态（Android）
+  set isPair(bool value) {
+    _isPair = value;
+    notifyListeners();
+  }
+
+  // 广播包
+  Uint8List? _dataManufacturerData;
+
+  /// 获取广播包
+  Uint8List? get dataManufacturerData => _dataManufacturerData;
+
+  /// 设置广播包
+  set dataManufacturerData(Uint8List? value) {
+    _dataManufacturerData = value;
+    notifyListeners();
+  }
+
+  // Constructor
+  IDOBluetoothDeviceModel({
+    int? rssi, // Required parameter
+    String? name, // Required parameter
+    IDOBluetoothDeviceStateType? state, // Required parameter
+    String? uuid, // Optional parameter
+    String? macAddress, // Optional parameter
+    String? otaMacAddress, // Optional parameter
+    String? btMacAddress, // Optional parameter
+    int? bltVersion, // Optional parameter
+    int? deviceId, // Optional parameter
+    int? deviceType, // Optional parameter
+    bool isOta = false, // Optional parameter with default value
+    bool isTlwOta = false, // Optional parameter with default value
+    bool isInDfu = false, // Optional parameter with default value
+    int platform = -1, // Optional parameter with default value
+    bool isNeedGetMacAddress = true, // Optional parameter with default value
+    bool isPair = false, // Optional parameter with default value
+    Uint8List? dataManufacturerData, // Optional parameter
+  })  : _rssi = rssi ?? -1,
+        _name = name,
+        _state = state ?? IDOBluetoothDeviceStateType.disconnected,
+        _uuid = uuid ?? "",
+        _macAddress = macAddress ?? "",
+        _otaMacAddress = otaMacAddress,
+        _btMacAddress = btMacAddress,
+        _bltVersion = bltVersion,
+        _deviceId = deviceId,
+        _deviceType = deviceType,
+        _isOta = isOta,
+        _isTlwOta = isTlwOta,
+        _isInDfu = isInDfu,
+        _platform = platform,
+        _isNeedGetMacAddress = isNeedGetMacAddress,
+        _isPair = isPair,
+        _dataManufacturerData = dataManufacturerData;
 
   IDOBluetoothDeviceModel.fromJson(Map json) {
     // print("IDOBluetoothDeviceModel = $json");
@@ -68,13 +261,11 @@ class IDOBluetoothDeviceModel {
     uuid = json['uuid'];
     macAddress = json['macAddress'];
     if (json.containsKey("serviceUUIDs")) {
-      List<String>? sUUIDString = json['serviceUUIDs'] != null
-          ? json['serviceUUIDs'].cast<String>()
-          : [];
+      List<String>? sUUIDString = json['serviceUUIDs'] != null ? json['serviceUUIDs'].cast<String>() : [];
       if (sUUIDString is! List<String>) {
         sUUIDString = [].cast<String>();
       }
-      _transformIsOTA(sUUIDString??[]);
+      _transformIsOTA(sUUIDString ?? []);
     }
     if (json.containsKey("dataManufacturerData")) {
       dataManufacturerData = json['dataManufacturerData'];
@@ -94,15 +285,17 @@ class IDOBluetoothDeviceModel {
   }
 
   //兼容xx平台
-  _transformAnyPlatform(Uint8List data){
+  _transformAnyPlatform(Uint8List data) {
     if (data.length < 16) {
       return;
     }
     platform = data[15];
     int dfuMode = data[14];
     int version = data[8];
-    if (version == 3 && dfuMode == 1) {
+    if (version == 3 && dfuMode == 1 && (platform == 98 || platform == 99)) {
+      /// 思澈ota
       isInDfu = true;
+      isOta = true;
     }
   }
 
@@ -113,13 +306,9 @@ class IDOBluetoothDeviceModel {
             uuid.toLowerCase() == RX_UPDATE_UUID_0XFE59_ANDROID.toLowerCase() ||
             uuid.toLowerCase() == RX_UPDATE_UUID_0XFE59_IOS.toLowerCase())
         .firstWhere((is_uuid_ota) => is_uuid_ota, orElse: () => false);
-    isTlwOta = uuids
-        .map(
-            (uuid) => uuid.toLowerCase() == RX_UPDATE_UUID_0X0203.toLowerCase())
-        .firstWhere((is_uuid_ota) => is_uuid_ota,
-            orElse: () =>
-                name?.toLowerCase() == RX_UPDATE_NAME_TLW.toLowerCase());
-
+    isTlwOta = uuids.map((uuid) => uuid.toLowerCase() == RX_UPDATE_UUID_0X0203.toLowerCase()).firstWhere(
+        (is_uuid_ota) => is_uuid_ota,
+        orElse: () => name?.toLowerCase() == RX_UPDATE_NAME_TLW.toLowerCase());
   }
 
   _transformTlwMacAddress() {
@@ -151,11 +340,9 @@ class IDOBluetoothDeviceModel {
     if (length == 8) {
       macAddress = IDOBluetoothTool.uint8ToHex(data.sublist(2, 8));
     } else {
-      final serviceUuid =
-          IDOBluetoothTool.uint8ToHex(data.sublist(length - 3, length - 1));
+      final serviceUuid = IDOBluetoothTool.uint8ToHex(data.sublist(length - 3, length - 1));
       if (serviceUuid == "0AF0") {
-        macAddress =
-            IDOBluetoothTool.uint8ToHex(data.sublist(length - 9, length - 3));
+        macAddress = IDOBluetoothTool.uint8ToHex(data.sublist(length - 9, length - 3));
       } else {
         if (length >= 29 || length == 10) {
           macAddress = IDOBluetoothTool.uint8ToHex(data.sublist(4, 10));

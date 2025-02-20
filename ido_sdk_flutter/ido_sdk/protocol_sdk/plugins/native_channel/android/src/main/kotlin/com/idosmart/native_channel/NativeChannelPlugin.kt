@@ -1,5 +1,6 @@
 package com.idosmart.native_channel
 
+import android.app.Application
 import android.os.Handler
 import android.os.Looper
 import com.idosmart.native_channel.alexa.utils.AlexaLogUtil
@@ -13,16 +14,13 @@ import com.idosmart.native_channel.pigeon_generate.api_alexa.ApiAlexaFlutter
 import com.idosmart.native_channel.pigeon_generate.api_alexa.ApiAlexaHost
 import com.idosmart.native_channel.pigeon_generate.api_get_app_info.ApiGetAppInfo
 import com.idosmart.native_channel.pigeon_generate.api_get_file_info.ApiGetFileInfo
+import com.idosmart.native_channel.pigeon_generate.api_sifli.*
 import com.idosmart.native_channel.pigeon_generate.api_tools.ApiTools
 import com.idosmart.native_channel.pigeon_generate.api_tools.ToolsDelegate
+import com.idosmart.native_channel.siche.Config
+import com.idosmart.native_channel.siche.SicheApiHostImpl
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 
-/**
- * @author tianwei
- * @date 2023/9/22
- * @time 20:09
- * 用途:
- */
 class NativeChannelPlugin : FlutterPlugin, ApiAlexaHost {
 
     val handler = Handler(Looper.getMainLooper())
@@ -42,6 +40,16 @@ class NativeChannelPlugin : FlutterPlugin, ApiAlexaHost {
     private var apiAlexaFlutter: ApiAlexaFlutter? = null
     internal var tools: ToolsDelegate? = null
 
+    private var application: Application? = null
+    var apiSifliFlutter: ApiSifliFlutter? = null
+
+
+    internal fun androidLog(msgArg: String) {
+        Handler(Looper.getMainLooper()).post {
+            NativeChannelPlugin.instance().tools?.getNativeLog(msgArg) {}
+        }
+    }
+
     private fun runOnUiThread(callback: () -> Unit) {
         handler.post {
             callback()
@@ -50,6 +58,7 @@ class NativeChannelPlugin : FlutterPlugin, ApiAlexaHost {
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         AlexaLogUtil.p("onAttachedToEngine")
+        this.application = flutterPluginBinding.applicationContext as Application
         NativeChannelPlugin.instance().tools = ToolsDelegate(flutterPluginBinding.binaryMessenger)
         ApiGetAppInfo.setUp(flutterPluginBinding.binaryMessenger,GetAppInfoImpl.instance(flutterPluginBinding))
         ApiGetFileInfo.setUp(flutterPluginBinding.binaryMessenger,GetFileInfoImpl.instance())
@@ -68,6 +77,9 @@ class NativeChannelPlugin : FlutterPlugin, ApiAlexaHost {
         ApiAlexaHost.setUp(messenger, this)
         apiAlexaFlutter = ApiAlexaFlutter(messenger)
         AlexaLogUtil.setApiAlexaFlutter(apiAlexaFlutter, handler)
+        NativeChannelPlugin.instance().apiSifliFlutter = ApiSifliFlutter(messenger)
+        Config.init(this.application)
+        ApiSifliHost.setUp(messenger, SicheApiHostImpl())
     }
 
     private fun tearDown() {

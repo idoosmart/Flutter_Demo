@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:path/path.dart' as path;
 import '../../../protocol_lib.dart';
 import 'base_file.dart';
 
@@ -20,7 +21,11 @@ extension _NormalFileExt on NormalFile {
     // 创建目录
     final rootPath = await createTransferDirIfNeed(subPath: fileHash);
     // 副本文件
-    final aFilePath = '$rootPath/0.${type.name}';
+    var aFilePath = '$rootPath/0.${type.name}';
+
+    if (item.fileType == FileTransType.fw) {
+      aFilePath = '$rootPath/0${path.extension(item.filePath)}';
+    }
 
     final newItem = NormalFileModel(
         fileType: item.fileType,

@@ -188,11 +188,12 @@ extension IDOProtocolAPIExtFileOperation on IDOProtocolAPI {
   /// ```dart
   /// filePath 素材路径
   /// saveFileName,输出文件名,一般为EPO.DAT
+  /// fileCount 制作epo所需的文件数量
   /// ```dart
-  int makeEpoFile({required String filePath, required String saveFileName}) {
+  int makeEpoFile({required String filePath, required String saveFileName, required int fileCount}) {
     final inPathUtf8 = filePath.toNativeUtf8();
     final outPathUtf8 = saveFileName.toNativeUtf8();
-    return bindings.mkEpoFile(inPathUtf8.cast(), outPathUtf8.cast());
+    return bindings.mkEpoFile(inPathUtf8.cast(), outPathUtf8.cast(), fileCount);
   }
 
   /// 制作思澈表盘文件,会在输入路径下生成(.watch)表盘文件
@@ -203,6 +204,19 @@ extension IDOProtocolAPIExtFileOperation on IDOProtocolAPI {
   int mkSifliDialFile({required String filePath}) {
     final inPathUtf8 = filePath.toNativeUtf8();
     return bindings.mkSifliDialFile(inPathUtf8.cast());
+  }
+
+  /// 获取思澈表盘(.watch)文件占用空间大小，计算规则：
+  /// ```dart
+  /// nor方案：对表盘所有文件以4096向上取整  -98平台对应的项目，IDW27,205G Pro,IDW28,IDS05，DR03等
+  /// nand方案：对表盘所有文件以2048向上取整 -99平台对应的项目，GTX12,GTX13,GTR1,TIT21
+  /// filePath .watch文件路径，包含文件名
+  /// platform 平台类型，目前有98(nor)，99(nand)平台
+  /// @return size 文件占用磁盘的实际大小，-1:失败，文件路径访问失败，-2:失败，申请内存失败，-3:失败，读取文件失败，-4:失败，输入平台类型不支持
+  /// ```
+  int getSifliDialSize({required String filePath, required int platform}) {
+    final inPathUtf8 = filePath.toNativeUtf8();
+    return bindings.getSifliDialSize(inPathUtf8.cast(), platform);
   }
 
   /// 图片转换格式 png->bmp
@@ -245,6 +259,21 @@ extension IDOProtocolAPIExtFileOperation on IDOProtocolAPI {
     ffi.Pointer<ffi.Char> inPathUtf8 = inputFilePath.toNativeUtf8().cast();
     ffi.Pointer<ffi.Char> outPathUtf8 = outputFilePath.toNativeUtf8().cast();
     final rs = bindings.jpgToPNG(inPathUtf8, outPathUtf8);
+    pkg_ffi.calloc.free(inPathUtf8);
+    pkg_ffi.calloc.free(outPathUtf8);
+    return rs;
+  }
+
+  /// PNG图片32/24位转16位
+  /// ```dart
+  /// inputFilePath 用于转换的png路径(包含文件名及后缀)
+  /// outputFilePath 转换完的png路径(包含文件名及后缀)
+  /// @return: SUCCESS(0) : 成功
+  /// ```
+  int pngConvert16bit({required String inputFilePath, required String outputFilePath}) {
+    ffi.Pointer<ffi.Char> inPathUtf8 = inputFilePath.toNativeUtf8().cast();
+    ffi.Pointer<ffi.Char> outPathUtf8 = outputFilePath.toNativeUtf8().cast();
+    final rs = bindings.PngConvert16bit(inPathUtf8, outPathUtf8);
     pkg_ffi.calloc.free(inPathUtf8);
     pkg_ffi.calloc.free(outPathUtf8);
     return rs;

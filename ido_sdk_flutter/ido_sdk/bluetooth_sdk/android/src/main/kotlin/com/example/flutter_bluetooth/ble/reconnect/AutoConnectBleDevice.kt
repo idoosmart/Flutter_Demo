@@ -69,7 +69,7 @@ open class AutoConnectBleDevice(deviceAddress: String) : AbsIDOBleDevice(deviceA
 
         if (isConnectedAndReady) {
             Logger.e("[AutoConnectBle] is on connected state, ignore this action!")
-            callOnConnectedAndReady()
+            callOnConnectedAndReady(platform)
             return
         }
 
@@ -126,13 +126,13 @@ open class AutoConnectBleDevice(deviceAddress: String) : AbsIDOBleDevice(deviceA
         stopReconnect()
     }
 
-    override fun callOnConnectedAndReady() {
-        super.callOnConnectedAndReady()
+    override fun callOnConnectedAndReady(platform: Int) {
+        super.callOnConnectedAndReady(platform)
         Logger.p("[AutoConnectBle]  callOnConnectedAndReady")
         stopReconnect()
     }
 
-    override fun callOnConnectBreakByGATT(status: Int, newState: Int) {
+    override fun callOnConnectBreakByGATT(status: Int, newState: Int,platform: Int) {
         if (mIsAutoConnecting) {
             Logger.p("[AutoConnectBle]  callOnConnectBreakByGATT, autoConnectIfBreak = $autoConnectIfBreak, mIsInitiativeDisConnect = $mIsInitiativeDisConnect")
             //支持自动断线重连，并且不是主动断开
@@ -141,27 +141,27 @@ open class AutoConnectBleDevice(deviceAddress: String) : AbsIDOBleDevice(deviceA
             } else {
                 Logger.p("[AutoConnectBle]  isAutoConnectIfBreak = false")
                 stopReconnect()
-                super.callOnConnectBreakByGATT(status, newState)
+                super.callOnConnectBreakByGATT(status, newState,platform)
             }
         } else {
-            super.callOnConnectBreakByGATT(status, newState)
+            super.callOnConnectBreakByGATT(status, newState,platform)
         }
     }
 
-    override fun callOnConnectFailedByGATT(status: Int, newState: Int) {
+    override fun callOnConnectFailedByGATT(status: Int, newState: Int,platform: Int) {
         Logger.p("[AutoConnectBle]  callOnConnectFailedByGATT, mIsAutoConnecting = $mIsAutoConnecting, mHasFindDevice = $mHasFindDevice,  mIsConnectDueToPhoneBluetoothSwitch = $mIsConnectDueToPhoneBluetoothSwitch, status = $status, newState = $newState")
         if (mIsAutoConnecting) {
             if (mHasFindDevice) {
                 mFindDeviceAndGattErrorTimes++
                 Logger.p("[AutoConnectBle]  mFindDeviceAndGattErrorTimes = $mFindDeviceAndGattErrorTimes")
-                mBluetoothCallback?.callOnGattErrorAndNeedRebootBluetooth()
+//                mBluetoothCallback?.callOnGattErrorAndNeedRebootBluetooth()
             }
             if (tryConnectNotExistDeviceByGattError()) {
                 return
             }
             tryReconnect();
         } else {
-            super.callOnConnectFailedByGATT(status, newState)
+            super.callOnConnectFailedByGATT(status, newState,platform)
         }
     }
 

@@ -16,16 +16,33 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
   late final _subjectControlEvent =
   StreamController<Tuple3<int, int, String>>.broadcast();
   late final _subjectFastSyncComplete = StreamController<int>.broadcast();
+  late final _subjectOnBeforeDeviceDisconnect = StreamController<void>.broadcast();
 
-  /// 数据交换相关指令(不需要响应)
-  late final _exchangeExcludeCmd = [620, 624, 626, 628, 622, 5055, 610, 612, 614];
-  /// 数据交换相关指令(需要响应)
-  late final _exchangeCmd = [600, 604, 608, 606, 602, 5021, 5056, 5023, 5022];
+  late final _sppManager = SppTransManager();
+
+  @override
+  SifliChannelImpl? sifliChannel;
+
+  /// 不使用队列且不需要响应的指令
+  ///
+  /// 数据交换相关：620, 624, 626, 628, 622, 5055, 610, 612, 614
+  /// 快速短信回复：580
+  /// 设置v2/v3热启动参数：158, 5070
+  late final _noQueueNoResCmds = [620, 624, 626, 628, 622, 5055, 610, 612, 614, 580, 158, 5070];
+
+  /// 不使用队列但需要响应的指令
+  ///
+  /// 数据交换相关：600, 604, 608, 606, 602, 5021, 5056, 5023, 5022
+  late final _noQueueHasResCmds = [600, 604, 608, 606, 602, 5021, 5056, 5023, 5022];
 
   CallbackWriteDataToBle? _callbackWriteDataToBle;
   CallbackCRequestCmd? _callbackCRequestCmd;
   // CallbackFastSyncComplete? _callbackFastSyncComplete;
   CallbackCRequestCmd? _callbackCRequestCmdExt;
+
+  FileTranRequestCallback? _callbackDevice2AppRequest;
+  FileTranProgressCallback? _callbackDevice2AppProgress;
+  FileTranStatusCallback? _callbackDevice2AppStatus;
 
   /// 相同指令存在最大数量
   final _maxSameCmdTaskCount = 3;
@@ -39,6 +56,7 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
     print('initClib - _IDOProtocolCoreManager');
     await _cLibManager.initClib();
     _registerStreamListen();
+    _initSppTransManager();
     return true;
   }
 
@@ -59,7 +77,7 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
         bool useQueue = true,
         CmdPriority cmdPriority = CmdPriority.normal,
         Map<String, String>? cmdMap}) {
-    if (!useQueue || _exchangeExcludeCmd.contains(evtType)) {
+    if (!useQueue || _noQueueNoResCmds.contains(evtType)) {
       if (cmdMap != null) {
         logger?.v('发送：${cmdMap["cmd"]} - "${cmdMap["desc"]}"');
       }
@@ -70,13 +88,16 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
       if (cmdMap != null) {
         logger?.v('收到：${cmdMap["cmd"]} - "${cmdMap["desc"]}"');
       }
+      if (evtType == 2) {
+        _subjectOnBeforeDeviceDisconnect.add(null);
+      }
       return CancelableOperation<CmdResponse>.fromFuture(
           Future(() => CmdResponse(code: ErrorCode.success)),
           onCancel: () {});
     }
 
     // 数据交换相关指令特殊处理(不使用队列）
-    if (_exchangeCmd.contains(evtType)) {
+    if (_noQueueHasResCmds.contains(evtType)) {
       if (cmdMap != null) {
         logger?.v('exchange cmd - ${cmdMap["cmd"]} "${cmdMap["desc"]}"');
       }
@@ -88,6 +109,22 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
             logger?.v("exchange cmd - cancel $evtType");
           });
     }
+
+    // SKG定制功能，app确认绑定结果
+    if (evtType == 206) {
+      if (cmdMap != null) {
+        logger?.v('cmd - ${cmdMap["cmd"]} "${cmdMap["desc"]}"');
+      }
+      final cmdTask = CommandTask.create(evtType, evtBase, json);
+      return CancelableOperation<CmdResponse>.fromFuture(_taskTool.addTask(cmdTask),
+          onCancel: () {
+            logger?.d('CancelableOperation cancel, evtType:$evtType');
+            cmdTask.cancel();
+            logger?.v("cmd - cancel $evtType");
+          });
+    }
+
+    // 基础指令不使用队列（代码保留 不要删）
     // else {
     //   if (cmdMap != null) {
     //     logger?.v('cmd - ${cmdMap["cmd"]} "${cmdMap["desc"]}"');
@@ -101,7 +138,6 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
     //       });
     // }
 
-    // 基础指令不使用队列
     // 过滤重复指令不超过3个
     if (_queueCmd.findTaskCount(evtBase: evtBase, evtType: evtType, json: json) >=
         _maxSameCmdTaskCount) {
@@ -141,18 +177,20 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
   }
 
   @override
-  CancelableOperation<CmdResponse> sync(
-      {required SyncType type,
+  CancelableOperation<CmdResponse> sync({
+    List<int> selectTypes = const [],
+        required SyncType type,
         required SyncProgressCallback progressCallback,
         required SyncDataCallback dataCallback}) {
     // 数据同步的优先级要低于基础指令
     Cancelable<CmdResponse>? rs;
     return CancelableOperation<CmdResponse>.fromFuture(
         (rs = _queueSync.execute(
-          arg1: type,
-          arg2: progressCallback,
-          arg3: dataCallback,
-          fun3: _execSyncs,
+          arg1: selectTypes,
+          arg2: type,
+          arg3: progressCallback,
+          arg4: dataCallback,
+          fun4: _execSyncs,
           priority: WorkPriority.regular,
           interval: const Duration(milliseconds: 50),
           onDispose: _onDispose,
@@ -217,11 +255,20 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
   }
 
   @override
-  void dispose() {
+  StreamSubscription listenOnBeforeDeviceDisconnect(void Function(void) func) {
+    return _subjectOnBeforeDeviceDisconnect.stream.listen(func);
+  }
+
+  @override
+  void dispose({bool needKeepTransFileTask = false}) {
     _queueCmd.dispose();
     _queueSync.dispose();
     _queueLog.dispose();
-    _queueTrans.dispose();
+    if (!needKeepTransFileTask) {
+      _queueTrans.dispose();
+    }else{
+      logger?.d("platform is 97|98|99, needKeepTransFileTask is true, ignore queueTrans.dispose()");
+    }
     _taskTool.cancelAll();
   }
 
@@ -244,13 +291,23 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
   @override
   void receiveDataFromBle(Uint8List data, String? macAddress, int type) {
     //响应数据 , Mac地址为多设备操作数据准备，目前C库不能多设备通信
-    _cLibManager.cLib.receiveDataFromBle(data: data, type: type);
+    //拦截spp或根据条件放行
+    if (type == 1 && _sppManager.interceptCmd(data)) {
+      _sppManager.receivedData(data);
+    } else {
+      _cLibManager.cLib.receiveDataFromBle(data: data, type: type);
+    }
   }
 
   @override
   void writeDataComplete() {
     //写入数据完成，执行下一个包发送
     _cLibManager.cLib.tranDataSendComplete();
+  }
+
+  @override
+  void writeSppDataComplete() {
+    _sppManager.sppDataTransComplete();
   }
 
   @override
@@ -316,6 +373,38 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
   int writeRawData({required Uint8List data}) {
     return _cLibManager.cLib.writeRawData(data: data);
   }
+
+  @override
+  void registerDeviceTranFileToApp({
+    required FileTranRequestCallback requestCallback}) {
+    _callbackDevice2AppRequest = requestCallback;
+  }
+
+  @override
+  void unregisterDeviceTranFileToApp() {
+    _callbackDevice2AppRequest = null;
+    _callbackDevice2AppProgress = null;
+    _callbackDevice2AppStatus = null;
+  }
+
+  @override
+  void listenDeviceTranFileToApp({
+    required FileTranProgressCallback progressCallback,
+    required FileTranStatusCallback statusCallback,
+  }) {
+    _callbackDevice2AppProgress = progressCallback;
+    _callbackDevice2AppStatus = statusCallback;
+  }
+
+  @override
+  void initSifliChannel() {
+    if (sifliChannel == null) {
+      logger?.d("init sifli channel");
+      sifliChannel = SifliChannelImpl();
+      ApiSifliFlutter.setup(sifliChannel!);
+    }
+  }
+
 }
 
 extension _IDOProtocolCoreManagerExt on _IDOProtocolCoreManager {
@@ -330,17 +419,20 @@ extension _IDOProtocolCoreManagerExt on _IDOProtocolCoreManager {
       }
     });
     final rs = await task.call();
+
     logger?.v("cmd - done $evtType, queue: ${_queueCmd.getQueueList()}");
     return rs;
   }
 
   /// 执行数据同步task
   Future<CmdResponse> _execSyncs(
+      List<int> types,
       SyncType syncType,
       SyncProgressCallback progressCallback,
       SyncDataCallback dataCallback,
       Stream notification) async {
     final task = SyncTask.create(syncType, progressCallback, dataCallback);
+    task.selectTypes = types;
     notification.listen((event) {
       if (event is String && event == 'kill') {
         logger?.d('sync task kill syncType:$syncType');
@@ -455,8 +547,8 @@ extension _IDOProtocolCoreManagerExt on _IDOProtocolCoreManager {
     // 监听设备状态
     _cLibManager.streamListenReceiveData.stream.listen((tuple) {
       //logger?.v('streamListenReceiveData.stream.listen');
+      // 有效区间事件才需要打印log
       if (tuple.item2 >= 551 && tuple.item2 <= 591) {
-        // 有效区间事件才需要打印log
         logger?.v('controlEvent ${[tuple.item1, tuple.item2, tuple.item3]}');
       }
       if (tuple.item2 == 577) {
@@ -477,12 +569,32 @@ extension _IDOProtocolCoreManagerExt on _IDOProtocolCoreManager {
         logger?.v('_subjectControlEvent.hasListener false');
       }
     });
+
+    _cLibManager.streamDataTranToAppComplete.stream.listen((event) {
+      if (_callbackDevice2AppRequest != null) {
+        _callbackDevice2AppStatus?.call(event, 0);
+      }
+    });
+
+    _cLibManager.streamDataTranToAppProgress.stream.listen((event) {
+      if (_callbackDevice2AppRequest != null) {
+        _callbackDevice2AppProgress?.call(event/100.0);
+      }
+    });
+
+    _cLibManager.streamDataTranToAppRequest.stream.listen((event) {
+      _callbackDevice2AppRequest?.call(event);
+    });
   }
 
   WorkPriority _mapCmdPriority(CmdPriority priority) {
     var rs = WorkPriority.highRegular;
     switch (priority) {
+      case CmdPriority.low:
+        rs = WorkPriority.regular;
+        break;
       case CmdPriority.normal:
+        rs = WorkPriority.highRegular;
         break;
       case CmdPriority.high:
         rs = WorkPriority.high;
@@ -493,8 +605,23 @@ extension _IDOProtocolCoreManagerExt on _IDOProtocolCoreManager {
     }
     return rs;
   }
-}
 
+  void _initSppTransManager() {
+    _sppManager.initSpp();
+    _sppManager.registerCoreBridge(
+        inOtaMode: () => _cLibManager.cLib.getBindMode() == 2,
+        supportContinueTrans: () => _cLibManager.cLib.getIsSupportTranContinue(),
+        writer: (data) {
+          if (_callbackWriteDataToBle != null) {
+            _callbackWriteDataToBle!(
+                CmdRequest(data: data, type: 1, macAddress: ''));
+          }
+        });
+    listenOnBeforeDeviceDisconnect((p0) {
+      _sppManager.onDisconnect();
+    });
+  }
+}
 
 class _ListTaskTool<T extends BaseTask> {
   late List<T> _taskList;

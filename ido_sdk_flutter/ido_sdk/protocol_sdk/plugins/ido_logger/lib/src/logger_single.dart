@@ -77,7 +77,7 @@ extension _LoggerSingleExt on LoggerSingle {
       }
 
       if (_config!.writeToFile) {
-        final file = _getFile();
+        final file = _getFileToday(); // _getFile();
         if (!file.existsSync()) {
           file.createSync(recursive: true);
         }

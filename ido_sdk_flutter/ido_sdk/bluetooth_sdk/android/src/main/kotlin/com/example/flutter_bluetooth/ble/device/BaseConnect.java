@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.os.Build;
 import android.os.Handler;
@@ -20,12 +21,15 @@ import com.example.flutter_bluetooth.ble.callback.UserCloseBluetoothCallBack;
 import com.example.flutter_bluetooth.bt.HIDConnectManager;
 import com.example.flutter_bluetooth.timer.ITimeOutPresenter;
 import com.example.flutter_bluetooth.timer.TimeOutPresenter;
+import com.example.flutter_bluetooth.utils.ByteDataConvertUtil;
 import com.example.flutter_bluetooth.utils.CommonUtils;
 import com.example.flutter_bluetooth.logger.Logger;
 import com.example.flutter_bluetooth.utils.PairedDeviceUtils;
 import com.example.flutter_bluetooth.utils.PhoneInfoUtil;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -73,6 +77,8 @@ abstract class BaseConnect implements BluetoothCallback {
 
     private boolean mIsNeedHandGattCallback = true;
 
+    protected int platform;
+
     BaseConnect(String deviceAddress) {
         mDeviceAddress = deviceAddress;
         init();
@@ -118,23 +124,36 @@ abstract class BaseConnect implements BluetoothCallback {
 
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-            Logger.p("[BaseConnect:onDescriptorWrite] status:"+status+", descriptor:"+descriptor.getUuid());
+            Logger.p("[BaseConnect:onDescriptorWrite] status:" + status + ", descriptor:" + descriptor.getUuid());
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 if (UUIDConfig.CLIENT_CHARACTERISTIC_CONFIG_UUID.equals(descriptor.getUuid())) {
-                    Logger.p("[BaseConnect:onDescriptorWrite] getvalue:" + descriptor.getValue()[0] + ", characteristicuuid:" + descriptor.getCharacteristic().getUuid());
+                    Logger.p("[BaseConnect:onDescriptorWrite] getvalue:" + descriptor.getValue()[0] + "characteristicuuid:" + descriptor.getCharacteristic().getUuid());
                     //TODO 此处需解释
                     if (descriptor.getValue()[0] == 1) {
                         if (UUIDConfig.NOTIFY_UUID_NORMAL.equals(descriptor.getCharacteristic().getUuid())) {
                             enableHealthNotify(gatt);
+                            // enableHenxuanNotify(gatt);
                         } else if (UUIDConfig.NOTIFY_UUID_HEALTH.equals(descriptor.getCharacteristic().getUuid())) {
+                            if (BLEGattAttributes.isContainsHenxuanService(gatt)) {
+                                BLEGattAttributes.platform = BLEGattAttributes.PLATFORM_HENXUAN;
+                                enableHenxuanNotify(gatt);
+                            } else if (BLEGattAttributes.isContainsVCService(gatt)) {
+                                BLEGattAttributes.platform = BLEGattAttributes.PLATFORM_VC;
+                                enableVCNotify(gatt);
+                            } else {
+                                BLEGattAttributes.platform = BLEGattAttributes.PLATFORM_IDO;
+                                connectedAndReady();
+                            }
+                            Logger.p("[BaseConnect:onDescriptorWrite] BLEGattAttributes.platform:" + BLEGattAttributes.platform);
+                        } else if (UUIDConfig.NOTIFY_UUID_HENXUAN.equals(descriptor.getCharacteristic().getUuid()) || UUIDConfig.NOTIFY_UUID_VC.equals(descriptor.getCharacteristic().getUuid())) {
                             connectedAndReady();
                         }
                     } else {
-                        enableNormalNotifyFailed();
+                        callOnEnableNormalNotifyFailed();
                     }
                 }
             } else {
-                enableNormalNotifyFailed();
+                callOnEnableNormalNotifyFailed();
             }
 
         }
@@ -143,11 +162,11 @@ abstract class BaseConnect implements BluetoothCallback {
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             callOnCharacteristicWrite(gatt, characteristic, status);
 
-
         }
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            Logger.e("[BytesDataConnect] receive <= 收到数据, " + this);
             callOnCharacteristicChanged(gatt, characteristic);
         }
     }
@@ -228,7 +247,7 @@ abstract class BaseConnect implements BluetoothCallback {
      * @param timeoutMills
      * @param mDeviceAddress
      */
-    protected void connect(long timeoutMills,String mDeviceAddress) {
+    protected void connect(long timeoutMills, String mDeviceAddress) {
 
         checkPhoneEnvInfo(mDeviceAddress);
 
@@ -345,7 +364,7 @@ abstract class BaseConnect implements BluetoothCallback {
             Logger.e("[BaseConnect:connectionStateChange()] connect break");
 
             closeConnect();
-            callOnConnectBreakByGATT(status, newState);
+            callOnConnectBreakByGATT(status, newState,platform);
 
             boolean isBluetoothOpen = BluetoothAdapter.getDefaultAdapter().isEnabled();
             if (!isBluetoothOpen) {
@@ -359,7 +378,7 @@ abstract class BaseConnect implements BluetoothCallback {
 
             closeConnect();
             Logger.e("[BaseConnect:connectionStateChange()] connect failed");
-            callOnConnectFailedByGATT(status, newState);
+            callOnConnectFailedByGATT(status, newState,platform);
         }
 
 
@@ -368,7 +387,7 @@ abstract class BaseConnect implements BluetoothCallback {
     private void handleConnectFailedState(int status, int newState) {
         closeConnect();
         Logger.e("[BaseConnect:connectionStateChange()] connect failed");
-        callOnConnectFailedByGATT(status, newState);
+        callOnConnectFailedByGATT(status, newState,platform);
     }
 
     //某些手机在关闭蓝牙开关之后，不会回调该接口
@@ -447,6 +466,14 @@ abstract class BaseConnect implements BluetoothCallback {
             Logger.e("[BaseConnect] device  dw02 in dfu mode");
             callOnInDfuMode();
         }
+        List<String> uuids = new ArrayList<>();
+        List<BluetoothGattService> services = gatt.getServices();
+        if(services!=null && services.size()>0){
+            for(BluetoothGattService service :services){
+                uuids.add(service.getUuid().toString());
+            }
+            callOnServices(uuids);
+        }
         if (HIDConnectManager.isNeedCreateBond(gatt)) {
             Logger.p("[BaseConnect] is need create bond");
             HIDConnectManager.getManager().connect(gatt.getDevice(), new HIDConnectManager.IBondStateListener() {
@@ -478,6 +505,50 @@ abstract class BaseConnect implements BluetoothCallback {
                 callOnInDfuMode();
             }
         });
+    }
+
+    private void enableHenxuanNotify(final BluetoothGatt gatt) {
+        Logger.e("[BaseConnect] start to enableHenxuanNotify...");
+        boolean enable = BLEGattAttributes.enableHenxuanDeviceNotifyHealth(gatt, true);
+        if (enable) {
+            Logger.e("[BaseConnect] enableHenxuanNotify ok");
+        } else {
+            Logger.e("[BaseConnect] enableHenxuanNotify failed, retry...");
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    boolean enable = BLEGattAttributes.enableHenxuanDeviceNotifyHealth(gatt, true);
+                    if (!enable) {
+                        Logger.e("[BaseConnect] enableHenxuanNotify reEnable failed");
+                        //enableHealthNotifyFailed();
+                    } else {
+                        Logger.e("[BaseConnect] enableHenxuanNotify reEnable ok");
+                    }
+                }
+            }, 200);
+        }
+    }
+
+    private void enableVCNotify(final BluetoothGatt gatt) {
+        Logger.e("[BaseConnect] start to enableVCNotify...");
+        boolean enable = BLEGattAttributes.enableVCDeviceNotifyHealth(gatt, true);
+        if (enable) {
+            Logger.e("[BaseConnect] enableVCNotify ok");
+        } else {
+            Logger.e("[BaseConnect] enableVCNotify failed, retry...");
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    boolean enable = BLEGattAttributes.enableVCDeviceNotifyHealth(gatt, true);
+                    if (!enable) {
+                        Logger.e("[BaseConnect] enableVCNotify reEnable failed");
+                        //enableHealthNotifyFailed();
+                    } else {
+                        Logger.e("[BaseConnect] enableVCNotify reEnable ok");
+                    }
+                }
+            }, 200);
+        }
     }
 
     private void enableNormalNotify(final BluetoothGatt gatt) {
@@ -561,7 +632,12 @@ abstract class BaseConnect implements BluetoothCallback {
         Logger.p("[BaseConnect] connected success.");
         mIsConnectedAndReady = true;
         mIsCanSendData = true;
-        callOnConnectedAndReady();
+        try {
+            platform = BLEGattAttributes.isContainsHenxuanService(mBluetoothGatt) ? BLEGattAttributes.PLATFORM_HENXUAN : BLEGattAttributes.PLATFORM_IDO;
+        } catch (Exception e) {
+            platform = BLEGattAttributes.PLATFORM_IDO;
+        }
+        callOnConnectedAndReady(platform);
     }
 
 
@@ -693,7 +769,7 @@ abstract class BaseConnect implements BluetoothCallback {
     private void callDisconnectMethodSystemNoRespond() {
         Logger.e("[BaseConnect] callDisconnectMethodSystemNoRespond()");
         closeConnect();
-        callOnConnectBreakByGATT(0xff, 0xff);
+        callOnConnectBreakByGATT(0xff, 0xff,platform);
     }
 
 }

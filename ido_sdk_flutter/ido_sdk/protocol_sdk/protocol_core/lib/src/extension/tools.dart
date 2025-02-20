@@ -25,6 +25,12 @@ extension IDOProtocolCoreManagerExtTools on IDOProtocolCoreManager {
     return IDOProtocolClibManager().cLib.getBindMode();
   }
 
+  /// 解绑清除v3缓存健康数据
+  /// 0 成功， 非0失败
+  int unBindClearV3HealthData() {
+    return IDOProtocolClibManager().cLib.unBindClearV3HealthData();
+  }
+
   /// 设置运行环境 release / debug
   /// mode 0:debug 1:release
   int setRunMode(int mode) {
@@ -106,11 +112,12 @@ extension IDOProtocolCoreManagerExtTools on IDOProtocolCoreManager {
   /// ```dart
   /// filePath 素材路径
   /// saveFileName,输出文件名,一般为EPO.DAT
+  /// fileCount 制作epo所需的文件数量
   /// ```dart
-  int makeEpoFile({required String filePath, required String saveFileName}) {
+  int makeEpoFile({required String filePath, required String saveFileName, required int fileCount}) {
     return IDOProtocolClibManager()
         .cLib
-        .makeEpoFile(filePath: filePath, saveFileName: saveFileName);
+        .makeEpoFile(filePath: filePath, saveFileName: saveFileName, fileCount: fileCount);
   }
 
   /// 制作思澈表盘文件,会在输入路径下生成(.watch)表盘文件
@@ -120,6 +127,18 @@ extension IDOProtocolCoreManagerExtTools on IDOProtocolCoreManager {
   /// ```
   int mkSifliDialFile({required String filePath}) {
     return IDOProtocolClibManager().cLib.mkSifliDialFile(filePath: filePath);
+  }
+
+  /// 获取思澈表盘(.watch)文件占用空间大小，计算规则：
+  /// ```dart
+  /// nor方案：对表盘所有文件以4096向上取整  -98平台对应的项目，IDW27,205G Pro,IDW28,IDS05，DR03等
+  /// nand方案：对表盘所有文件以2048向上取整 -99平台对应的项目，GTX12,GTX13,GTR1,TIT21
+  /// filePath .watch文件路径，包含文件名
+  /// platform 平台类型，目前有98(nor)，99(nand)平台
+  /// @return size 文件占用磁盘的实际大小，-1:失败，文件路径访问失败，-2:失败，申请内存失败，-3:失败，读取文件失败，-4:失败，输入平台类型不支持
+  /// ```
+  int getSifliDialSize({required String filePath, required int platform}) {
+    return IDOProtocolClibManager().cLib.getSifliDialSize(filePath: filePath, platform: platform);
   }
 
   /// 图片转换格式 png->bmp
@@ -156,6 +175,17 @@ extension IDOProtocolCoreManagerExtTools on IDOProtocolCoreManager {
   int jpgToPNG(
       {required String inputFilePath, required String outputFilePath}) {
     return IDOProtocolClibManager().cLib.jpgToPNG(
+        inputFilePath: inputFilePath, outputFilePath: outputFilePath);
+  }
+
+  /// PNG图片32/24位转16位
+  /// ```dart
+  /// inputFilePath 用于转换的png路径(包含文件名及后缀)
+  /// outputFilePath 转换完的png路径(包含文件名及后缀)
+  /// @return: SUCCESS(0) : 成功
+  /// ```
+  int pngConvert16bit({required String inputFilePath, required String outputFilePath}) {
+    return IDOProtocolClibManager().cLib.pngConvert16bit(
         inputFilePath: inputFilePath, outputFilePath: outputFilePath);
   }
 
@@ -235,6 +265,11 @@ extension IDOProtocolCoreManagerExtTools on IDOProtocolCoreManager {
       {required String inPath, required outPath, required int fileSize}) {
     return IDOProtocolClibManager().cLib.audioSamplingRateConversion(
         inPath: inPath, outPath: outPath, fileSize: fileSize);
+  }
+
+  /// 音频采样率转换进度回调注册
+  void registerAudioSRConversionProgress(void Function(int progress) func) {
+    IDOProtocolClibManager().cLib.registerAudioSRConversionProgress(func: func);
   }
 
   /// 音频文件格式转换 mp3转pcm

@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:json_annotation/json_annotation.dart';
+
 part 'base_exchange_model.g.dart';
 
 class IDOBaseExchangeModel {
@@ -18,14 +21,8 @@ class IDOBaseExchangeModel {
   @JsonKey(name: 'sport_type')
   int? sportType;
 
-  IDOBaseExchangeModel({
-    this.day,
-    this.hour,
-    this.minute,
-    this.second,
-    this.sportType
-  });
-
+  IDOBaseExchangeModel(
+      {this.day, this.hour, this.minute, this.second, this.sportType});
 }
 
 /// app 开始发起运动
@@ -55,18 +52,18 @@ class IDOAppStartExchangeModel extends IDOBaseExchangeModel {
   @JsonKey(name: 'avg_week_activity_time')
   int? avgWeekActivityTime;
 
-  IDOAppStartExchangeModel({
-    this.targetValue,
-    this.targetType,
-    this.forceStart,
-    this.vo2max,
-    this.recoverTime,
-    this.avgWeekActivityTime
-  });
+  IDOAppStartExchangeModel(
+      {this.targetValue,
+      this.targetType,
+      this.forceStart,
+      this.vo2max,
+      this.recoverTime,
+      this.avgWeekActivityTime});
 
   Map<String, dynamic> toJson() => _$IDOAppStartExchangeModelToJson(this);
-  factory IDOAppStartExchangeModel.fromJson(Map<String, dynamic> json) => _$IDOAppStartExchangeModelFromJson(json);
 
+  factory IDOAppStartExchangeModel.fromJson(Map<String, dynamic> json) =>
+      _$IDOAppStartExchangeModelFromJson(json);
 }
 
 /// app 开始发起运动 ble回复
@@ -81,7 +78,9 @@ class IDOAppStartReplyExchangeModel extends IDOBaseExchangeModel {
   IDOAppStartReplyExchangeModel({this.retCode});
 
   Map<String, dynamic> toJson() => _$IDOAppStartReplyExchangeModelToJson(this);
-  factory IDOAppStartReplyExchangeModel.fromJson(Map<String, dynamic> json) => _$IDOAppStartReplyExchangeModelFromJson(json);
+
+  factory IDOAppStartReplyExchangeModel.fromJson(Map<String, dynamic> json) =>
+      _$IDOAppStartReplyExchangeModelFromJson(json);
 }
 
 /// app 发起运动结束
@@ -100,11 +99,13 @@ class IDOAppEndExchangeModel extends IDOBaseExchangeModel {
   @JsonKey(name: 'is_save')
   int? isSave;
 
-  IDOAppEndExchangeModel({this.duration,this.calories,this.distance,this.isSave});
+  IDOAppEndExchangeModel(
+      {this.duration, this.calories, this.distance, this.isSave});
 
   Map<String, dynamic> toJson() => _$IDOAppEndExchangeModelToJson(this);
-  factory IDOAppEndExchangeModel.fromJson(Map<String, dynamic> json) => _$IDOAppEndExchangeModelFromJson(json);
 
+  factory IDOAppEndExchangeModel.fromJson(Map<String, dynamic> json) =>
+      _$IDOAppEndExchangeModelFromJson(json);
 }
 
 /// app 发起运动结束 ble回复
@@ -155,8 +156,9 @@ class IDOAppEndReplyExchangeModel extends IDOBaseExchangeModel {
       this.limitMins});
 
   Map<String, dynamic> toJson() => _$IDOAppEndReplyExchangeModelToJson(this);
-  factory IDOAppEndReplyExchangeModel.fromJson(Map<String, dynamic> json) => _$IDOAppEndReplyExchangeModelFromJson(json);
 
+  factory IDOAppEndReplyExchangeModel.fromJson(Map<String, dynamic> json) =>
+      _$IDOAppEndReplyExchangeModelFromJson(json);
 }
 
 /// app 交换运动数据
@@ -174,10 +176,13 @@ class IDOAppIngExchangeModel extends IDOBaseExchangeModel {
   /// 0: 全部有效、1: 距离无效、 2: GPS信号弱
   int? status;
 
-  IDOAppIngExchangeModel({ this.calories, this.distance, this.duration, this.status});
+  IDOAppIngExchangeModel(
+      {this.calories, this.distance, this.duration, this.status});
 
   Map<String, dynamic> toJson() => _$IDOAppIngExchangeModelToJson(this);
-  factory IDOAppIngExchangeModel.fromJson(Map<String, dynamic> json) => _$IDOAppIngExchangeModelFromJson(json);
+
+  factory IDOAppIngExchangeModel.fromJson(Map<String, dynamic> json) =>
+      _$IDOAppIngExchangeModelFromJson(json);
 }
 
 /// app 交换运动数据 ble回复
@@ -222,7 +227,9 @@ class IDOAppIngReplyExchangeModel extends IDOBaseExchangeModel {
       this.hrJson});
 
   Map<String, dynamic> toJson() => _$IDOAppIngReplyExchangeModelToJson(this);
-  factory IDOAppIngReplyExchangeModel.fromJson(Map<String, dynamic> json) => _$IDOAppIngReplyExchangeModelFromJson(json);
+
+  factory IDOAppIngReplyExchangeModel.fromJson(Map<String, dynamic> json) =>
+      _$IDOAppIngReplyExchangeModelFromJson(json);
 }
 
 /// app 交换运动数据暂停
@@ -240,10 +247,13 @@ class IDOAppPauseExchangeModel extends IDOBaseExchangeModel {
   @JsonKey(name: 'sport_second')
   int? pauseSecond;
 
-  IDOAppPauseExchangeModel({this.pauseHour, this.pauseMinute, this.pauseSecond});
+  IDOAppPauseExchangeModel(
+      {this.pauseHour, this.pauseMinute, this.pauseSecond});
 
   Map<String, dynamic> toJson() => _$IDOAppPauseExchangeModelToJson(this);
-  factory IDOAppPauseExchangeModel.fromJson(Map<String, dynamic> json) => _$IDOAppPauseExchangeModelFromJson(json);
+
+  factory IDOAppPauseExchangeModel.fromJson(Map<String, dynamic> json) =>
+      _$IDOAppPauseExchangeModelFromJson(json);
 }
 
 /// app 交换运动数据暂停 ble回复
@@ -256,18 +266,20 @@ class IDOAppPauseReplyExchangeModel extends IDOBaseExchangeModel {
   IDOAppPauseReplyExchangeModel({this.errCode});
 
   Map<String, dynamic> toJson() => _$IDOAppPauseReplyExchangeModelToJson(this);
-  factory IDOAppPauseReplyExchangeModel.fromJson(Map<String, dynamic> json) => _$IDOAppPauseReplyExchangeModelFromJson(json);
+
+  factory IDOAppPauseReplyExchangeModel.fromJson(Map<String, dynamic> json) =>
+      _$IDOAppPauseReplyExchangeModelFromJson(json);
 }
 
 /// app 交换运动数据恢复
 @JsonSerializable()
 class IDOAppRestoreExchangeModel extends IDOBaseExchangeModel {
-
   IDOAppRestoreExchangeModel();
 
   Map<String, dynamic> toJson() => _$IDOAppRestoreExchangeModelToJson(this);
-  factory IDOAppRestoreExchangeModel.fromJson(Map<String, dynamic> json) => _$IDOAppRestoreExchangeModelFromJson(json);
 
+  factory IDOAppRestoreExchangeModel.fromJson(Map<String, dynamic> json) =>
+      _$IDOAppRestoreExchangeModelFromJson(json);
 }
 
 /// app 交换运动数据恢复 ble回复
@@ -279,8 +291,11 @@ class IDOAppRestoreReplyExchangeModel extends IDOBaseExchangeModel {
 
   IDOAppRestoreReplyExchangeModel({this.errCode});
 
-  Map<String, dynamic> toJson() => _$IDOAppRestoreReplyExchangeModelToJson(this);
-  factory IDOAppRestoreReplyExchangeModel.fromJson(Map<String, dynamic> json) => _$IDOAppRestoreReplyExchangeModelFromJson(json);
+  Map<String, dynamic> toJson() =>
+      _$IDOAppRestoreReplyExchangeModelToJson(this);
+
+  factory IDOAppRestoreReplyExchangeModel.fromJson(Map<String, dynamic> json) =>
+      _$IDOAppRestoreReplyExchangeModelFromJson(json);
 }
 
 /// app v3交换运动数据
@@ -311,6 +326,7 @@ class IDOAppIngV3ExchangeModel extends IDOBaseExchangeModel {
   int? gpsInfoCount;
 
   /// 坐标数据 最多30个
+  /// ```dart
   /// example: "gps" : [
   ///     {
   ///       "latitude" :22543100,
@@ -321,10 +337,18 @@ class IDOAppIngV3ExchangeModel extends IDOBaseExchangeModel {
   ///       "longitude" :113264400
   ///     }
   ///   ]
-  List<Map<String,int>>? gps;
+  ///   ```
+  List<Map<String, int>>? gps;
 
-  IDOAppIngV3ExchangeModel({this.version,this.signal,this.distance,
-    this.speed,this.duration,this.calories,this.gpsInfoCount,this.gps});
+  IDOAppIngV3ExchangeModel(
+      {this.version,
+      this.signal,
+      this.distance,
+      this.speed,
+      this.duration,
+      this.calories,
+      this.gpsInfoCount,
+      this.gps});
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> newMap = {};
@@ -332,8 +356,8 @@ class IDOAppIngV3ExchangeModel extends IDOBaseExchangeModel {
     map.forEach((key, value) {
       var newKey = key;
       if (key == 'sport_type') {
-         /// 替换key
-         newKey = key.replaceAll('sport_type', 'type');
+        /// 替换key
+        newKey = key.replaceAll('sport_type', 'type');
       }
       newMap[newKey] = value;
     });
@@ -350,15 +374,13 @@ class IDOAppIngV3ExchangeModel extends IDOBaseExchangeModel {
       }
       newJson[newKey] = value;
     });
-   return _$IDOAppIngV3ExchangeModelFromJson(newJson);
+    return _$IDOAppIngV3ExchangeModelFromJson(newJson);
   }
-
 }
 
 /// app v3交换运动数据 ble回复
 @JsonSerializable()
 class IDOAppIngV3ReplyExchangeModel extends IDOBaseExchangeModel {
-
   /// 协议版本号
   int? version;
 
@@ -481,7 +503,6 @@ class IDOAppIngV3ReplyExchangeModel extends IDOBaseExchangeModel {
     });
     return _$IDOAppIngV3ReplyExchangeModelFromJson(newJson);
   }
-
 }
 
 /// app 获取v3多运动数据
@@ -644,17 +665,70 @@ class IDOAppActivityDataV3ExchangeModel extends IDOBaseExchangeModel {
   @JsonKey(name: 'action_data_count')
   int? actionDataCount;
 
-  ///课程内运动热量 单位千卡
+  /// 课程内运动热量 单位千卡
   @JsonKey(name: 'in_class_calories')
   int? inClassCalories;
 
-  ///动作完成率 0—100
+  /// 动作完成率 0—100
   @JsonKey(name: 'completion_rate')
   int? completionRate;
 
-  ///心率控制率 0—100
+  /// 心率控制率 0—100
   @JsonKey(name: 'hr_completion_rate')
   int? hrCompletionRate;
+
+  /// 分段数据个数
+  @JsonKey(name: 'segdata_item_num')
+  int? segmentItemNum;
+
+  /// 分段数据总时间 单位秒
+  @JsonKey(name: 'segdata_total_time')
+  int? segmentTotalTime;
+
+  /// 分段数据总距离 单位米
+  @JsonKey(name: 'segdata_total_distance')
+  int? segmentTotalDistance;
+
+  /// 分段数据总配速 单位秒/百米
+  @JsonKey(name: 'segdata_total_pace')
+  int? segmentTotalPace;
+
+  ///分段数据总平均心率
+  @JsonKey(name: 'segdata_total_avg_hr')
+  int? segmentTotalAvgHr;
+
+  /// 分段数据总步频 单位次/分
+  @JsonKey(name: 'segdata_total_avg_step_frequency')
+  int? segmentTotalAvgStepFrequency;
+
+  /// 区间配速
+  /// 高强度间歇配速 单位秒/百米
+  @JsonKey(name: 'pace_hiit')
+  int? paceHiit;
+
+  /// 区间配速
+  /// 无氧配速
+  /// 单位秒/百米
+  @JsonKey(name: 'pace_anaerobic')
+  int? paceAnaerobic;
+
+  /// 区间配速
+  /// 乳酸阈配速
+  /// 单位秒/百米
+  @JsonKey(name: 'pace_lactic_acid_threshold')
+  int? paceLacticAcidThreshold;
+
+  /// 区间配速
+  /// 马拉松配速
+  /// 单位秒/百米
+  @JsonKey(name: 'pace_marathon')
+  int? paceMarathon;
+
+  /// 区间配速
+  /// 轻松跑配速
+  /// 单位秒/百米
+  @JsonKey(name: 'pace_easy_run')
+  int? paceEasyRun;
 
   /// 每公里耗时秒数 配速集合
   @JsonKey(name: 'km_speed_s')
@@ -676,13 +750,23 @@ class IDOAppActivityDataV3ExchangeModel extends IDOBaseExchangeModel {
   @JsonKey(name: 'pace_speed_items')
   List<int>? paceSpeedItems;
 
+  /// 分段数据详情
+  /// index ：分段序号
+  /// time: 用时 单位秒
+  /// distance: 距离 单位米
+  /// pace: 配速 单位秒/百米
+  /// avg_hr: 平均心率 单位次/分
+  /// avg_step_frequency: 平均步频 单位次/分
+  @JsonKey(name: 'seg_items')
+  List<Map<String, dynamic>>? segmentItems;
+
   ///  动作完成内容
   ///  type : 动作类型  1快走；2慢跑; 3中速跑；4快跑
   ///  heart_con_value : 每个动作心率控制
   ///  time : 动作完成时间 单位秒
   ///  goal_timegoal_time ：动作目标时间
   @JsonKey(name: 'items')
-  List<Map<String,dynamic>>? actionData;
+  List<Map<String, dynamic>>? actionData;
 
   IDOAppActivityDataV3ExchangeModel(
       {this.year,
@@ -728,14 +812,24 @@ class IDOAppActivityDataV3ExchangeModel extends IDOBaseExchangeModel {
       this.inClassCalories,
       this.completionRate,
       this.hrCompletionRate,
+      this.segmentItemNum,
+      this.segmentTotalTime,
+      this.segmentTotalDistance,
+      this.segmentTotalPace,
+      this.segmentTotalAvgHr,
+      this.segmentTotalAvgStepFrequency,
+      this.paceHiit,
+      this.paceAnaerobic,
+      this.paceLacticAcidThreshold,
+      this.paceMarathon,
+      this.paceEasyRun,
       this.kmSpeeds,
       this.stepsFrequency,
       this.itemsMiSpeed,
       this.itemRealSpeed,
       this.paceSpeedItems,
-      this.actionData
-      });
-
+      this.actionData,
+      this.segmentItems});
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> newMap = {};
@@ -751,7 +845,8 @@ class IDOAppActivityDataV3ExchangeModel extends IDOBaseExchangeModel {
     return newMap;
   }
 
-  factory IDOAppActivityDataV3ExchangeModel.fromJson(Map<String, dynamic> json) {
+  factory IDOAppActivityDataV3ExchangeModel.fromJson(
+      Map<String, dynamic> json) {
     Map<String, dynamic> newJson = {};
     json.forEach((key, value) {
       var newKey = key;
@@ -763,13 +858,11 @@ class IDOAppActivityDataV3ExchangeModel extends IDOBaseExchangeModel {
     });
     return _$IDOAppActivityDataV3ExchangeModelFromJson(newJson);
   }
-
 }
 
 /// app v3 多运动数交换中获取1分钟心率数据
 @JsonSerializable()
 class IDOAppHrDataExchangeModel extends IDOBaseExchangeModel {
-
   /// 协议版本号
   int? version;
 
@@ -785,7 +878,8 @@ class IDOAppHrDataExchangeModel extends IDOBaseExchangeModel {
   @JsonKey(name: 'heart_rate_history')
   List<int>? heartRates;
 
-  IDOAppHrDataExchangeModel({this.version, this.heartRateHistoryLen, this.interval, this.heartRates});
+  IDOAppHrDataExchangeModel(
+      {this.version, this.heartRateHistoryLen, this.interval, this.heartRates});
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> newMap = {};
@@ -818,9 +912,9 @@ class IDOAppHrDataExchangeModel extends IDOBaseExchangeModel {
 /// app v3 多运动数据交换中获取GPS经纬度数据
 @JsonSerializable()
 class IDOAppGpsDataExchangeModel extends IDOBaseExchangeModel {
-
   /// 协议版本号
   int? version;
+
   /// 坐标点时间间隔 单位秒
   @JsonKey(name: 'interval_second')
   int? intervalSecond;
@@ -831,9 +925,10 @@ class IDOAppGpsDataExchangeModel extends IDOBaseExchangeModel {
 
   /// gps数据详情集合 [{'latitude':0,'longitude':0}]
   @JsonKey(name: 'GPS_data')
-  List<Map<String,dynamic>>? gpsData;
+  List<Map<String, dynamic>>? gpsData;
 
-  IDOAppGpsDataExchangeModel({this.version, this.intervalSecond, this.gpsCount, this.gpsData});
+  IDOAppGpsDataExchangeModel(
+      {this.version, this.intervalSecond, this.gpsCount, this.gpsData});
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> newMap = {};
@@ -866,35 +961,34 @@ class IDOAppGpsDataExchangeModel extends IDOBaseExchangeModel {
 /// app发起运动 ble设备发送交换运动数据暂停
 @JsonSerializable()
 class IDOAppBlePauseExchangeModel extends IDOBaseExchangeModel {
+  IDOAppBlePauseExchangeModel();
 
-    IDOAppBlePauseExchangeModel();
+  Map<String, dynamic> toJson() {
+    Map<String, dynamic> newMap = {};
+    final map = _$IDOAppBlePauseExchangeModelToJson(this);
+    map.forEach((key, value) {
+      var newKey = key;
+      if (key == 'sport_type') {
+        /// 替换key
+        newKey = key.replaceAll('sport_type', 'type');
+      }
+      newMap[newKey] = value;
+    });
+    return newMap;
+  }
 
-    Map<String, dynamic> toJson() {
-      Map<String, dynamic> newMap = {};
-      final map = _$IDOAppBlePauseExchangeModelToJson(this);
-      map.forEach((key, value) {
-        var newKey = key;
-        if (key == 'sport_type') {
-          /// 替换key
-          newKey = key.replaceAll('sport_type', 'type');
-        }
-        newMap[newKey] = value;
-      });
-      return newMap;
-    }
-
-    factory IDOAppBlePauseExchangeModel.fromJson(Map<String, dynamic> json) {
-      Map<String, dynamic> newJson = {};
-      json.forEach((key, value) {
-        var newKey = key;
-        if (key == 'type') {
-          /// 替换key
-          newKey = key.replaceAll('type', 'sport_type');
-        }
-        newJson[newKey] = value;
-      });
-      return _$IDOAppBlePauseExchangeModelFromJson(newJson);
-    }
+  factory IDOAppBlePauseExchangeModel.fromJson(Map<String, dynamic> json) {
+    Map<String, dynamic> newJson = {};
+    json.forEach((key, value) {
+      var newKey = key;
+      if (key == 'type') {
+        /// 替换key
+        newKey = key.replaceAll('type', 'sport_type');
+      }
+      newJson[newKey] = value;
+    });
+    return _$IDOAppBlePauseExchangeModelFromJson(newJson);
+  }
 }
 
 /// app发起运动 ble设备发送交换运动数据暂停 app回复
@@ -906,14 +1000,18 @@ class IDOAppBlePauseReplyExchangeModel extends IDOBaseExchangeModel {
 
   IDOAppBlePauseReplyExchangeModel({this.errCode});
 
-  Map<String, dynamic> toJson() => _$IDOAppBlePauseReplyExchangeModelToJson(this);
-  factory IDOAppBlePauseReplyExchangeModel.fromJson(Map<String, dynamic> json) => _$IDOAppBlePauseReplyExchangeModelFromJson(json);
+  Map<String, dynamic> toJson() =>
+      _$IDOAppBlePauseReplyExchangeModelToJson(this);
+
+  factory IDOAppBlePauseReplyExchangeModel.fromJson(
+          Map<String, dynamic> json) =>
+      _$IDOAppBlePauseReplyExchangeModelFromJson(json);
 }
+
 //
 /// app发起运动 ble设备发送交换运动数据恢复
 @JsonSerializable()
 class IDOAppBleRestoreExchangeModel extends IDOBaseExchangeModel {
-
   IDOAppBleRestoreExchangeModel();
 
   Map<String, dynamic> toJson() {
@@ -943,6 +1041,7 @@ class IDOAppBleRestoreExchangeModel extends IDOBaseExchangeModel {
     return _$IDOAppBleRestoreExchangeModelFromJson(newJson);
   }
 }
+
 //
 /// app发起运动 ble设备发送交换运动数据恢复 app回复
 @JsonSerializable()
@@ -953,14 +1052,18 @@ class IDOAppBleRestoreReplyExchangeModel extends IDOBaseExchangeModel {
 
   IDOAppBleRestoreReplyExchangeModel({this.errCode});
 
-  Map<String, dynamic> toJson() => _$IDOAppBleRestoreReplyExchangeModelToJson(this);
-  factory IDOAppBleRestoreReplyExchangeModel.fromJson(Map<String, dynamic> json) => _$IDOAppBleRestoreReplyExchangeModelFromJson(json);
+  Map<String, dynamic> toJson() =>
+      _$IDOAppBleRestoreReplyExchangeModelToJson(this);
+
+  factory IDOAppBleRestoreReplyExchangeModel.fromJson(
+          Map<String, dynamic> json) =>
+      _$IDOAppBleRestoreReplyExchangeModelFromJson(json);
 }
+
 //
 /// app发起运动 ble设备发送交换运动数据结束
 @JsonSerializable()
 class IDOAppBleEndExchangeModel extends IDOBaseExchangeModel {
-
   /// 持续时长 单位s
   int? duration;
 
@@ -994,19 +1097,21 @@ class IDOAppBleEndExchangeModel extends IDOBaseExchangeModel {
   @JsonKey(name: 'is_save')
   int? isSave;
 
-  IDOAppBleEndExchangeModel({this.duration,
-    this.calories,
-    this.distance,
-    this.avgHr,
-    this.maxHr,
-    this.burnFatMins,
-    this.aerobicMins,
-    this.limitMins,
-    this.isSave});
+  IDOAppBleEndExchangeModel(
+      {this.duration,
+      this.calories,
+      this.distance,
+      this.avgHr,
+      this.maxHr,
+      this.burnFatMins,
+      this.aerobicMins,
+      this.limitMins,
+      this.isSave});
 
   Map<String, dynamic> toJson() => _$IDOAppBleEndExchangeModelToJson(this);
-  factory IDOAppBleEndExchangeModel.fromJson(Map<String, dynamic> json) => _$IDOAppBleEndExchangeModelFromJson(json);
 
+  factory IDOAppBleEndExchangeModel.fromJson(Map<String, dynamic> json) =>
+      _$IDOAppBleEndExchangeModelFromJson(json);
 }
 
 //
@@ -1026,10 +1131,13 @@ class IDOAppBleEndReplyExchangeModel extends IDOBaseExchangeModel {
   ///距离 单位0.01km
   int? distance;
 
-  IDOAppBleEndReplyExchangeModel({this.errCode,this.duration,this.calories,this.distance});
+  IDOAppBleEndReplyExchangeModel(
+      {this.errCode, this.duration, this.calories, this.distance});
 
   Map<String, dynamic> toJson() => _$IDOAppBleEndReplyExchangeModelToJson(this);
-  factory IDOAppBleEndReplyExchangeModel.fromJson(Map<String, dynamic> json) => _$IDOAppBleEndReplyExchangeModelFromJson(json);
+
+  factory IDOAppBleEndReplyExchangeModel.fromJson(Map<String, dynamic> json) =>
+      _$IDOAppBleEndReplyExchangeModelFromJson(json);
 }
 
 /// ble发起运动 ble设备发送交换运动数据开始
@@ -1067,6 +1175,7 @@ class IDOBleStartExchangeModel extends IDOBaseExchangeModel {
     return _$IDOBleStartExchangeModelFromJson(newJson);
   }
 }
+
 //
 /// ble发起的运动 ble设备交换运动数据过程中
 @JsonSerializable()
@@ -1140,7 +1249,6 @@ class IDOBleEndExchangeModel extends IDOBaseExchangeModel {
 /// ble发起的运动 ble设备发送交换运动数据暂停
 @JsonSerializable()
 class IDOBlePauseExchangeModel extends IDOBaseExchangeModel {
-
   IDOBlePauseExchangeModel();
 
   Map<String, dynamic> toJson() {
@@ -1214,12 +1322,14 @@ class IDOBleStartReplyExchangeModel extends IDOBaseExchangeModel {
   @JsonKey(name: 'ret_code')
   int? retCode;
 
-  IDOBleStartReplyExchangeModel({this.operate,this.retCode});
+  IDOBleStartReplyExchangeModel({this.operate, this.retCode});
 
   Map<String, dynamic> toJson() => _$IDOBleStartReplyExchangeModelToJson(this);
-  factory IDOBleStartReplyExchangeModel.fromJson(Map<String, dynamic> json) => _$IDOBleStartReplyExchangeModelFromJson(json);
 
+  factory IDOBleStartReplyExchangeModel.fromJson(Map<String, dynamic> json) =>
+      _$IDOBleStartReplyExchangeModelFromJson(json);
 }
+
 //
 /// ble发起的运动 ble设备交换运动数据过程中 app回复
 @JsonSerializable()
@@ -1230,7 +1340,9 @@ class IDOBleIngReplyExchangeModel extends IDOBaseExchangeModel {
   IDOBleIngReplyExchangeModel({this.distance});
 
   Map<String, dynamic> toJson() => _$IDOBleIngReplyExchangeModelToJson(this);
-  factory IDOBleIngReplyExchangeModel.fromJson(Map<String, dynamic> json) => _$IDOBleIngReplyExchangeModelFromJson(json);
+
+  factory IDOBleIngReplyExchangeModel.fromJson(Map<String, dynamic> json) =>
+      _$IDOBleIngReplyExchangeModelFromJson(json);
 }
 
 /// ble发起的运动 ble设备发送交换运动数据结束 app回复
@@ -1243,8 +1355,9 @@ class IDOBleEndReplyExchangeModel extends IDOBaseExchangeModel {
   IDOBleEndReplyExchangeModel({this.retCode});
 
   Map<String, dynamic> toJson() => _$IDOBleEndReplyExchangeModelToJson(this);
-  factory IDOBleEndReplyExchangeModel.fromJson(Map<String, dynamic> json) => _$IDOBleEndReplyExchangeModelFromJson(json);
 
+  factory IDOBleEndReplyExchangeModel.fromJson(Map<String, dynamic> json) =>
+      _$IDOBleEndReplyExchangeModelFromJson(json);
 }
 
 /// ble发起的运动 ble设备发送交换运动数据暂停 app回复
@@ -1257,8 +1370,9 @@ class IDOBlePauseReplyExchangeModel extends IDOBaseExchangeModel {
   IDOBlePauseReplyExchangeModel({this.retCode});
 
   Map<String, dynamic> toJson() => _$IDOBlePauseReplyExchangeModelToJson(this);
-  factory IDOBlePauseReplyExchangeModel.fromJson(Map<String, dynamic> json) => _$IDOBlePauseReplyExchangeModelFromJson(json);
 
+  factory IDOBlePauseReplyExchangeModel.fromJson(Map<String, dynamic> json) =>
+      _$IDOBlePauseReplyExchangeModelFromJson(json);
 }
 
 /// ble发起的运动 ble设备发送交换运动数据恢复 app回复
@@ -1270,8 +1384,11 @@ class IDOBleRestoreReplyExchangeModel extends IDOBaseExchangeModel {
 
   IDOBleRestoreReplyExchangeModel({this.retCode});
 
-  Map<String, dynamic> toJson() => _$IDOBleRestoreReplyExchangeModelToJson(this);
-  factory IDOBleRestoreReplyExchangeModel.fromJson(Map<String, dynamic> json) => _$IDOBleRestoreReplyExchangeModelFromJson(json);
+  Map<String, dynamic> toJson() =>
+      _$IDOBleRestoreReplyExchangeModelToJson(this);
+
+  factory IDOBleRestoreReplyExchangeModel.fromJson(Map<String, dynamic> json) =>
+      _$IDOBleRestoreReplyExchangeModelFromJson(json);
 }
 
 /// app 操作计划运动
@@ -1279,15 +1396,18 @@ class IDOBleRestoreReplyExchangeModel extends IDOBaseExchangeModel {
 class IDOAppOperatePlanExchangeModel extends IDOBaseExchangeModel {
   /// 1:开始运动，2：暂停运动, 3:恢复运动 ，4：结束运动, 5: 切换动作
   int? operate;
+
   /// 训练的课程日期偏移 从0开始
   @JsonKey(name: 'training_offset')
   int? trainingOffset;
+
   /// 计划类型：1：跑步计划3km，2：跑步计划5km，
   /// 3：跑步计划10km，4：半程马拉松训练（二期，5：马拉松训练（二期）
   @JsonKey(name: 'type')
   int? planType;
 
-  IDOAppOperatePlanExchangeModel({this.operate,this.trainingOffset,this.planType});
+  IDOAppOperatePlanExchangeModel(
+      {this.operate, this.trainingOffset, this.planType});
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> newMap = {};
@@ -1324,22 +1444,29 @@ class IDOAppOperatePlanReplyExchangeModel extends IDOBaseExchangeModel {
   /// 3：跑步计划10km，4：半程马拉松训练（二期，5：马拉松训练（二期）
   @JsonKey(name: 'type')
   int? planType;
+
   /// 1:开始运动，2：暂停运动, 3:恢复运动 ，4：结束运动, 5: 切换动作
   int? operate;
+
   /// 动作类型  1:快走；2:慢跑；3:中速跑；4:快跑  ；
   /// 5:结束课程运动 （还要等待用户是否有自由运动）；
   /// 6:课程结束后自由运动 （此字段当operate为5起作用）
   @JsonKey(name: 'action_type')
   int? actionType;
+
   /// 0为成功，非0为失败
   @JsonKey(name: 'err_code')
   int? errorCode;
 
-  IDOAppOperatePlanReplyExchangeModel({this.planType,this.operate,this.actionType,this.errorCode});
+  IDOAppOperatePlanReplyExchangeModel(
+      {this.planType, this.operate, this.actionType, this.errorCode});
 
-  Map<String, dynamic> toJson() => _$IDOAppOperatePlanReplyExchangeModelToJson(this);
-  factory IDOAppOperatePlanReplyExchangeModel.fromJson(Map<String, dynamic> json) => _$IDOAppOperatePlanReplyExchangeModelFromJson(json);
+  Map<String, dynamic> toJson() =>
+      _$IDOAppOperatePlanReplyExchangeModelToJson(this);
 
+  factory IDOAppOperatePlanReplyExchangeModel.fromJson(
+          Map<String, dynamic> json) =>
+      _$IDOAppOperatePlanReplyExchangeModelFromJson(json);
 }
 
 /// ble 操作计划运动
@@ -1347,39 +1474,57 @@ class IDOAppOperatePlanReplyExchangeModel extends IDOBaseExchangeModel {
 class IDOBleOperatePlanExchangeModel extends IDOBaseExchangeModel {
   /// 1:开始运动，2：暂停运动, 3:恢复运动 ，4：结束运动, 5: 切换动作
   int? operate;
+
   /// 计划类型：1：跑步计划3km，2：跑步计划5km，
   /// 3：跑步计划10km，4：半程马拉松训练（二期，5：马拉松训练（二期）
   @JsonKey(name: 'type')
   int? planType;
+
   /// 动作类型  1:快走；2:慢跑；3:中速跑；4:快跑  ；
   /// 5:结束课程运动 （还要等待用户是否有自由运动）；
   /// 6:课程结束后自由运动 （此字段当operate为5起作用）
   @JsonKey(name: 'action_type')
   int? actionType;
+
   /// 0为成功，非0为失败
   @JsonKey(name: 'err_code')
   int? errorCode;
+
   /// 训练课程年份
   @JsonKey(name: 'year')
   int? trainingYear;
+
   /// 训练课程月份
   @JsonKey(name: 'month')
   int? trainingMonth;
+
   /// 训练课程日期
   @JsonKey(name: 'training_day')
   int? trainingDay;
+
   /// 动作目标时间  单位秒
   @JsonKey(name: 'time')
   int? time;
+
   /// 心率范围低值
   @JsonKey(name: 'low_heart')
   int? lowHeart;
+
   /// 心率范围高值
   @JsonKey(name: 'height_heart')
   int? heightHeart;
 
-  IDOBleOperatePlanExchangeModel({this.operate,this.planType,this.actionType,
-    this.errorCode,this.trainingYear,this.trainingMonth,this.trainingDay,this.time,this.lowHeart,this.heightHeart});
+  IDOBleOperatePlanExchangeModel(
+      {this.operate,
+      this.planType,
+      this.actionType,
+      this.errorCode,
+      this.trainingYear,
+      this.trainingMonth,
+      this.trainingDay,
+      this.time,
+      this.lowHeart,
+      this.heightHeart});
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> newMap = {};
@@ -1420,22 +1565,29 @@ class IDOBleOperatePlanExchangeModel extends IDOBaseExchangeModel {
 class IDOBleOperatePlanReplyExchangeModel extends IDOBaseExchangeModel {
   /// 1:开始运动，2：暂停运动, 3:恢复运动 ，4：结束运动, 5: 切换动作
   int? operate;
+
   /// 计划类型：1：跑步计划3km，2：跑步计划5km，
   /// 3：跑步计划10km，4：半程马拉松训练（二期，5：马拉松训练（二期）
   @JsonKey(name: 'type')
   int? planType;
+
   /// 动作类型  1:快走；2:慢跑；3:中速跑；4:快跑  ；
   /// 5:结束课程运动 （还要等待用户是否有自由运动）；
   /// 6:课程结束后自由运动 （此字段当operate为5起作用）
   @JsonKey(name: 'action_type')
   int? actionType;
+
   /// 0为成功，非0为失败
   @JsonKey(name: 'err_code')
   int? errorCode;
 
-  IDOBleOperatePlanReplyExchangeModel({this.operate,this.planType,this.actionType,this.errorCode});
+  IDOBleOperatePlanReplyExchangeModel(
+      {this.operate, this.planType, this.actionType, this.errorCode});
 
-  Map<String, dynamic> toJson() => _$IDOBleOperatePlanReplyExchangeModelToJson(this);
-  factory IDOBleOperatePlanReplyExchangeModel.fromJson(Map<String, dynamic> json) => _$IDOBleOperatePlanReplyExchangeModelFromJson(json);
+  Map<String, dynamic> toJson() =>
+      _$IDOBleOperatePlanReplyExchangeModelToJson(this);
 
+  factory IDOBleOperatePlanReplyExchangeModel.fromJson(
+          Map<String, dynamic> json) =>
+      _$IDOBleOperatePlanReplyExchangeModelFromJson(json);
 }

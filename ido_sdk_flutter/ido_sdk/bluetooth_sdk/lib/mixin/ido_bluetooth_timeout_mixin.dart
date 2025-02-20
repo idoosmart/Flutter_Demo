@@ -70,7 +70,9 @@ mixin IDOBluetoothTimeoutMixin {
           uuid: currentDevice?.uuid,
           macAddress: currentDevice?.macAddress,
           state: IDOBluetoothDeviceStateType.disconnected,
-          errorState: IDOBluetoothDeviceConnectErrorType.timeOut));
+          errorState: IDOBluetoothDeviceConnectErrorType.timeOut,
+          platform: 0
+      ));
     }//这里会再次触发设备状态回调
     bluetoothManager.channelCancelConnect(currentDevice?.macAddress);
   }

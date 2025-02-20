@@ -273,7 +273,9 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
       int realSpeedCount, int paceSpeedCount, int inClassCalories,
       int completionRate, int hrCompletionRate, List<int> kmSpeeds, List<int> stepsFrequency,
       List<int> itemsMiSpeed, List<int> itemRealSpeed, List<int> paceSpeedItems, List<Map<String,dynamic>> actionData,
-      ) {
+      int segmentItemNum, int segmentTotalTime, int segmentTotalDistance, int segmentTotalPace, int segmentTotalAvgHr,
+      int segmentTotalAvgStepFrequency, int paceHiit, int paceAnaerobic, int paceLacticAcidThreshold, int paceMarathon,
+      int paceEasyRun, List<Map<String, dynamic>> segmentItems) {
     this.day = day;
     this.hour = hour;
     this.minute = minute;
@@ -329,6 +331,18 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
     this.realSpeeds?.addAll(itemRealSpeed);
     this.paceSpeeds?.addAll(paceSpeedItems);
     this.actionData?.addAll(actionData);
+    this.segmentItemNum = (this.segmentItemNum ?? 0) + segmentItemNum;
+    this.segmentTotalTime = segmentTotalTime;
+    this.segmentTotalDistance = segmentTotalDistance;
+    this.segmentTotalPace = segmentTotalPace;
+    this.segmentTotalAvgHr = segmentTotalAvgHr;
+    this.segmentTotalAvgStepFrequency = segmentTotalAvgStepFrequency;
+    this.paceHiit = paceHiit;
+    this.paceAnaerobic = paceAnaerobic;
+    this.paceLacticAcidThreshold = paceLacticAcidThreshold;
+    this.paceMarathon = paceMarathon;
+    this.paceEasyRun = paceEasyRun;
+    this.segmentItems?.addAll(segmentItems);
   }
 
   /// 获取云端GPS数据

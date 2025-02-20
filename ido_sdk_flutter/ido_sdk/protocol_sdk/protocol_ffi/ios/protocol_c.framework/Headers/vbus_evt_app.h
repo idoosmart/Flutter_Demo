@@ -49,6 +49,9 @@ typedef enum
 	SYNC_EVT_DATA_TRAN_PROCESSING_SPP                = 20,     //数据传输的进度  spp传输进度
 	SYNC_EVT_DATA_TRAN_COMPLETE_SPP                  = 21,     //数据传输完成,注意错误值  spp传输进度完成
 	SYNC_EVT_V3_HEALTH_EACH_TYPE_ITEMS_COMPLETE      = 22,     //v3健康数据同步单项数据完成通知 2022-7-26
+    SYNC_EVT_DEVICE_TRAN_FILE_2_APP_PROGRESS         = 24,     //24 设备上传文件进度上报事件
+    SYNC_EVT_DEVICE_TRAN_FILE_2_APP_COMPELETE        = 25,     //25 设备上传文件结果上报事件
+    SYNC_EVT_DEVICE_TRAN_FILE_2_APP_INFO             = 26,     //26 设备上传文件信息上报事件
 
 	VBUS_EVT_APP_SET_ALARM                           = 100,    //设置闹钟
 	VBUS_EVT_APP_SET_LONG_SIT                        = 101,	   //设置久坐 struct protocol_long_sit
@@ -131,13 +134,15 @@ typedef enum
     VBUS_EVT_APP_SET_BODY_POWER_ON_OFF               = 192,    //手机app通过这个命令开关，设置身体电量开关  struct protocol_set_body_power_on_off
     VBUS_EVT_APP_SET_VOICE_ASSISTANT_ON_OFF          = 193,    //手机app通过这个命令开关，设置手机语音助手开关  struct protocol_set_voice_assistant_on_off
     VBUS_EVT_APP_SET_NOTICE_CALL_QUICK_REPLY_ON_OFF  = 194,    //手机app通过这个命令开关，设置来电快捷回复开关  struct protocol_set_call_quick_reply_on_off
-
+    VBUS_EVT_APP_SET_VERSION_INFORMATION             = 195,    //手机app通过这个命令开关，设置固件版本信息     struct protocol_set_version_information
+    
 	VBUS_EVT_APP_BIND_START                          = 200,    //绑定 struct protocol_start_bind,struct protocol_start_bind_reply
 	VBUS_EVT_APP_BIND_REMOVE                         = 201,	   //解绑
 	VBUS_EVT_APP_AUTH                                = 202,	   //开始授权 struct protocol_start_auth,struct protocol_start_auth_reply
 	VBUS_EVT_APP_BIND_REFUSE                         = 203,	   //绑定拒绝
 	VBUS_EVT_APP_SET_ENCRYPTED_AUTH                  = 204,    //发送计算好的授权数据     struct protocol_start_encrypted_auth,struct protocol_start_encrypted_auth_reply
     VBUS_EVT_APP_GET_ENCRYPTED_CODE                  = 205,    //获取授权数据 protocol_start_aut_code_reply
+    VBUS_EVT_APP_SEND_BIND_RESULTE                   = 206,    //APP下发配对结果 struct protocol_app_send_bind_resulte
     
 	VBUS_EVT_APP_APP_GET_MAC                         = 300,	   //获得mac struct protocol_device_mac
 	VBUS_EVT_APP_GET_DEVICE_INFO                     = 301,	   //获得设备信息 struct protocol_device_info
@@ -186,6 +191,9 @@ typedef enum
     VBUS_EVT_APP_GET_UNDELETEABLE_MEUN_LIST          = 340,    //获取固件不可删除的快捷应用列表
     VBUS_EVT_APP_GET_SN_INFO                         = 341,    //获取sn信息
     VBUS_EVT_APP_GET_UNIT                            = 342,    //获取固件单位
+    VBUS_EVT_APP_GET_HEART_RATE_MODE_SMART           = 343,    //APP智能心率模式获取
+    VBUS_EVT_APP_GET_SPO2                            = 344,    //获取血氧开关
+    VBUS_EVT_APP_GET_PRESSURE                        = 345,    //获取压力开关
     
     VBUS_EVT_CHECK_REBOOT                            = 350,	   //检查重启状态,非协议,用于内部状态处理
 	VBUS_EVT_APP_GET_UNREAD_APP_ONOFF                = 351,    //获取获取固件红点提示开关状态   struct protocol_head ,struct protocol_unread_app_reminder
@@ -392,7 +400,19 @@ typedef enum
 	VBUS_EVT_FUNC_V3_GET_BLE_BEEP                          = 5071,  //获取固件本地提示音文件信息
 	VBUS_EVT_FUNC_V3_BP_CAL_CONTROL                        = 5072,  //V3血压校准控制 struct protocol_v3_bp_cal_control struct protocol_v3_bp_cal_control_reply
 	VBUS_EVT_FUNC_V3_BP_CAL_COMPLETE                       = 5073,  //V3血压校准完成
+    VBUS_EVT_FUNC_SEND_MINI_PROGRAM_CONTROL                = 5078,  //发送小程序操作
     VBUS_EVT_FUNC_SMART_COMPETITOR_CONFIG_INFO             = 5080,  //智能陪跑配置信息
+    VBUS_EVT_FUNC_MAKE_SMART_COMPETITOR_FILE               = 5081,  //制作isf & isf.slz文件 泰坦06定制
+    VBUS_EVT_FUNC_AI_SEND_TXT                              = 5082,	//发送AI语音转换文本
+    VBUS_EVT_FUNC_SLEEP_PLAN                               = 5083,  //睡眠计划
+    VBUS_EVT_FUNC_DRINK_PLAN                               = 5084,  //喝水计划
+    VBUS_EVT_FUNC_V3_ECARD_CONTROL                         = 5085,  //电子卡片
+    VBUS_EVT_FUNC_V3_VOICE_MEMO                            = 5086,  //语音备忘录
+    VBUS_EVT_FUNC_V3_MORNING_EDITION                       = 5087,  //晨报
+    VBUS_EVT_FUNC_V3_CALENDEAR_REMINDER                    = 5088,  //日历提醒
+    VBUS_EVT_FUNC_V3_CONFIG_MES_LIST                       = 5089,  //配置默认的消息应用列表
+    VBUS_EVT_FUNC_V3_SET_ICE                               = 5090,  //设置紧急联系人（ECI）方式
+
 
 	VBUS_EVT_FUNC_MAKE_PHOTO                               = 5500,	//制作照片
 	VBUS_EVT_FUNC_GPS_FILE                                 = 5501,	//制作gps文件
@@ -406,6 +426,9 @@ typedef enum
 	VBUS_EVT_FUNC_PCM_TO_MP3                               = 5517,  //音频文件转换  将采样率转化为44.1khz   mp3_to_mp3(char* mp3Path,char* pcmPath);
 	VBUS_EVT_FUNC_TRANS_ALL_CONTACT                        = 5518,  //APP下发蓝牙联系人数据给协议层
 	VBUS_EVT_FUNC_FLASH_LOG_SCOND_CHIP_START               = 5519,	//开始获取第二块芯片flash log
+    
+    VBUS_EVT_FUNC_V3_GET_OPERATE_ALG_FILE                  = 5522,  //获取固件算法文件信息（ACC/GPS）
+    VBUS_EVT_FUNC_V3_SPORT_RECORD_SHOW_CONFIG              = 5523,  //支持获取运动记录的显示项配置
 
 	MP3_TO_MP3_PROCESSING                                  = 5530,  //MP3转换进度  注意错误值和回调值
 

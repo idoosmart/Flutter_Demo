@@ -27,6 +27,7 @@ DeviceInfoModel _$DeviceInfoModelFromJson(Map<String, dynamic> json) =>
       userDefinedDialMainVersion:
           json['user_defined_dial_main_version'] as int?,
       sn: json['sn'],
+      gpsPlatform: json['gps_platform'] as int?,
     );
 
 Map<String, dynamic> _$DeviceInfoModelToJson(DeviceInfoModel instance) =>
@@ -49,4 +50,5 @@ Map<String, dynamic> _$DeviceInfoModelToJson(DeviceInfoModel instance) =>
       'show_bind_choice_ui': instance.showBindChoiceUi,
       'user_defined_dial_main_version': instance.userDefinedDialMainVersion,
       'sn': instance.sn,
+      'gps_platform': instance.gpsPlatform,
     };

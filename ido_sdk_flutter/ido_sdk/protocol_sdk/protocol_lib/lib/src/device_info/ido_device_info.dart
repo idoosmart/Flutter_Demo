@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:protocol_core/protocol_core.dart';
 import 'package:protocol_lib/protocol_lib.dart';
 
 import '../private/logger/logger.dart';
@@ -11,7 +12,11 @@ import '../private/local_storage/local_storage.dart';
 import '../private/notification/notification.dart';
 
 class IDODeviceInfo {
-  IDODeviceInfo._internal();
+  IDODeviceInfo._internal() {
+    _subjectOnChanged.stream.listen((event) {
+      _onDeviceInfoChanged();
+    });
+  }
   static final _instance = IDODeviceInfo._internal();
   factory IDODeviceInfo() => _instance;
 
@@ -42,7 +47,7 @@ class IDODeviceInfo {
   int get bindTimeout => _device?.bindConfirmTimeout ?? 0;
 
   /// 设备平台 0:nordic, 10:realtek 8762x, 20:cypress psoc6, 30:Apollo3, 40:汇顶, 50:nordic+泰凌微,
-  /// 60:泰凌微+5340+no nand flash, 70:汇顶+富瑞坤, 80:5340, 90: 炬芯, 99: 思澈
+  /// 60:泰凌微+5340+no nand flash, 70:汇顶+富瑞坤, 80:5340, 90: 炬芯, 97: 恒玄, 98: 思澈1, 99: 思澈2
   int get platform => _device?.platform ?? 0;
 
   /// 设备形状类型 0：无效；1：圆形；2：方形的； 3：椭圆
@@ -69,6 +74,9 @@ class IDODeviceInfo {
   /// BtName
   String? get btName => _device?.btNameString();
 
+  /// GPS芯片平台 0：无效 1：索尼 sony 2：洛达 Airoh 3：芯与物 icoe
+  int get gpsPlatform => _device?.gpsPlatform ?? 0;
+
 
   // 扩展信息
 
@@ -78,7 +86,7 @@ class IDODeviceInfo {
 
   /// （SDK 内部专用， 外部慎用！！！）
   /// 当前设备mac地址 - 带冒号
-  String? get macAddressFull => _deviceExt?.macAddressFull;
+  String? get macAddressFull => _deviceExt?.macAddressFull ?? _libMgr.macAddressFull;
 
   /// （SDK 内部专用， 外部慎用！！！）
   /// 注意：该名称是由调用 libManager.markConnectedDevice(...)传入，sdk不会主去刷新该值
@@ -152,7 +160,7 @@ class IDODeviceInfo {
   ///    });
   /// ```
   String getDeviceOtaVersion() {
-    if (libManager.funTable.getBtVersion) {
+    if (libManager.funTable.getBleAndBtVersion) {
       return '${fwVersion1.toString()}'
           '.${fwVersion2.toString().padLeft(2, '0')}'
           '.${fwVersion3.toString().padLeft(2, '0')}';
@@ -187,7 +195,7 @@ class IDODeviceInfo {
         if (notTelink) {
           storage?.saveDeviceInfoToDisk(_device!);
         }
-        statusNotification
+        statusSdkNotification
             ?.add(IDOStatusNotification.deviceInfoUpdateCompleted);
         return this;
       } else {
@@ -224,7 +232,7 @@ class IDODeviceInfo {
         if (notTelink) {
           storage?.saveDeviceInfoToDisk(_device!);
         }
-        statusNotification
+        statusSdkNotification
             ?.add(IDOStatusNotification.deviceInfoUpdateCompleted);
         return this;
       }
@@ -259,7 +267,7 @@ class IDODeviceInfo {
         if (notTelink) {
           storage?.saveFirmwareVersionToDisk(_fw!);
         }
-        statusNotification
+        statusSdkNotification
             ?.add(IDOStatusNotification.deviceInfoFwVersionCompleted);
         return this;
       }
@@ -319,6 +327,7 @@ class IDODeviceInfo {
   /// 设置设备BT MacAddress（SDK内部使用）
   void setDeviceBtMacAddress(String macAddressBt) {
     _deviceExt = storage?.loadDeviceInfoExtWith(libManager.macAddress);
+    logger?.d("setDeviceBtMacAddress _deviceExt:${_deviceExt?.toJson()} macAddressBt: $macAddressBt");
     _deviceExt?.macAddressBt = macAddressBt;
     _subjectOnChanged.add(0);
   }
@@ -385,6 +394,26 @@ class IDODeviceInfo {
     _subjectOnChanged.add(0);
   }
 
+  /// 手动设置设备信息（SDK内部使用），外部不要调用
+  void innerSetDeviceInfo({
+    required int platform,
+    required String macAddress,
+    required bool otaMode,
+    String uuid = '',
+    int? deviceId}) {
+    logger?.wtf("innerSetDeviceInfo platform: $platform macAddress: $macAddress otaMode: $otaMode uuid: $uuid");
+    final tmpMacAddress = macAddress.replaceAll(':', '').toUpperCase();
+    _deviceExt = DeviceInfoExtModel(
+        macAddress: tmpMacAddress,
+        macAddressFull: macAddress,
+        macAddressBt: '',
+        uuid: uuid,
+        otaMode: otaMode,
+        updateTime: DateTime.now().millisecondsSinceEpoch);
+    _device = DeviceInfoModel(platform: platform, deivceId: deviceId);
+    _subjectOnChanged.add(0);
+  }
+
   /// 设备信息变更  (SDK内部使用)
   StreamSubscription onDeviceInfoChanged(void Function(int) func) {
     return _subjectOnChanged.stream.listen(func);
@@ -416,6 +445,7 @@ extension IDODeviceInfoExt on IDODeviceInfo {
       'uuid': uuid,
       'sn': sn,
       'btName': btName,
+      'gpsPlatform': gpsPlatform,
       'macAddressBt': macAddressBt,
       'fwVersion1': fwVersion1,
       'fwVersion2': fwVersion2,
@@ -429,6 +459,44 @@ extension IDODeviceInfoExt on IDODeviceInfo {
       'fwBtMatchVersion3': fwBtMatchVersion3,
     });
   }
+
+  void _onDeviceInfoChanged() {
+    if (_device != null) {
+      // 判断设备平台
+      if (platform == 98 || platform == 99) {
+        logger?.d("deviceInfo platform: $platform");
+        IDOProtocolCoreManager().initSifliChannel();
+      }
+    }
+  }
+
+  /// 思澈平台
+  bool isSilfiOta() {
+    // 98: 思澈1, 99: 思澈2
+    if (platform == 98 || platform == 99) {
+      return true;
+    }
+    return false;
+  }
+
+  bool isNordicPlatform() => platform == 0;
+
+  bool isRealtekPlatform() => platform == 10;
+
+  bool isTelinkPlatform() => platform == 60;
+
+  /// 通用的，ota的时候使用爱都自己的协议
+  bool isCommonPlatform() => [30, 40, 50, 80, 90].contains(platform);
+
+  /// 恒玄
+  bool isPersimwearPlatform() => platform == 97;
+
+  /// 思澈
+  bool isSilfiPlatform() => [98, 99].contains(platform);
+
+  /// 芯与物 icoe gps平台
+  bool isIcoeGpsPlatform() => gpsPlatform == 3;
+
 }
 
 // 字节数组解析为字符串(待c库调整为返回字符串，此处再废弃）

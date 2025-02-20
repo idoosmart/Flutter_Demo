@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:async';
 
+import 'package:protocol_lib/protocol_lib.dart';
 import 'package:protocol_lib/src/private/logger/logger.dart';
 
 import 'base_file.dart';
@@ -9,8 +10,13 @@ import '../model/normal_file_model.dart';
 
 class EpoFile extends BaseFile {
   Completer<bool>? _completerWriteFile;
+  StreamSubscription? subscriptEpoWrite;
+  Timer? _timerWriteFileWait;
+  EpoFile(super.type, super.fileItem, bool needCheckWriteFileComplete) {
+    _needCheckWriteFileComplete = needCheckWriteFileComplete;
+  }
 
-  EpoFile(super.type, super.fileItem);
+  bool _needCheckWriteFileComplete = true;
 
   @override
   Future<BaseFileModel> makeFileIfNeed() {
@@ -19,23 +25,56 @@ class EpoFile extends BaseFile {
 
   @override
   Future<bool> writeFileIfNeed() async {
+    // 不需要等待epo写完成结果
+    if (!_needCheckWriteFileComplete) {
+      return super.writeFileIfNeed();
+    }
+
+    // 45s超时处理(当收不到0740时触发超时)
+    _timerWriteFileWait?.cancel();
+    _timerWriteFileWait = Timer(const Duration(seconds: 45), () {
+      _timerWriteFileWait = null;
+      if (_completerWriteFile != null && !_completerWriteFile!.isCompleted) {
+        logger?.d('tran epo 0740 timeout');
+        _completerWriteFile?.complete(false);
+        subscriptEpoWrite?.cancel();
+        _completerWriteFile = null;
+        subscriptEpoWrite = null;
+      }
+    });
+
     logger?.d('call writeFileIfNeed()');
     _completerWriteFile = Completer();
-    StreamSubscription? subscript;
-    subscript = coreMgr.listenDeviceStateChanged((code) {
+    subscriptEpoWrite = coreMgr.listenDeviceStateChanged((code) {
       logger?.d('tran writeFileIfNeed code:$code');
       if (code == 44) {
-        // 成功
         _completerWriteFile?.complete(true);
-        subscript?.cancel();
+        subscriptEpoWrite?.cancel();
+        _completerWriteFile = null;
+        subscriptEpoWrite = null;
+        _timerWriteFileWait?.cancel();
       } else if (code == 43) {
-        // 失败
         _completerWriteFile?.complete(false);
-        subscript?.cancel();
+        subscriptEpoWrite?.cancel();
+        _completerWriteFile = null;
+        subscriptEpoWrite = null;
+        _timerWriteFileWait?.cancel();
       }
     });
 
     return _completerWriteFile!.future;
+  }
+
+  @override
+  void cancel() {
+    super.cancel();
+    _timerWriteFileWait?.cancel();
+    _timerWriteFileWait = null;
+    subscriptEpoWrite?.cancel();
+    subscriptEpoWrite = null;
+    logger?.i('epo_file call cancel');
+    _completerWriteFile?.complete(false);
+    _completerWriteFile = null;
   }
 }
 

@@ -101,7 +101,21 @@ IDOV3ExchangeModel _$V3ExchangeModelFromJson(Map<String, dynamic> json) =>
       gpsCount: json['gpsCount'] as int?,
       gpsData: (json['gpsData'] as List<dynamic>?)
           ?.map((e) => e as Map<String, dynamic>)
-          .toList()
+          .toList(),
+        segmentItemNum: json['segmentItemNum'] as int?,
+        segmentTotalTime: json['segmentTotalTime'] as int?,
+        segmentTotalDistance: json['segmentTotalDistance'] as int?,
+        segmentTotalPace: json['segmentTotalPace'] as int?,
+        segmentTotalAvgHr: json['segmentTotalAvgHr'] as int?,
+        segmentTotalAvgStepFrequency: json['segmentTotalAvgStepFrequency'] as int?,
+        paceHiit: json['paceHiit'] as int?,
+        paceAnaerobic: json['paceAnaerobic'] as int?,
+        paceLacticAcidThreshold: json['paceLacticAcidThreshold'] as int?,
+        paceMarathon: json['paceMarathon'] as int?,
+        paceEasyRun: json['paceEasyRun'] as int?,
+        segmentItems: (json['segmentItems'] as List<dynamic>?)
+            ?.map((e) => e as Map<String, dynamic>)
+            .toList(),
     );
 
 Map<String, dynamic> _$V3ExchangeModelToJson(IDOV3ExchangeModel instance) =>
@@ -186,7 +200,19 @@ Map<String, dynamic> _$V3ExchangeModelToJson(IDOV3ExchangeModel instance) =>
       'paceSpeeds': instance.paceSpeeds,
       'realSpeedCount': instance.realSpeedCount,
       'realSpeeds': instance.realSpeeds,
-       'intervalSecond': instance.intervalSecond,
-       'gpsCount': instance.gpsCount,
-       'gpsData': instance.gpsData
+      'intervalSecond': instance.intervalSecond,
+      'gpsCount': instance.gpsCount,
+      'gpsData': instance.gpsData,
+      'segmentItemNum': instance.segmentItemNum,
+      'segmentTotalTime': instance.segmentTotalTime,
+      'segmentTotalDistance': instance.segmentTotalDistance,
+      'segmentTotalPace': instance.segmentTotalPace,
+      'segmentTotalAvgHr': instance.segmentTotalAvgHr,
+      'segmentTotalAvgStepFrequency': instance.segmentTotalAvgStepFrequency,
+      'paceHiit': instance.paceHiit,
+      'paceAnaerobic': instance.paceAnaerobic,
+      'paceLacticAcidThreshold': instance.paceLacticAcidThreshold,
+      'paceMarathon': instance.paceMarathon,
+      'paceEasyRun': instance.paceEasyRun,
+      'segmentItems': instance.segmentItems
     };

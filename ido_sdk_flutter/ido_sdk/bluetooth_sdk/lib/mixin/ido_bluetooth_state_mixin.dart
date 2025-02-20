@@ -28,6 +28,12 @@ mixin IDOBluetoothStateMixin {
             .connected;
   }
 
+  bool get isConnecting{
+    return bluetoothManager.currentDevice?.state ==
+        IDOBluetoothDeviceStateType
+            .connecting;
+  }
+
   //是否断链
   // bool get isDisconnected{
   //   return bluetoothManager.currentDevice?.state !=

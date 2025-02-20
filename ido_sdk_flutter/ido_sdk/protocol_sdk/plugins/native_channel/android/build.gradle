@@ -46,16 +46,34 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+            java.srcDirs += 'src/main/kotlin'
+        }
+    }
+
     defaultConfig {
         minSdkVersion 16
     }
 
+    // 以下资源仅用于内部标准化项目（不要修改此处代码）
+    libraryVariants.configureEach { variant ->
+        variant.mergeAssets.doLast {
+            delete fileTree(dir: variant.getMergeAssets().getOutputDir(), includes: [
+                    '**/com.tencent.mm.png.bak',
+                    '**/com.tencent.mobileqq.png.bak'
+            ])
+        }
+    }
+
     dependencies {
+        implementation fileTree(include: ['*.jar'], dir: 'libs')
         testImplementation 'org.jetbrains.kotlin:kotlin-test'
         testImplementation 'org.mockito:mockito-core:5.0.0'
         implementation 'commons-fileupload:commons-fileupload:1.3.1'
         implementation group: 'commons-io', name: 'commons-io', version: '2.5'
-
+        implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
         implementation 'com.squareup.okhttp3:okhttp:3.14.9'
         implementation 'com.squareup.okio:okio:1.17.2'
     }

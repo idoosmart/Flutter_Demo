@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
+import android.os.Build
+import android.text.TextUtils
 import android.util.Log
 import com.example.flutter_bluetooth.ble.config.UUIDConfig
 import com.example.flutter_bluetooth.bt.BTDeviceScanManager
@@ -77,6 +79,13 @@ open class SPPConnector(val deviceAddress: String?) {
     private fun connect(device: BluetoothDevice) {
         p("[SPPConnector] connect " + device.name)
         try {
+
+            //小米11没有blutooth 权限导致崩溃
+            if (isXiaomi11Series()) {
+                failed()
+                p("[SPPConnector] connect. not permission")
+                return
+            }
             val socket = device.createRfcommSocketToServiceRecord(UUIDConfig.SPP_UUID) //加密传输，Android系统强制配对，弹窗显示配对码
             e("[SPPConnector] createRfcommSocketToServiceRecord: ${socket?.isConnected}")
             if (!socket.isConnected) {
@@ -89,8 +98,24 @@ open class SPPConnector(val deviceAddress: String?) {
         }
     }
 
+    /**
+     * 判断设备是否为小米 11 系列
+     * @return true 如果是小米 11 系列，false 否则
+     */
+    fun isXiaomi11Series(): Boolean {
+        val model: String = Build.MODEL
+        // 小米 11 系列的型号
+        return model.equals("M2011K2C") ||  // 小米 11i / 小米 11X Pro
+                model.equals("M2011J20CI") ||  // 小米 11
+                model.contains("M201") ||  // 小米 11i
+                model.equals("M2101K9C") ||  // 小米 11X
+                model.equals("M2101K9G") || model.contains("Mi") ||   //"Mi Note 10 Lite"   Mi 10
+                model.contains("M2007") || model.contains("M210") || model.contains("2109119DG")  //客户出现的崩溃
+    }
+
     private fun success(socket: BluetoothSocket) {
         p("[SPPConnector] success.")
+        mCmdQueue.clear()
         this.socket = socket
         if (connectStateListener != null) {
             connectStateListener!!.onSuccess(deviceAddress)
@@ -167,7 +192,7 @@ open class SPPConnector(val deviceAddress: String?) {
         if (data == null) {
             return false
         }
-//        p("[SPPConnector] send[" + data.size + "] => " + ByteDataConvertUtil.bytesToHexString(data))
+        p("[SPPConnector] send[" + data.size + "] => " + ByteDataConvertUtil.bytesToHexString(data))
         if (!isConnected) {
             e("[SPPConnector] write(). not connected.")
             return false

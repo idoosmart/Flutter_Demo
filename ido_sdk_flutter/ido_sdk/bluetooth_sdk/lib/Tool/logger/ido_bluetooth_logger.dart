@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:archive/archive_io.dart';
 import 'logger_config.dart';
 import 'logger_manager.dart';
@@ -15,19 +14,23 @@ class IDOBluetoothLogger {
   late LoggerManager loggerNative;
   String? loggerPath;
 
-  register({bool outputToConsole = false}) async {
-    loggerPath = '${(await getApplicationDocumentsDirectory())
-        .path}/$fileName';
-    logger = LoggerManager(config: await flutterConfig(outputToConsole: outputToConsole));
-    loggerNative = LoggerManager(config: await nativeConfig(outputToConsole: outputToConsole));
+  register({bool outputToConsole = false, required String? logDir}) async {
+    if (logDir != null) {
+      loggerPath = '$logDir/$fileName';
+      logger = LoggerManager(config: await flutterConfig(outputToConsole: outputToConsole));
+      loggerNative = LoggerManager(config: await nativeConfig(outputToConsole: outputToConsole));
+    }else {
+      throw ErrorDescription("logDir is null");
+    }
   }
 
   writeLog(Map event) {
     int platform = event['platform']; //1 ios  2 android 3 flutter;
-    String className = event['className'];
+    //String className = event['className'];
     String method = event['method'];
     String detail = event['detail'];
-    final str = '[$className-$method]   >>>   $detail';
+    //final str = '[$className-$method]   >>>   $detail';
+    final str = '[$method] >>> $detail';
     if (platform == 1 || platform == 2) {
       loggerNative.i(str);
     }else if (platform == 3) {

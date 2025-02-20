@@ -17,9 +17,9 @@ interface BluetoothCallback {
 
     fun callOnConnectTimeOut()
 
-    fun callOnConnectBreakByGATT(status: Int, newState: Int)
+    fun callOnConnectBreakByGATT(status: Int, newState: Int,platform: Int)
 
-    fun callOnConnectFailedByGATT(status: Int, newState: Int)
+    fun callOnConnectFailedByGATT(status: Int, newState: Int,platform: Int)
 
     fun callOnConnectFailedByErrorMacAddress()
 
@@ -31,7 +31,10 @@ interface BluetoothCallback {
 
     fun callOnInDfuMode()
 
-    fun callOnConnectedAndReady()
+    /**
+     * @param platform 手表平台
+     */
+    fun callOnConnectedAndReady(platform:Int)
 
     fun callOnEnableNormalNotifyFailed()
 
@@ -44,4 +47,6 @@ interface BluetoothCallback {
     fun callOnCharacteristicWrite(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int)
 
     fun callOnCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?)
+
+    fun callOnServices(services:List<String>)
 }

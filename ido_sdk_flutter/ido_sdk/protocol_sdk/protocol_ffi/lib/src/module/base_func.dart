@@ -102,7 +102,9 @@ extension IDOProtocolAPIExtBase on IDOProtocolAPI {
   /// 获取当前绑定状态
   /// 0 没有绑定, 1 已经绑定, 2 升级模式
   int getBindMode() {
-    return bindings.GetMode();
+    final rs = bindings.GetMode();
+    logger?.d("ffi getBindMode: $rs");
+    return rs;
   }
 
   /// 手动停止快速同步配置

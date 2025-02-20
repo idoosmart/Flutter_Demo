@@ -8,6 +8,7 @@ object Constants {
         const val STOP_SCAN = "stopScan"
         const val CONNECT = "connect"
         const val SEND_DATA = "sendData"
+        const val SEND_SPP_DATA = "sendSppData"
         const val STATE = "state"
         const val DISCONNECT = "cancelConnect"
         const val GET_DEVICE_STATE = "getDeviceState"
@@ -18,6 +19,8 @@ object Constants {
         const val START_DFU = "startNordicDFU"
         const val AUTO_CONNECT = "autoConnect"
         const val GET_A2DP_STATE = "getMediaState"
+        const val GET_SPP_STATE = "getSppState"
+        const val GET_DOCUMENT_PATH = "getDocumentPath"
     }
 
     object ResponseMethod {

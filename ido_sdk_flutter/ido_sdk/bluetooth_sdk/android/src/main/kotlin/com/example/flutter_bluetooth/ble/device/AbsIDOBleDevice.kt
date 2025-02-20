@@ -100,8 +100,11 @@ abstract class AbsIDOBleDevice(val deviceAddress: String) : BytesDataConnect(dev
         }
     }
 
-    fun writeDataToDevice(bytes: ByteArray) {
-        addCmdData(bytes, false)
+    fun writeDataToDevice(bytes: ByteArray,platform: Int) {
+        val request = ByteDataRequest()
+        request.sendData = bytes
+        request.platform = platform
+        addCmdData(request, false)
     }
 
     /**
@@ -116,7 +119,7 @@ abstract class AbsIDOBleDevice(val deviceAddress: String) : BytesDataConnect(dev
             mCustomCmdResponseCallbacks["${bytes[0]}${bytes[1]}"] = callback
         }
         p("writeCustomDataToDevice, ${ByteDataConvertUtil.bytesToHexString(bytes)}")
-        writeDataToDevice(bytes)
+        writeDataToDevice(bytes,0)
     }
 
     /**
@@ -167,8 +170,8 @@ abstract class AbsIDOBleDevice(val deviceAddress: String) : BytesDataConnect(dev
         }
     }
 
-    override fun callOnConnectedAndReady() {
-        mBluetoothCallback?.callOnConnectedAndReady()
+    override fun callOnConnectedAndReady(platform:Int) {
+        mBluetoothCallback?.callOnConnectedAndReady(platform)
         mConnectCallbacks.forEach {
             it.onConnectSuccess()
         }
@@ -210,9 +213,9 @@ abstract class AbsIDOBleDevice(val deviceAddress: String) : BytesDataConnect(dev
         }
     }
 
-    override fun callOnConnectBreakByGATT(status: Int, newState: Int) {
-        super.callOnConnectBreakByGATT(status, newState)
-        mBluetoothCallback?.callOnConnectBreakByGATT(status, newState)
+    override fun callOnConnectBreakByGATT(status: Int, newState: Int,platform: Int) {
+        super.callOnConnectBreakByGATT(status, newState,platform)
+        mBluetoothCallback?.callOnConnectBreakByGATT(status, newState,platform)
         mConnectCallbacks.forEach {
             it.onConnectBreak()
         }
@@ -225,8 +228,8 @@ abstract class AbsIDOBleDevice(val deviceAddress: String) : BytesDataConnect(dev
         }
     }
 
-    override fun callOnConnectFailedByGATT(status: Int, newState: Int) {
-        mBluetoothCallback?.callOnConnectFailedByGATT(status, newState)
+    override fun callOnConnectFailedByGATT(status: Int, newState: Int,platform: Int) {
+        mBluetoothCallback?.callOnConnectFailedByGATT(status, newState,platform)
         mConnectCallbacks.forEach {
             it.onConnectFailed(ConnectFailedReason.SYSTEM_GATT_ERROR)
         }
@@ -240,10 +243,13 @@ abstract class AbsIDOBleDevice(val deviceAddress: String) : BytesDataConnect(dev
     override fun callOnCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?) {
         super.callOnCharacteristicChanged(gatt, characteristic)
         val bytes = characteristic?.value
+        if (bytes == null || bytes.size < 1) {
+            p("callOnCharacteristicChanged,characteristic?.value is empty")
+            return
+        }
         if (filterCustomData(characteristic?.value) && mCustomCmdResponseCallbacks.isNotEmpty() && mCustomCmdResponseCallbacks.containsKey("${bytes!![0]}${bytes[1]}")
         ) {
             //拦截自定义指令
-            p("receiveCustomData: ${ByteDataConvertUtil.bytesToHexString(bytes)}")
             mCustomCmdResponseCallbacks.remove("${bytes!![0]}${bytes[1]}")?.onResponse(bytes)
         } else {
             mBluetoothCallback?.callOnCharacteristicChanged(gatt, characteristic)
@@ -256,6 +262,11 @@ abstract class AbsIDOBleDevice(val deviceAddress: String) : BytesDataConnect(dev
     override fun callOnConnectClosed() {
         super.callOnConnectClosed()
         mBluetoothCallback?.callOnConnectClosed()
+    }
+
+
+    override fun callOnServices(services: List<String>) {
+        mBluetoothCallback?.callOnServices(services)
     }
 
 }

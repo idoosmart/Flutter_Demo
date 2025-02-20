@@ -62,6 +62,30 @@ abstract class IDOProtocolClibManager {
   /// ```
   StreamController<Tuple3<int, int, String>> get streamListenReceiveData;
 
+  // ---------------------------- 设备传文件到app ----------------------------
+
+  /// 设备->app文件传输完成事件回调注册
+  ///
+  /// ```dart
+  /// 返回 Tuple2(int error, int errorVal)
+  /// ```
+  StreamController<int> get streamDataTranToAppComplete;
+
+  /// 设备->app文件传输进度事件回调注册
+  ///
+  /// ```dart
+  /// 返回 int progress
+  /// ```
+  StreamController<int> get streamDataTranToAppProgress;
+
+  /// 设备->app, 设备传输文件到APP的传输请求事件回调注册
+  ///
+  /// ```dart
+  /// 返回 json string
+  /// ```
+  StreamController<String> get streamDataTranToAppRequest;
+
+
   // ------------------------------- Alexa -------------------------------
   /// 上报接收到的opus语音文件状态
   ///

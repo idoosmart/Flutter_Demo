@@ -213,6 +213,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
               _v3Model?.paceSpeeds = [];
               _v3Model?.realSpeeds = [];
               _v3Model?.gpsData = [];
+              _v3Model?.segmentItems = [];
               _v3Model?.bleStart2AppData(model.day ?? 0, model.hour ?? 0, model.minute ?? 0,
                   model.second ?? 0, model.sportType ?? 0, model.operate ?? 0);
             }else {
@@ -321,6 +322,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
               _v3Model?.paceSpeeds = [];
               _v3Model?.realSpeeds = [];
               _v3Model?.gpsData = [];
+              _v3Model?.segmentItems = [];
             }else if (model.operate == 2) {
               if (_status == ExchangeStatus.blePausePlan) {
                 return;
@@ -432,6 +434,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
         reply.second = _baseModel?.second;
         reply.sportType = _baseModel?.sportType;
         data.model = reply;
+
         _v3Model?.getActivityData(reply.day ?? 0, reply.hour ?? 0, reply.minute ?? 0, reply.second ?? 0, reply.sportType ?? 0, reply.year ?? 0,
             reply.month ?? 0, reply.version ?? 0, reply.hrInterval ?? 0, reply.step ?? 0, reply.durations ?? 0, reply.calories ?? 0,
             reply.distance ?? 0, reply.burnFatMins ?? 0, reply.aerobicMins ?? 0, reply.limitMins ?? 0, reply.warmUp ?? 0, reply.fatBurning ?? 0,
@@ -441,8 +444,10 @@ extension _IDOExchangeExt on _IDOExchangeData {
             reply.avgHrValue ?? 0, reply.maxHrValue ?? 0, reply.kmSpeedCount ?? 0, reply.actionDataCount ?? 0, reply.stepsFrequencyCount ?? 0,
             reply.miSpeedCount ?? 0, reply.recoverTime ?? 0, reply.vo2max ?? 0, reply.trainingEffect ?? 0, reply.grade ?? 0, reply.realSpeedCount ?? 0,
             reply.paceSpeedCount ?? 0,reply.inClassCalories ?? 0, reply.completionRate ?? 0, reply.hrCompletionRate ?? 0 ,
-            reply.kmSpeeds ?? [], reply.stepsFrequency ?? [], reply.itemsMiSpeed ?? [], reply.itemRealSpeed ?? [],
-            reply.paceSpeedItems ?? [], reply.actionData ?? []);
+            reply.kmSpeeds ?? [], reply.stepsFrequency ?? [], reply.itemsMiSpeed ?? [], reply.itemRealSpeed ?? [], reply.paceSpeedItems ?? [], reply.actionData ?? [],
+            reply.segmentItemNum ?? 0, reply.segmentTotalTime ?? 0, reply.segmentTotalDistance ?? 0, reply.segmentTotalPace ?? 0, reply.segmentTotalAvgHr ?? 0,
+            reply.segmentTotalAvgStepFrequency ?? 0, reply.paceHiit ?? 0, reply.paceAnaerobic ?? 0, reply.paceLacticAcidThreshold ?? 0, reply.paceMarathon ?? 0,
+            reply.paceEasyRun ??0, reply.segmentItems ?? []);
         _streamV3Exchange.sink.add(_v3Model ?? IDOV3ExchangeModel());
         /// 此处v3运动数据结束
       }
@@ -520,6 +525,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
         _v3Model?.paceSpeeds = [];
         _v3Model?.realSpeeds = [];
         _v3Model?.gpsData = [];
+        _v3Model?.segmentItems = [];
         _v3Model?.appStart2BleData(model.day ?? 0, model.hour ?? 0, model.minute ?? 0,
             model.second ?? 0, model.sportType ?? 0,model.targetType??0,
             model.targetValue??0,model.forceStart?? 0,model.vo2max??0,model.recoverTime??0,
@@ -805,6 +811,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
          _v3Model?.paceSpeeds = [];
          _v3Model?.realSpeeds = [];
          _v3Model?.gpsData = [];
+         _v3Model?.segmentItems = [];
          _v3Model?.appPlan2BleData(model.day ?? 0, model.hour ?? 0, model.minute ?? 0,
              model.second ?? 0, model.sportType ?? 0,model.operate ?? 0,
              model.trainingOffset ?? 0, model.planType?? 0);

@@ -56,12 +56,13 @@ open class BTPair(val deviceAddress: String?) {
             logP("[BTConnectPresenter] pairing, wait user confirm!")
         }else{
             logP("[BTConnectPresenter] pair failed!")
+            failed()
         }
 //        scanBtDevice(deviceAddress)
     }
 
     open fun pair(strAddr: String?): Boolean {
-        val result = false
+        val result = true
         logP("[BTConnectPresenter] pair start: $strAddr")
         //蓝牙设备适配器
         val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
@@ -127,6 +128,11 @@ open class BTPair(val deviceAddress: String?) {
                     logP("createBond success, mac is" + tempDevice.address)
                     if (tempDevice.address == deviceAddress) {
                         success()
+                    }
+                }else if (bondState == BluetoothDevice.BOND_NONE) {
+                    logP("createBond failed, mac is" + tempDevice.address)
+                    if (tempDevice.address == deviceAddress) {
+                        bondStateListener?.onBondFailed(deviceAddress, -1, "")
                     }
                 }
             }

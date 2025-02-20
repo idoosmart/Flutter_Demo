@@ -31,15 +31,15 @@ class BaseFile extends AbstractFileOperate {
   bool get useCache => kDebugMode ? true : true;
 
   /// 清理临时文件（制作及压缩文件产生的临时文件）
-  bool get hasCleanTampFile => kDebugMode ? false : false; // TODO 测试阶段暂时保留
+  bool get hasCleanTampFile => kDebugMode ? false : true; // TODO 测试阶段暂时保留
 
   int index = 0; // 当前文件在列表中的索引
 
-  final _keyTranConfigReply = 'TranConfigReply';
+  //final _keyTranConfigReply = 'TranConfigReply';
 
   // 进度、状态及结果回调
   void Function(int error, int errorVal, int index)? _funcStatus;
-  void Function(int progress, int index)? _funcProgress;
+  void Function(double progress, int index)? _funcProgress;
 
   BaseFile(super.type, super.fileItem);
 
@@ -101,10 +101,16 @@ class BaseFile extends AbstractFileOperate {
       logger?.v("tranFile - end configParamIfNeed");
 
       logger?.v("tranFile - begin coreMgr.trans");
+      var startTime = DateTime.now();
       // 传输
       final fileTranItem = _createTranItem(newFileItem!, index);
       logger?.v("exec tran 原始文件:${fileItem.toString()}");
       logger?.v("exec tran 转换文件:${newFileItem!.toString()}");
+      // 屏蔽思澈平台ota中的所有指令发送
+      if (libManager.deviceInfo.isSilfiPlatform() && libManager.transFile.transFileType == FileTransType.fw) {
+        logger?.v('Silfi platform ota mode, clean cmd queue');
+        _coreMgr.dispose(needKeepTransFileTask: true);
+      }
       _transCancelOpt = coreMgr.trans(
           fileTranItem: fileTranItem,
           statusCallback: (error, errorVal) =>
@@ -121,6 +127,14 @@ class BaseFile extends AbstractFileOperate {
             logger?.d('tranFile _completer not work1');
           }
           return;
+        }
+        if (fileTranItem.fileSize > 0) {
+          final endTime = DateTime.now();
+          final useTime = endTime.difference(startTime);
+          final kb = (fileTranItem.fileSize/1024.0);
+          logger?.v('tranFile - useTime ${(useTime.inMilliseconds/1000.0).toStringAsFixed(2)}s'
+              ' ${kb.toStringAsFixed(2)}KB '
+              ' ${((kb/useTime.inMilliseconds)*1000).toStringAsFixed(2)}KB/s');
         }
         final rs = await writeFileIfNeed();
         if (_completer != null && !_completer!.isCompleted) {
@@ -159,7 +173,7 @@ class BaseFile extends AbstractFileOperate {
   }
 
   setCallbackFunc(void Function(int error, int errorVal, int index) funcStatus,
-      void Function(int progress, int index) funcProgress) {
+      void Function(double progress, int index) funcProgress) {
     _funcStatus = funcStatus;
     _funcProgress = funcProgress;
   }
@@ -302,9 +316,15 @@ extension BaseFileExt on BaseFile {
         dataType: _tranFileDataType(item.fileType),
         compressionType: _compressionType(item.fileType),
         fileSize: item.fileSize ?? 0,
-        originalFileSize: item.originalFileSize ?? 0);
+        originalFileSize: item.originalFileSize ?? 0,
+        platform: _libMgr.deviceInfo.platform,
+        macAddress: Platform.isAndroid ? _libMgr.deviceInfo.macAddressFull : _libMgr.deviceInfo.uuid,
+    );
     if (item.fileType == FileTransType.mp3 && item is MusicFileModel) {
       fileItem.useSpp = item.useSpp;
+    }
+    if (Platform.isIOS && _libMgr.deviceInfo.uuid == null) {
+      logger?.e("_libMgr.deviceInfo.uuid is null");
     }
     fileItem.index = idx;
     return fileItem;
@@ -362,6 +382,11 @@ extension BaseFileExt on BaseFile {
       case FileTransType.voice:
         rs = FileTranCompressionType.fastlz;
         break;
+      case FileTransType.other:
+        break;
+      case FileTransType.app:
+        rs = FileTranCompressionType.none;
+        break;
     }
     return rs;
   }
@@ -373,6 +398,9 @@ extension BaseFileExt on BaseFile {
     var fileExt = '.zip';
     switch (fileType) {
       case FileTransType.fw:
+        if (libMgr.deviceInfo.isSilfiOta()) {
+          return '.zip';
+        }
         // 名称固定
         return '.fw';
       case FileTransType.fzbin:
@@ -426,6 +454,12 @@ extension BaseFileExt on BaseFile {
       case FileTransType.voice:
         fileExt = '.pcm';
         break;
+      case FileTransType.other:
+        fileExt = ''; // 不指定后缀
+        break;
+      case FileTransType.app:
+        fileExt = '.app';
+        break;
     }
     return fileName.endsWith(fileExt) ? fileName : '$fileName$fileExt';
   }
@@ -435,6 +469,8 @@ extension BaseFileExt on BaseFile {
     var dataType = FileTranDataType.photo;
     switch (type) {
       case FileTransType.fw:
+        dataType = FileTranDataType.fw;
+        break;
       case FileTransType.wallpaper_z:
         dataType = FileTranDataType.photo;
         break;

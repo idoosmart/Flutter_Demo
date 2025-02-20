@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth/model/ido_bluetooth_dfu_config.dart';
 import 'package:flutter_bluetooth/model/ido_bluetooth_dfu_state.dart';
 import 'package:rxdart/rxdart.dart';
@@ -75,7 +75,8 @@ abstract class IDOBluetoothManager {
   /// device: Mac地址必传，iOS要带上uuid，最好使用搜索返回的对象
   /// manual connection
   /// device: Mac address must be passed, iOS must bring uuid, it is best to use the object returned by the search
-  connect(IDOBluetoothDeviceModel? device);
+  /// delayDuration: 连接延迟时长, 默认不延迟
+  connect(IDOBluetoothDeviceModel? device, {Duration? delayDuration = Duration.zero});
 
   /// 使用这个重连设备
   /// Use this to reconnect the device
@@ -104,8 +105,11 @@ abstract class IDOBluetoothManager {
   /// data: data
   /// device: device sending data
   /// type:0 BLE data, 1 SPP data
+  /// platform: 0 爱都, 1 恒玄, 2 VC
   Future<IDOBluetoothWriteType> writeData(Uint8List data,
-      {IDOBluetoothDeviceModel? device, int type = 0});
+      {IDOBluetoothDeviceModel? device,
+        int type = 0,
+        int platform = 0});
 
   /// 发送数据状态
   /// Send data status
@@ -131,6 +135,10 @@ abstract class IDOBluetoothManager {
   /// 取消配对（android）
   /// unpair (android)
   cancelPair({IDOBluetoothDeviceModel? device});
+
+  /// bt状态（android）
+  /// bt status (android)
+  Stream<bool> stateBt();
 
   /// btMacAddress 连接SPP（android）
   /// btMacAddress connect to SPP (android)
@@ -165,6 +173,9 @@ abstract class IDOBluetoothManager {
   ///主动获取媒体音频开关状态
   Future<IDOBluetoothMediaState> getMediaAudioState(String btMac);
 
+  ///主动获取SPP连接状态
+  Future<bool> getSppState({String btMac});
+
   ///监听媒体音频开关状态
   Stream<IDOBluetoothMediaState> mediaAudioState();
 
@@ -185,7 +196,6 @@ abstract class IDOBluetoothManager {
   /// deviceID：只搜索deviceID的设备
   /// uuids: 只搜索 uuid设备
   scanFilter({List<String>? deviceNames, List<int>? deviceIDs, List<String>? macAddresss, List<String>? uuids});
-
 
   /// 设备上报到keychain存储（ios）
   requestMacAddress(IDOBluetoothDeviceModel? device);

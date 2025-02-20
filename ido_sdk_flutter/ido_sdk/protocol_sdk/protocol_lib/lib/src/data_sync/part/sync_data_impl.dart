@@ -16,15 +16,16 @@ class _IDOSyncData implements IDOSyncData {
     __statusPrivate = val;
     _streamStatus.add(val);
     if (val == SyncStatus.syncing) {
-      statusNotification?.add(IDOStatusNotification.syncHealthDataIng);
+      statusSdkNotification?.add(IDOStatusNotification.syncHealthDataIng);
     }else if (val != SyncStatus.init) {
-      statusNotification?.add(IDOStatusNotification.syncHealthDataCompleted);
+      statusSdkNotification?.add(IDOStatusNotification.syncHealthDataCompleted);
     }
   }
 
   @override
-  Stream<bool> startSync(
-      {required CallbackSyncProgress funcProgress,
+  Stream<bool> startSync({
+    List<SyncDataType>? types = const [],
+      required CallbackSyncProgress funcProgress,
       required CallbackSyncData funcData,
       required CallbackSyncCompleted funcCompleted}) {
     if (!IDOProtocolLibManager().isConnected) {
@@ -32,7 +33,7 @@ class _IDOSyncData implements IDOSyncData {
     }
     _completer = Completer();
     final stream = CancelableOperation.fromFuture(
-        _startSync(funcProgress, funcData, funcCompleted), onCancel: () {
+        _startSync((types ?? []).mappingValues, funcProgress, funcData, funcCompleted), onCancel: () {
       _status = SyncStatus.canceled;
       _completer?.complete(false);
       _completer = null;
@@ -54,24 +55,40 @@ class _IDOSyncData implements IDOSyncData {
     return _streamStatus.stream;
   }
 
+  @override
+  List<SyncDataType> getSupportSyncDataTypeList() {
+    // 目前支持单项同步的类型
+    final syncTypes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15, 16];
+    final supportSyncDataTypes = <int>[];
+    for (var type in syncTypes) {
+      final rs = IDOProtocolCoreManager().isSupportSyncHealthDataType(type);
+      if(rs) {
+        supportSyncDataTypes.add(type);
+      }
+    }
+    return supportSyncDataTypes.mappingValues;
+  }
+
 }
 
 extension _IDOSyncDataExt on _IDOSyncData {
   // 开始同步
-  Future<bool> _startSync(CallbackSyncProgress funcProgress,
+  Future<bool> _startSync(
+      List<int> types,
+      CallbackSyncProgress funcProgress,
       CallbackSyncData funcData, CallbackSyncCompleted funcCompleted) async {
     try {
       if (!libManager.isConnected) {
         logger?.e('sync data device disconnect');
          if (funcCompleted != null) {
-             funcCompleted(-4);
+             funcCompleted(ErrorCode.no_connected_device);
          }  
          return Future(() => false);
       }
       if (libManager.otaType != IDOOtaType.none) {
         logger?.e('sync data device is ota mode == ${libManager.otaType}');
         if (funcCompleted != null) {
-            funcCompleted(-5);
+            funcCompleted(ErrorCode.ota_mode);
         }
         return Future(() => false);
       }
@@ -83,7 +100,7 @@ extension _IDOSyncDataExt on _IDOSyncData {
       final calculate = SyncCalculate();
       await calculate.refreshProgressProportion();
       _syncHandle =
-          SyncDataHandle(calculate.activityCount > 0, calculate.gpsCount > 0,
+          SyncDataHandle(types, calculate.activityCount > 0, calculate.gpsCount > 0,
               (progress, type) {
         if (type == SyncType.v2Health) {
           calculate.v2HealthProgress = progress;
@@ -105,7 +122,7 @@ extension _IDOSyncDataExt on _IDOSyncData {
         //   return;
         // }
         if (funcData != null) {
-          logger?.d('sync data ==${jsonStr} data type ==${type} error code ==${errorCode}');
+          //logger?.d('sync data ==${jsonStr} data type ==${type} error code ==${errorCode}');
           final dataType = SyncDataType.values[type.index];
           funcData(dataType, jsonStr, errorCode);
         }
@@ -113,16 +130,14 @@ extension _IDOSyncDataExt on _IDOSyncData {
         if (syncStatus == SyncStatus.finished) {
           return;
         }
-        logger?.d('sync data complete error code ==$errorCode');
-        logger?.d('sync data complete status ==$syncStatus');
-
-        if (funcCompleted != null) {
-            funcCompleted(errorCode);
-        }
         _status = SyncStatus.finished;
+        logger?.d('sync data complete status: $syncStatus errCode: $errorCode');
         _completer?.complete(errorCode == 0);
         _completer = null;
         _closeFastModeIfNeed();
+        if (funcCompleted != null) {
+          funcCompleted(errorCode);
+        }
       });
       _syncHandle!.start().timeout(Duration(seconds: calculate.syncTimeout),
           onTimeout: () {

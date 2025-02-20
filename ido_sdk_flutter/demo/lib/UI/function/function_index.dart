@@ -68,6 +68,8 @@ class _FunctionContentState extends State<FunctionContent> {
       S.current.setdisplaymode,
       S.current.setsmartnotfity,
       S.current.setcurrenttime,
+      S.current.setsmartheartrate,
+      S.current.setspo2switch,
     ],
     S.current.getfunction: [
       S.current.getfunctionlist,
@@ -148,6 +150,11 @@ class _FunctionContentState extends State<FunctionContent> {
           event.macAddress!.isNotEmpty)) {
         final device = bluetoothManager.currentDevice!;
         //debugPrint('begin markConnectedDevice');
+        var uniqueId = event.macAddress!;
+        // 获取设备uuid(只有ios)
+        if (Platform.isIOS && bluetoothManager.currentDevice?.uuid != null) {
+          uniqueId = bluetoothManager.currentDevice!.uuid!;
+        }
         final otaType = device.isTlwOta
             ? IDOOtaType.telink
             : device.isOta
@@ -155,11 +162,6 @@ class _FunctionContentState extends State<FunctionContent> {
                 : IDOOtaType.none;
         final isBinded = await libManager.cache
             .loadBindStatus(macAddress: event.macAddress!);
-        var uniqueId = event.macAddress!;
-        // 获取设备uuid(只有ios)
-        if (Platform.isIOS && bluetoothManager.currentDevice?.uuid != null) {
-          uniqueId = bluetoothManager.currentDevice!.uuid!;
-        }
         await libManager.markConnectedDeviceSafe(
             uniqueId: uniqueId,
             otaType: otaType,

@@ -1,5 +1,7 @@
 part of '../ido_message_icon.dart';
 
+
+
 class _IDOMessageIcon implements IDOMessageIcon {
   static final _instance = _IDOMessageIcon._internal();
 
@@ -12,6 +14,9 @@ class _IDOMessageIcon implements IDOMessageIcon {
   late final _streamState = StreamController<bool>.broadcast();
   late final _streamPath = StreamController<String>.broadcast();
   late final _defaultAppInfoList = <IDOAppIconItemModel>[];
+
+  /// 思澈消息图标代理对象
+  SeCheMessageIconDelegate? _scDelegate;
 
   /// Android 已更新图标应用id缓存集合
   late final _androidEventTypes = <int>[];
@@ -28,6 +33,10 @@ class _IDOMessageIcon implements IDOMessageIcon {
   /// 是否在更新中
   bool _isUpdate = false;
 
+  int _iconWidth = 60;
+
+  String _macAddress = "";
+
   /// 实现set方法
   set isUpdate(bool value) {
     _isUpdate = value;
@@ -38,19 +47,32 @@ class _IDOMessageIcon implements IDOMessageIcon {
   /// 第一次获取包名数据
   bool _isFirst = false;
 
+  /// 是否注册监听
+  bool _isRegister = false;
+
   /// app图标信息模型
   IDOAppIconInfoModel? _currentModel;
 
   @override
   void registerListenUpdate() async {
+    if (_isRegister) {
+      logger?.v("registerListenUpdate _isRegister: true, ignore");
+      return;
+    }
+    _isRegister = true;
     ToolsImpl().listenNativeLog().listen((event) {
       logger?.d(event);
     });
-    await GetAndroidAppInfo().copyAppIcon();
+    final rs = await GetAndroidAppInfo().copyAppIcon();
     _listenUpdate();
     _listenFastSyncComplete();
     final path = await getIconDirPath();
     _streamPath.add(path);
+    if (Platform.isIOS && !rs) {
+      _isRegister = false;
+      logger?.v("registerListenUpdate reset _isRegister = false");
+    }
+
   }
 
   @override
@@ -83,6 +105,81 @@ class _IDOMessageIcon implements IDOMessageIcon {
     }
   }
 
+  /// 设置默认app信息集合(支持的设备需要)
+  @override
+  void setDefaultAppInfoList(List<IDOAppIconItemModel> models) async {
+    if (Platform.isAndroid) {
+      logger?.d(
+          'android does not need to perform setDefaultAppInfoList method');
+      return;
+    }
+
+    if (!_libMgr.isConnected) {
+      logger?.d('not connected, please call connect device first');
+      return;
+    }
+
+    if (_currentModel?.iconWidth != null) {
+      _iconWidth = _currentModel?.iconWidth ?? 60;
+      logger?.d("set default app icons icon width 1 == $_iconWidth");
+    } else {
+      logger?.d(
+          'setDefaultAppInfoList country_code: $ios_countryCode, models.length: ${models
+              .length}');
+      var iconWidth = 60;
+      final map_objc = {"operat_flag": 0, "last_id": 0};
+      final response = await _libMgr
+          .send(evt: CmdEvtType.getPackName, json: jsonEncode(map_objc))
+          .first;
+      if (_isSuccessCallback(response)) {
+        final map = jsonDecode(response.json!) as Map<String, dynamic>;
+        map.putIfAbsent('country_code', () => ios_countryCode ?? 'US');
+        final model = IDOAppIconInfoModel.fromJson(map);
+        iconWidth = model.iconWidth ?? 60;
+      }
+      _iconWidth = iconWidth == 0 ? 60 : iconWidth;
+      logger?.d("set default app icons icon width 2 == $_iconWidth");
+    }
+
+    final userSetDefaultAppInfoList = <IDOAppIconItemModel>[];
+    userSetDefaultAppInfoList.addAll(models);
+    final dirPath = await getIconDirPath();
+    try {
+      for (var e in userSetDefaultAppInfoList) {
+        final file = File(e.iconLocalPath);
+        if (file.existsSync()) {
+          final filePath1 = "$dirPath/${e.packName}${'_100'}.png";
+          final rs = await copyFileChecksum(e.iconLocalPath, filePath1);
+          if (rs == 2) {
+            // 大图变更，删除小图
+            var smallIconPath = "$dirPath/${e.packName}_46.png";
+            final smallFile = File(smallIconPath);
+            if (smallFile.existsSync()) {
+              smallFile.deleteSync();
+            }
+          }
+          e.iconLocalPath = "";
+          e.iconLocalPathBig = filePath1;
+          final smallFilePath = await IconHelp.cropPicture(
+              filePath1, e.packName, _iconWidth, _iconWidth);
+          if (smallFilePath != null) {
+            e.iconLocalPath = smallFilePath.path;
+          }
+        } else {
+          logger?.e("_IDOMessageIcon file not exists: ${e.iconLocalPathBig}");
+        }
+      }
+      // 持久化
+      final obj = IDOAppIconInfoModel(version: 0,
+          iconWidth: _iconWidth,
+          iconHeight: _iconWidth,
+          items: userSetDefaultAppInfoList);
+      await storage?.saveUserDefaultMsgIconToDisk(obj);
+    }catch(e) {
+      logger?.e("setDefaultAppInfoList error == $e");
+    }
+  }
+
   @override
   Future<List<IDOAppIconItemModel>> getDefaultAppInfo() async {
     if (_defaultAppInfoList.isNotEmpty) {
@@ -93,10 +190,15 @@ class _IDOMessageIcon implements IDOMessageIcon {
     var iconWidth = 60;
     var iconHeight = 60;
     if (_currentModel == null) {
+      logger?.d('getDefaultAppInfo country_code: $ios_countryCode, items.length: ${items.length}');
       final map_objc = {"operat_flag": 0, "last_id": 0};
       final response = await _libMgr
           .send(evt: CmdEvtType.getPackName, json: jsonEncode(map_objc))
           .first;
+      if (_defaultAppInfoList.isNotEmpty) {
+        /// 上面指令可能执行多次，如果有数据，直接返回数据
+         return _defaultAppInfoList;
+      }
       if (_isSuccessCallback(response)) {
         final map = jsonDecode(response.json!) as Map<String, dynamic>;
         map.putIfAbsent('country_code', () => ios_countryCode ?? 'US');
@@ -108,7 +210,8 @@ class _IDOMessageIcon implements IDOMessageIcon {
       iconWidth = _currentModel?.iconWidth ?? 60;
       iconHeight = _currentModel?.iconHeight ?? 60;
     }
-
+    _iconWidth = iconWidth == 0 ? 60 : iconWidth;
+    logger?.d("get default app icons icon width == $_iconWidth, items: ${items.length}");
     for (var element in items) {
       final eventType = (element?["type"] as int?) ?? 0;
       final packName = element?["pkgName"] ?? "";
@@ -140,7 +243,7 @@ class _IDOMessageIcon implements IDOMessageIcon {
     }
     _defaultAppInfoList.forEach((element) {
       logger?.d(
-          "get default app info == ${element.appName} ${element.packName} ${element.iconCloudPath}");
+          "get default app info == ${element.appName} ${element.packName} ${element.iconCloudPath} icon width $_iconWidth");
     });
     return _defaultAppInfoList;
   }
@@ -173,7 +276,23 @@ class _IDOMessageIcon implements IDOMessageIcon {
       if (Platform.isIOS) {
         final dirPath = await getIconDirPath();
         final appInfo = await getDefaultAppInfo();
+        // 融合用户设置的应用图标信息
+        final userSetMsgIconList = (await storage?.loadUserDefaultMsgIconByDisk())?.items ?? [];
         final existentItems = model.items?.where((element) {
+          for (var e in userSetMsgIconList) {
+            if (e.packName == element.packName) {
+              if (element.iconLocalPathBig == null || element.iconLocalPathBig!.isEmpty) {
+                element.iconLocalPathBig = e.iconLocalPathBig;
+              }
+              if (element.appName.isEmpty) {
+                element.appName = e.appName;
+              }
+              if (element.iconLocalPath.isEmpty) {
+                element.iconLocalPath = e.iconLocalPath;
+              }
+              break;
+            }
+          }
           final oneApps = appInfo
               .where((item) => item.packName == element.packName)
               .toList();
@@ -181,40 +300,87 @@ class _IDOMessageIcon implements IDOMessageIcon {
           if (oneApps.isNotEmpty) {
             /// 赋值默认应用信息
             element.isDefault = true;
-            element.appName = oneApps.first.appName;
           } else {
             element.isDefault = false;
           }
 
-          // final isDefault = element.isDefault ?? false;
+          if (element.appName.isEmpty) {
+            if (oneApps.isNotEmpty) {
+                /// 赋值默认应用名称
+                element.appName = oneApps.first.appName;
+            }
+          }
+
           final packName = element.packName;
           final appName = element.appName;
-          var imagePath = element.iconLocalPathBig ?? '';
-          if (imagePath.isNotEmpty) {
-            imagePath = '$dirPath/${element.packName}${'_100'}.png';
-            element.iconLocalPathBig = imagePath;
+          final filePath1 = "$dirPath/${element.packName}${'_100'}.png";
+          final file1 = File(filePath1);
+          if (file1.existsSync() == false) {
+            logger?.d("local big image is not exist pack name == ${element.packName}");
+            element.iconLocalPathBig = '';
+          } else {
+            // logger?.d("local big image is exist pack name == $filePath1");
+            element.iconLocalPathBig = filePath1;
           }
-          var imagePath1 = element.iconLocalPath;
-          if (imagePath1.isNotEmpty) {
-            imagePath1 = '$dirPath/${element.packName}${'_46'}.png';
-            element.iconLocalPath = imagePath1;
+
+          var filePath2 = "$dirPath/${element.packName}${'_46'}.png";
+          if (_iconWidth > 60) {
+              filePath2 = "$dirPath/${element.packName}${'_$_iconWidth'}.png";
+          }
+          final file2 = File(filePath2);
+          if (file2.existsSync() == false) {
+            element.iconLocalPath = '';
+            logger?.d("local smart image is not exist pack name == ${element.packName}");
+          }else {
+            // logger?.d("local smart image is exist pack name == $filePath2");
+            element.iconLocalPath = filePath2;
           }
           if (   packName.isNotEmpty
               && appName.isNotEmpty
-              && imagePath.isNotEmpty) {
+              && file1.existsSync()) {
             return true;
           } else {
             return false;
           }
         }).toList();
-        model.items = existentItems;
+        model.items = await _reCropIcon(existentItems ?? []);
       }
+      logger?.d("get cache app items count 1: ${model.items?.length ?? 0}");
       return Future(() => model);
     } else {
+      logger?.d("get cache app items count 2: 0");
       return Future(() => IDOAppIconInfoModel());
     }
   }
 
+  Future<List<IDOAppIconItemModel>> _reCropIcon(List<IDOAppIconItemModel> items) async {
+     if (Platform.isAndroid) {
+        return Future(() => items);
+     }
+     if (items.isEmpty) {
+       return Future(() => items);
+     }
+     final dirPath = await getIconDirPath();
+     for (var element in items) {
+       var filePath = "$dirPath/${element.packName}${'_46'}.png";
+       if (_iconWidth > 60) {
+         filePath = "$dirPath/${element.packName}${'_$_iconWidth'}.png";
+       }
+       final file = File(filePath);
+       if (file.existsSync() == false) {
+         final file = await IconHelp.cropPicture(
+           element.iconLocalPathBig ?? '', element.packName, _iconWidth, _iconWidth);
+         if (file != null) {
+           element.iconLocalPath = file.path;
+         }else {
+           logger?.d("re crop icon error == ${element.packName}");
+         }
+       }
+     }
+     return Future(() => items);
+  }
+
+  // var _printTimer = 0;
   @override
   Future<List<IDOAppIconItemModel>> ios_getAllAppInfo(
       {bool force = false}) async {
@@ -236,7 +402,6 @@ class _IDOMessageIcon implements IDOMessageIcon {
     _isFirst = false;
     final model = await getCacheAppInfoModel();
     if (model.items != null && (model.items ?? []).isNotEmpty) {
-      logger?.d("get app info complete 1 == ${model.toJson()}");
       return Future(() => model.items ?? []);
     }
 
@@ -250,7 +415,7 @@ class _IDOMessageIcon implements IDOMessageIcon {
     /// 获取默认APP信息
     await _getAppInfo();
 
-    logger?.d("get app info complete 2 == ${_currentModel?.toJson()}");
+    // logger?.d("get app info complete 2 == ${_currentModel?.toJson()}  apps count == ${model.items?.length ?? 0}");
 
     return _currentModel?.items ?? [];
   }
@@ -265,7 +430,7 @@ class _IDOMessageIcon implements IDOMessageIcon {
     final items = await GetAndroidAppInfo().getInstallAppInfoList(force: force);
     if (!_isFirst || force) {
       /// 每次启动应用获取一次或者强制
-      logger?.d("android icon all app info == $items  force == $force");
+      logger?.d("android icon all app info == $items  items count == ${items.length}  force == $force");
       _isFirst = true;
     }
     final allApps = <IDOAppIconItemModel>[];
@@ -363,18 +528,50 @@ class _IDOMessageIcon implements IDOMessageIcon {
       _currentModel?.iconHeight = 0;
       _currentModel?.colorFormat = 0;
       _currentModel?.blockSize = 0;
+
       final count = (map['items_num'] as int?) ?? 0;
       _currentModel?.totalNum = count;
-      final items = (map['items'] as List<dynamic>?)
+      if (map['items'] == null) {
+        /// 固件返回数据异常，防止 items = null 的问题
+        logger?.d('android icon items is null');
+        _cacheEventTypes.clear();
+        isUpdate = false;
+        return Future(() => false);
+      }
+      var items = (map['items'] as List<dynamic>?)
           ?.map((e) => e as Map<String, dynamic>)
           .toList();
+
+      /// 超过通知50/100个数，可能返回的items没有对应的事件类型，需要添加赋值到items，传输图标到固件
+      final noExistItems = _cacheEventTypes.where((type) {
+        final list = items?.where((item) {
+          final evtType = (item["evt_type"] as int?) ?? 0;
+          return evtType == type;
+        }).toList() ?? [];
+        if (list.isNotEmpty) {
+            return false;
+        } else {
+            return true;
+        }
+      }).toList();
+
+      /// 添加没有的事件类型到items
+      for (var element in noExistItems) {
+        final item = {
+            "evt_type" : element,
+            "notify_state" : 1,
+            "pic_flag" : 2
+        };
+        logger?.d('android add no exist item == $item');
+        items?.add(item);
+      }
+
       final appInfoItems = await _noticeStateToAppInfo(items);
 
       final otherItems = appInfoItems.where((element) {
-            var isDownload = element.isUpdateAppIcon ?? false;
-            return (_cacheEventTypes.contains(element.evtType)) && !isDownload;
-          }).toList() ??
-          [];
+        var isDownload = element.isUpdateAppIcon ?? false;
+        return (_cacheEventTypes.contains(element.evtType)) && !isDownload;
+      }).toList() ?? [];
 
       if (otherItems.isEmpty) {
         logger?.d('android does not need to update the icon');
@@ -384,6 +581,8 @@ class _IDOMessageIcon implements IDOMessageIcon {
       }
 
       _currentModel?.items = otherItems;
+
+      logger?.d('android get cache app info complete 2 == ${_currentModel?.toJson()}');
 
       final model = IDOAppIconInfoModel(
           version: 0,
@@ -397,6 +596,7 @@ class _IDOMessageIcon implements IDOMessageIcon {
       await storage?.saveIconInfoDataToDisk(model);
 
       final transfer = TransferIcon();
+      transfer.addSeChe(_scDelegate);
       final complete = await transfer.tailorAndTransfer(_currentModel!).first;
       otherItems.forEach((element) {
         _cacheEventTypes.remove(element.evtType);
@@ -409,6 +609,7 @@ class _IDOMessageIcon implements IDOMessageIcon {
       isUpdate = false;
       return Future(() => false);
     }
+
   }
 
   @override
@@ -426,11 +627,19 @@ class _IDOMessageIcon implements IDOMessageIcon {
     return _streamPath.stream;
   }
 
+  @override
+  void addSeChe(SeCheMessageIconDelegate delegate) {
+    logger?.d('add seche message icon delegate == $delegate');
+    _scDelegate = delegate;
+  }
+
 }
 
 extension _IDOMessageIconExt on _IDOMessageIcon {
+
   /// 强制更新应用名字
   Future<List<IDOAppIconItemModel>> _forceUpdateAppName() async {
+
     if (_isUpdate) {
       /// 如果正在更新返回之前的应用信息
       final model = await getCacheAppInfoModel();
@@ -441,7 +650,7 @@ extension _IDOMessageIconExt on _IDOMessageIcon {
     isUpdate = true;
     logger?.d("force the app name to be updated");
 
-    _currentModel = await storage?.loadIconInfoDataByDisk();
+    _currentModel = await getCacheAppInfoModel();
 
     if (_currentModel == null) {
       isUpdate = false;
@@ -481,11 +690,19 @@ extension _IDOMessageIconExt on _IDOMessageIcon {
 
     logger?.d("get app info complete 3 == ${_currentModel?.toJson()}");
 
+    /// 需要重新赋值新路径
+    _currentModel = await getCacheAppInfoModel();
+
     return Future(() => _currentModel?.items ?? []);
   }
 
   /// 存放图片目录
   Future<String> _getDirPath() async {
+    // FIXME: 过早调用，storage为null，延迟500毫秒，等待storage初始化完成
+    if (storage == null) {
+      logger?.v('storage is null, wait for 500ms');
+      return Future.delayed(const Duration(milliseconds: 500), () => _getDirPath());
+    }
     return storage!.pathMessageIcon();
   }
 
@@ -505,7 +722,7 @@ extension _IDOMessageIconExt on _IDOMessageIcon {
   /// 监听快速配置完成
   _listenFastSyncComplete() {
     logger?.d('devices need to register to listen fast sync complete');
-    statusNotification?.listen((value) {
+    statusSdkNotification?.listen((value) {
       if (value == IDOStatusNotification.fastSyncCompleted) {
         /// 断线重连复位更新状态
         isUpdate = false;
@@ -513,14 +730,17 @@ extension _IDOMessageIconExt on _IDOMessageIcon {
         /// 快速配置完成
         if (Platform.isIOS) {
           logger?.d('ios first get app info when fast sync complete');
-
           /// 只支持iOS
           ios_getAllAppInfo();
         }
       } else if (value == IDOStatusNotification.protocolConnectCompleted) {
         /// 每次连接成功都清除一次已更新的事件ID集合
         _androidEventTypes.clear();
-
+        if (_macAddress != _libMgr.macAddress) {
+          logger?.d('replace the connected device _libMgr.macAddress ==${_libMgr.macAddress} _macAddress == $_macAddress');
+          _defaultAppInfoList.clear();
+        }
+        _macAddress = _libMgr.macAddress;
       }
     });
   }
@@ -597,15 +817,16 @@ extension _IDOMessageIconExt on _IDOMessageIcon {
       final items = (map['items'] as List<dynamic>?)
           ?.map((e) => e as Map<String, dynamic>)
           .toList();
+
       final appInfoItems = await _noticeStateToAppInfo(items);
 
       final otherItems = appInfoItems?.where((element) {
-            /// 13 通知只更新默认消息图标
-            var isDownload = element.isUpdateAppIcon ?? false;
-            var isDefault = element.isDefault ?? false;
-            var isLocal = element.iconLocalPath.isNotEmpty;
-            return !isDownload && isLocal && isDefault;
-          }).toList() ??
+        /// 13 通知只更新默认消息图标
+        var isDownload = element.isUpdateAppIcon ?? false;
+        var isDefault = element.isDefault ?? false;
+        var isLocal = element.iconLocalPath.isNotEmpty;
+        return !isDownload && isLocal && isDefault;
+      }).toList() ??
           [];
 
       if (otherItems.isEmpty) {
@@ -615,6 +836,8 @@ extension _IDOMessageIconExt on _IDOMessageIcon {
       }
 
       _currentModel?.items = otherItems;
+
+      logger?.d('android get cache app info complete 1 == ${_currentModel?.toJson()}');
 
       final model = IDOAppIconInfoModel(
           version: 0,
@@ -628,6 +851,7 @@ extension _IDOMessageIconExt on _IDOMessageIcon {
       await storage?.saveIconInfoDataToDisk(model);
 
       final transfer = TransferIcon();
+      transfer.addSeChe(_scDelegate);
       final complete = await transfer.tailorAndTransfer(_currentModel!).first;
 
       isUpdate = false;
@@ -654,7 +878,7 @@ extension _IDOMessageIconExt on _IDOMessageIcon {
       if (pic_flag == 1) {
         /// androidEventTypes 保存已经更新图标的事件ID类型
         if (!_androidEventTypes.contains(evt_type)) {
-          _androidEventTypes.add(evt_type);
+            _androidEventTypes.add(evt_type);
         }
       }
 
@@ -662,7 +886,7 @@ extension _IDOMessageIconExt on _IDOMessageIcon {
       final notify_state = (element?["notify_state"] as int?) ?? 0;
       // logger?.d('android get notice state == $element');
       final future =
-          GetAndroidAppInfo().getCurrentAppInfo(evt_type).then((value) {
+      GetAndroidAppInfo().getCurrentAppInfo(evt_type).then((value) async {
         final appInfo = value ?? {};
         final packName = appInfo?["pkgName"] ?? "";
         final appName = appInfo?["appName"] ?? "";
@@ -672,6 +896,7 @@ extension _IDOMessageIconExt on _IDOMessageIcon {
 
         /// 通知开关状态关闭不更新图标
         need_sync = (notify_state == 1 || notify_state == 2) ? need_sync : 0;
+
         final infoMap = {
           "evt_type": evt_type,
           "pack_name_array": packName,
@@ -684,10 +909,32 @@ extension _IDOMessageIconExt on _IDOMessageIcon {
           "icon_local_path_big": iconLocalPath,
           "need_sync_icon": need_sync
         };
+
+        if (!((appName is String && appName.isNotEmpty)&&
+            (packName is String && packName.isNotEmpty)&&
+            (iconLocalPath is String && iconLocalPath.isNotEmpty))) {
+          /// 暂时这样处理，记录相关日志，定位问题
+          logger?.d("android icon is null == $evt_type");
+          final allItems = await GetAndroidAppInfo().getInstallAppInfoList(force: false);
+          final oneItem = allItems.where((element) => element?["evt_type"] == evt_type).toList();
+          if (oneItem.isNotEmpty) {
+            final item = oneItem.first;
+            final packName2 = item?["pkgName"] ?? "";
+            final appName2 = item?["appName"] ?? "";
+            final iconLocalPath2 = item?["iconFilePath"] ?? "";
+            final isDefault2 = (item?["isDefault"] as bool?) ?? false;
+            infoMap["pack_name_array"] = packName2;
+            infoMap["app_name"] = appName2;
+            infoMap["icon_local_path"] = iconLocalPath2;
+            infoMap["icon_local_path_big"] = iconLocalPath2;
+            infoMap["is_default"] = isDefault2;
+            infoMap["need_sync_icon"] = need_sync;
+          }
+          logger?.d('android get app info == $infoMap');
+        }
         final item = IDOAppIconItemModel.fromJson(infoMap);
         item.isDefault = isDefault;
         infoMap["is_default"] = isDefault;
-        //logger?.d('android get app info == $infoMap');
         return item;
       });
       futures.add(future);
@@ -704,10 +951,16 @@ extension _IDOMessageIconExt on _IDOMessageIcon {
       "operat_flag": (_packNum == 0 ? 0 : 1),
       "last_id": _lastId
     };
-   final response = await _libMgr
+    final response = await _libMgr
         .send(evt: CmdEvtType.getPackName, json: jsonEncode(map_objc)).first;
     if (_isSuccessCallback(response)) {
       final map = jsonDecode(response.json!) as Map<String, dynamic>;
+      if (map['items'] == null) {
+        /// 固件异常，防止 items = null 的问题
+        logger?.d('ios icon items is null');
+        isUpdate = false;
+        return Future(() => false);
+      }
       map.putIfAbsent('country_code', () => ios_countryCode ?? 'US');
       final model = IDOAppIconInfoModel.fromJson(map);
       if (_packNum == 0) {
@@ -717,29 +970,47 @@ extension _IDOMessageIconExt on _IDOMessageIcon {
         _currentModel?.colorFormat = model.colorFormat;
         _currentModel?.blockSize = model.blockSize;
         _currentModel?.totalNum = model.totalNum;
+        _iconWidth = model.iconWidth ?? 60;
+        logger?.d("get pack name icon width == $_iconWidth");
       }
       final items = _currentModel?.items
-              ?.where((item1) =>
-                  (model.items
-                      ?.where((item2) => item1.packName == item2.packName)
-                      .toList()
-                      .length)! >
-                  1)
-              .toList() ??
+          ?.where((item1) =>
+      (model.items
+          ?.where((item2) => item1.packName == item2.packName)
+          .toList()
+          .length)! >
+          1)
+          .toList() ??
           [];
       if (items.isEmpty) {
         /// 防止固件返回多次相同包名数据
-        final defaultList = await getDefaultAppInfo();
-        defaultList.forEach((element1) {
+        final localModel = await getCacheAppInfoModel();
+        var allItems = localModel.items ?? [];
+        if (allItems.isEmpty) {
+           allItems = await getDefaultAppInfo();
+        }
+        allItems.forEach((element1) {
           model.items?.forEach((element2) {
             if (element2.packName == element1.packName) {
+              if ((element1.isDefault ?? false) &&
+                  File(element1.iconLocalPath).existsSync()) {
+                element2.isDownloadAppInfo = true;
+              }
               element2.iconLocalPathBig = element1.iconLocalPathBig;
               element2.iconLocalPath = element1.iconLocalPath;
+              element2.iconCloudPath = element1.iconCloudPath;
+              element2.appName = element1.appName;
+              element2.isDefault = element1.isDefault ?? false;
+              element2.appName = element1.appName;
+              element2.appVersion = element1.appVersion;
             }
           });
         });
         _currentModel?.items?.addAll(model.items ?? []);
-        _lastId = _currentModel?.items?.last.itemId ?? 0;
+        _lastId = 0;
+        if ((_currentModel?.items)!.isNotEmpty) {
+          _lastId = _currentModel?.items?.last.itemId ?? 0;
+        }
         _packNum = _currentModel?.items?.length ?? 0;
       } else {
         logger?.e("have the same package name == ${model.toJson()}");
@@ -757,7 +1028,6 @@ extension _IDOMessageIconExt on _IDOMessageIcon {
         //执行完成
         logger?.d("get app pack name info complete");
         isUpdate = true;
-        await _setLocalPathWithPackName();
         return _dynamicUpdateAppIcon();
       }
     } else {
@@ -766,50 +1036,11 @@ extension _IDOMessageIconExt on _IDOMessageIcon {
     }
   }
 
-  /// 赋值本地存储图片地址
-  Future<bool> _setLocalPathWithPackName() async {
-    final dirPath = await _getDirPath();
-    _currentModel?.items?.forEach((element) {
-      final filePath1 = "$dirPath/${element.packName}${'_100'}.png";
-      final filePath2 = "$dirPath/${element.packName}${'_46'}.png";
-      final file1 = File(filePath1);
-      final file2 = File(filePath2);
-      if (!file1.existsSync()) {
-        element.iconLocalPathBig = '';
-      } else {
-        logger?.d("local big image is exist pack name == ${element.packName}");
-        element.iconLocalPathBig = filePath1;
-      }
-      if (!file2.existsSync()) {
-        element.iconLocalPath = '';
-      } else {
-        logger
-            ?.d("local smart image is exist pack name == ${element.packName}");
-        element.iconLocalPath = filePath2;
-      }
-    });
-    return Future(() => true);
-  }
-
   /// ios 动态更新消息图标和APP名字
   Future<bool> _dynamicUpdateAppIcon() async {
 
     if (_isFirst) {
       logger?.d('ios save app info first');
-
-      /// 赋值更新状态
-      final appInfo = await getDefaultAppInfo();
-      _currentModel?.items?.forEach((element) {
-        final oneApps = appInfo
-            .where((item) => item.packName == element.packName)
-            .toList();
-        if (oneApps.isNotEmpty) {
-          element.isDefault = true;
-          element.appName = oneApps.first.appName;
-        } else {
-          element.isDefault = false;
-        }
-      });
 
       /// 存储一次数据
       await storage?.saveIconInfoDataToDisk(_currentModel!);
@@ -829,22 +1060,6 @@ extension _IDOMessageIconExt on _IDOMessageIcon {
     final download = DownloadIcon();
     await download.startDownload(_currentModel!).first;
 
-    // logger?.d('download icon complete to json == ${_currentModel?.toJson()}');
-
-    /// 赋值更新状态
-    final appInfo = await getDefaultAppInfo();
-    _currentModel?.items?.forEach((element) {
-      final oneApps = appInfo
-          .where((item) => item.packName == element.packName)
-          .toList();
-      if (oneApps.isNotEmpty) {
-        element.isDefault = true;
-        element.appName = oneApps.first.appName;
-      } else {
-        element.isDefault = false;
-      }
-    });
-
     logger?.d('ios save app info update state');
 
     /// 存储一次数据
@@ -856,6 +1071,7 @@ extension _IDOMessageIconExt on _IDOMessageIcon {
 
     /// 传输图标
     final transfer = TransferIcon();
+    transfer.addSeChe(_scDelegate);
     final success1 = await transfer.onlyStartTransfer(_currentModel!).first;
 
     logger?.d('transfer icon complete');
@@ -869,7 +1085,7 @@ extension _IDOMessageIconExt on _IDOMessageIcon {
       return !isSetAppName;
     }).toList();
     final success2 =
-        await setAppName.setAppName(items as List<IDOAppInfo>).first;
+    await setAppName.setAppName(items as List<IDOAppInfo>).first;
     isUpdate = false;
     logger?.d('message icon transfer complete');
     return Future(() => (success1 && success2));
@@ -894,5 +1110,49 @@ extension _IDOMessageIconExt on _IDOMessageIcon {
     } else {
       return _getNoticeState();
     }
+  }
+}
+
+
+extension _IDOMessageIconFileOpt on _IDOMessageIcon {
+  /// 文件复制，覆盖已存在文件
+  copyFile(String orgFilePath, String newFilePage) async {
+    final file = await File(orgFilePath).copy(newFilePage);
+    if (!await file.exists()) {
+      logger?.d('_IDOMessageIconFileOpt copy file fail $orgFilePath to $newFilePage');
+      //throw UnsupportedError('copy file fail');
+    }
+  }
+
+  /// 文件复制，校验文件hash, 覆盖已存在文件
+  ///
+  /// 返回 0 - 未修改， 1 - 修改(目标文件不存)， 2 - 修改(hash不一致)
+  Future<int> copyFileChecksum(String orgFilePath, String newFilePage) async {
+    final orgFile = File(orgFilePath);
+    final newFile = File(newFilePage);
+    final orgFileChecksum = await getFileChecksum(orgFile);
+    final newFileChecksum = await getFileChecksum(newFile);
+    if (orgFileChecksum != newFileChecksum) {
+      logger?.v('_IDOMessageIconFileOpt copy $orgFilePath to $newFilePage');
+      await copyFile(orgFilePath, newFilePage);
+      if (newFileChecksum != null) {
+        return 2;
+      }
+      return 1;
+    }
+    return 0;
+  }
+
+  /// 用官方的crypto库同步获取文件hash
+  ///
+  /// 耗时情况：206MB 1.3s / 39MB 0.3s / 1.3MB 10 ms
+  Future<String?> getFileChecksum(File file) async {
+    if (!await file.exists()) {
+      logger?.e('getFileChecksum file not exists: ${file.path}');
+      return null;
+    }
+    final stream = file.openRead();
+    final hash = await md5.bind(stream).first;
+    return hash.toString();
   }
 }

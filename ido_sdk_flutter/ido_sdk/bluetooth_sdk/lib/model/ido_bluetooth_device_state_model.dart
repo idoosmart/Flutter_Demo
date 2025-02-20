@@ -8,13 +8,16 @@ class IDOBluetoothDeviceStateModel {
   String? macAddress;
   IDOBluetoothDeviceStateType? state;
   IDOBluetoothDeviceConnectErrorType? errorState;
+  // 0 爱都, 1 恒玄, 2 VC
+  int? platform;
 
   IDOBluetoothDeviceStateModel(
-      {this.uuid, this.macAddress, this.state, this.errorState});
+      {this.uuid, this.macAddress, this.state, this.errorState, this.platform});
 
   IDOBluetoothDeviceStateModel.fromJson(Map json) {
     uuid = json.putIfAbsent('uuid', () => (null));
     macAddress = json.putIfAbsent('macAddress', () => (null));
+    platform = json.putIfAbsent('platform', () => (0));
     state = IDOBluetoothDeviceStateType.values[json['state']];
     errorState = IDOBluetoothDeviceConnectErrorType.values[json['errorState']];
   }
@@ -25,6 +28,7 @@ class IDOBluetoothDeviceStateModel {
     data['macAddress'] = macAddress;
     data['state'] = state;
     data['errorState'] = errorState;
+    data['platform'] = platform;
     return data;
   }
 }

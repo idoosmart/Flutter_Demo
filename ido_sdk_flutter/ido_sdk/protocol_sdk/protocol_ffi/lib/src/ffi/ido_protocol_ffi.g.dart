@@ -1406,26 +1406,29 @@ class ProtocolFfiBindings {
           int Function(
               ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, int, int)>();
 
-  /// @brief 制作(EPO.DAT)文件
+  /// @brief 制作(EPO.DAT/.pgl)文件
   /// @param file_path 素材路径
-  /// @param save_file_name 输出文件名,一般为EPO.DAT
-  /// @return SUCCESS(0),成功
+  /// @param save_file_name 输出文件名,一般为EPO.DAT/.pgl
+  /// @param file_count 需要合并的文件个数，如果跟实际文件夹内个数不一致就报错,错误码ERROR_INVALID_PARAM(7)
+  /// @return SUCCESS(0),成功,ERROR_INVALID_PARAM(7),EPO文件过期ERROR_INVAILD_FILE (27)
   int mkEpoFile(
     ffi.Pointer<ffi.Char> file_path,
     ffi.Pointer<ffi.Char> save_file_name,
+    int file_count,
   ) {
     return _mkEpoFile(
       file_path,
       save_file_name,
+      file_count,
     );
   }
 
   late final _mkEpoFilePtr = _lookup<
       ffi.NativeFunction<
-          ffi.Int Function(
-              ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)>>('mkEpoFile');
-  late final _mkEpoFile = _mkEpoFilePtr
-      .asFunction<int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)>();
+          ffi.Int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>,
+              ffi.Int)>>('mkEpoFile');
+  late final _mkEpoFile = _mkEpoFilePtr.asFunction<
+      int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, int)>();
 
   /// @brief 图片转换格式 png->bmp
   /// @param inname 用于转换的png路径(包含文件名及后缀)
@@ -1452,6 +1455,28 @@ class ProtocolFfiBindings {
               ffi.Int)>>('Png2Bmp');
   late final _Png2Bmp = _Png2BmpPtr.asFunction<
       int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, int)>();
+
+  /// @brief PNG图片32/24位转16位
+  /// @param inname 用于转换的png路径(包含文件名及后缀)
+  /// @param outname 转换完的png路径(包含文件名及后缀)
+  /// @return:
+  /// SUCCESS(0) : 成功
+  int PngConvert16bit(
+    ffi.Pointer<ffi.Char> inname,
+    ffi.Pointer<ffi.Char> outname,
+  ) {
+    return _PngConvert16bit(
+      inname,
+      outname,
+    );
+  }
+
+  late final _PngConvert16bitPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int Function(ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>)>>('PngConvert16bit');
+  late final _PngConvert16bit = _PngConvert16bitPtr.asFunction<
+      int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)>();
 
   /// @brief 制作壁纸图片文件
   /// @param file_path 素材路径
@@ -1519,6 +1544,28 @@ class ProtocolFfiBindings {
           'mkSifliDialFile');
   late final _mkSifliDialFile =
       _mkSifliDialFilePtr.asFunction<int Function(ffi.Pointer<ffi.Char>)>();
+
+  /// @brief 获取思澈表盘(.watch)文件占用空间大小，计算规则：
+  /// nor方案：对表盘所有文件以4096向上取整  -98平台对应的项目，IDW27,205G Pro,IDW28,IDS05，DR03等
+  /// nand方案：对表盘所有文件以2048向上取整 -99平台对应的项目，GTX12,GTX13,GTR1,TIT21
+  /// @param file_path .watch文件路径，包含文件名
+  /// @param platform 平台类型，目前有98(nor)，99(nand)平台
+  /// @return size 文件占用磁盘的实际大小，-1:失败，文件路径访问失败，-2:失败，申请内存失败，-3:失败，读取文件失败，-4:失败，输入平台类型不支持
+  int getSifliDialSize(
+    ffi.Pointer<ffi.Char> file_path,
+    int platform,
+  ) {
+    return _getSifliDialSize(
+      file_path,
+      platform,
+    );
+  }
+
+  late final _getSifliDialSizePtr = _lookup<
+          ffi.NativeFunction<ffi.Int Function(ffi.Pointer<ffi.Char>, ffi.Int)>>(
+      'getSifliDialSize');
+  late final _getSifliDialSize = _getSifliDialSizePtr
+      .asFunction<int Function(ffi.Pointer<ffi.Char>, int)>();
 
   /// @brief 压缩png图片质量
   /// @param inputFilePath   输入文件路径
@@ -1810,6 +1857,18 @@ class ProtocolFfiBindings {
       'getCrc16');
   late final _getCrc16 =
       _getCrc16Ptr.asFunction<int Function(ffi.Pointer<ffi.Char>, int)>();
+
+  /// @brief 获取是否支持断点续传的功能表
+  /// @return 0不支持 1支持
+  int getIsSupportTranContinue() {
+    return _getIsSupportTranContinue();
+  }
+
+  late final _getIsSupportTranContinuePtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function()>>(
+          'getIsSupportTranContinue');
+  late final _getIsSupportTranContinue =
+      _getIsSupportTranContinuePtr.asFunction<int Function()>();
 
   /// ------------------------------ v2消息/来电提醒 ------------------------------
   /// /**
@@ -2207,6 +2266,121 @@ class ProtocolFfiBindings {
       _SppDataTranProgressCallbackRegPtr.asFunction<
           int Function(data_tran_progress_cb_handle)>();
 
+  /// @brief:设备传输文件到APP的传输完成事件回调注册
+  /// @param func 函数指针
+  /// @return:SUCCESS(0)成功
+  int Device2AppDataTranCompleteCallbackReg(
+    protocol_report_complete_cb_handle func,
+  ) {
+    return _Device2AppDataTranCompleteCallbackReg(
+      func,
+    );
+  }
+
+  late final _Device2AppDataTranCompleteCallbackRegPtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Int Function(protocol_report_complete_cb_handle)>>(
+      'Device2AppDataTranCompleteCallbackReg');
+  late final _Device2AppDataTranCompleteCallbackReg =
+      _Device2AppDataTranCompleteCallbackRegPtr.asFunction<
+          int Function(protocol_report_complete_cb_handle)>();
+
+  /// @brief:设备传输文件到APP的传输进度事件回调注册
+  /// @param func 函数指针
+  /// @return:SUCCESS(0)成功
+  int Device2AppDataTranProgressCallbackReg(
+    protocol_report_progress_cb_handle func,
+  ) {
+    return _Device2AppDataTranProgressCallbackReg(
+      func,
+    );
+  }
+
+  late final _Device2AppDataTranProgressCallbackRegPtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Int Function(protocol_report_progress_cb_handle)>>(
+      'Device2AppDataTranProgressCallbackReg');
+  late final _Device2AppDataTranProgressCallbackReg =
+      _Device2AppDataTranProgressCallbackRegPtr.asFunction<
+          int Function(protocol_report_progress_cb_handle)>();
+
+  /// @brief:APP回复设备传输文件到APP的请求
+  /// @param error_code 0回复握手成功 非0失败，拒绝传输
+  /// @return:SUCCESS(0)成功
+  int Device2AppDataTranRequestReply(
+    int error_code,
+  ) {
+    return _Device2AppDataTranRequestReply(
+      error_code,
+    );
+  }
+
+  late final _Device2AppDataTranRequestReplyPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int)>>(
+          'Device2AppDataTranRequestReply');
+  late final _Device2AppDataTranRequestReply =
+      _Device2AppDataTranRequestReplyPtr.asFunction<int Function(int)>();
+
+  /// @brief:APP主动停止设备传输文件到APP
+  /// @return:SUCCESS(0)成功
+  int Device2AppDataTranManualStop() {
+    return _Device2AppDataTranManualStop();
+  }
+
+  late final _Device2AppDataTranManualStopPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function()>>(
+          'Device2AppDataTranManualStop');
+  late final _Device2AppDataTranManualStop =
+      _Device2AppDataTranManualStopPtr.asFunction<int Function()>();
+
+  /// @brief:设备传输文件到APP的传输请求事件回调注册
+  /// json字符串内容:
+  /// file_type 文件类型:
+  /// typedef enum{
+  /// DATA_TRAN_FILE_TYPE_UNKNOWN,           //无效
+  /// DATA_TRAN_FILE_TYPE_FW,                //固件升级文件
+  /// DATA_TRAN_FILE_TYPE_FZBIN,             //图片资源升级
+  /// DATA_TYPE_FILE_TYPE_BIN,               //字库升级
+  /// DATA_TYPE_FILE_TYPE_LANG,              //语言包
+  /// DATA_TYPE_FILE_TYPE_BT,                //BT文件
+  /// DATA_TYPE_FILE_TYPE_IWF,               //云表盘文件
+  /// DATA_TYPE_FILE_TYPE_WALLPAPER,         //本地壁纸文件
+  /// DATA_TYPE_FILE_TYPE_ML,                //通讯录文件
+  /// DATA_TYPE_FILE_TYPE_UBX,               //AGPS文件
+  /// DATA_TYPE_FILE_TYPE_GPS,               //GPS文件
+  /// DATA_TYPE_FILE_TYPE_MP3,               //MP3文件
+  /// DATA_TYPE_FILE_TYPE_MESSAGE,           //消息图标
+  /// DATA_TYPE_FILE_TYPE_SPORT,             //运动图片 单图
+  /// DATA_TYPE_FILE_TYPE_MOVE_SPORTS,       //运动图片 多图
+  /// DATA_TYPE_FILE_TYPE_EPO,               //EPO文件
+  /// DATA_TYPE_FILE_TYPE_TONE,              //提示音
+  /// DATA_TYPE_FILE_TYPE_BP_CALIBRATE,      //血压校准文件
+  /// DATA_TYPE_FILE_TYPE_BP_ALGORITHM,      //血压模型算法文件
+  /// DATA_TYPE_FILE_TYPE_VOICE = 0x13       //语音备忘录文件
+  /// }TRAN_FILE_TYPE;
+  /// file_size 文件大小
+  /// file_compression_type 文件压缩类型 0不压缩
+  /// file_name 文件名称
+  /// file_path 文件路径
+  ///
+  /// @param func 函数指针
+  /// @return:SUCCESS(0)成功
+  /// 备注：收到回调后，10s没有使用该方法dev_2_app_tran_request_reply回复设备，会结束传输
+  int Device2AppDataTranRequestCallbackReg(
+    protocol_report_json_cb_handle func,
+  ) {
+    return _Device2AppDataTranRequestCallbackReg(
+      func,
+    );
+  }
+
+  late final _Device2AppDataTranRequestCallbackRegPtr = _lookup<
+          ffi.NativeFunction<ffi.Int Function(protocol_report_json_cb_handle)>>(
+      'Device2AppDataTranRequestCallbackReg');
+  late final _Device2AppDataTranRequestCallbackReg =
+      _Device2AppDataTranRequestCallbackRegPtr.asFunction<
+          int Function(protocol_report_json_cb_handle)>();
+
   /// @brief v3血压校准完成事件回调注册
   /// @param func 函数指针
   /// @return SUCCESS(0)成功
@@ -2286,6 +2460,76 @@ class ProtocolFfiBindings {
       _SyncV3HealthDataOneNoticeCompleteCbRegPtr.asFunction<
           int Function(
               protocol_sync_v3_health_client_one_notice_complete_cb_handle)>();
+
+  /// @brief:同步v3健康数据的自定义一项
+  /// @param data_type 数据同步类型
+  /// 1 同步血氧
+  /// 2 同步压力
+  /// 3 同步心率(v3)
+  /// 4 同步多运动数据(v3)
+  /// 5 同步GPS数据(v3)
+  /// 6 同步游泳数据
+  /// 7 同步眼动睡眠数据
+  /// 8 同步运动数据
+  /// 9 同步噪音数据
+  /// 10 同步温度数据
+  /// 12 同步血压数据
+  /// 14 同步呼吸频率数据
+  /// 15 同步身体电量数据
+  /// 16 同步HRV(心率变异性水平)数据
+  ///
+  /// @return:
+  /// SUCCESS(0)成功 非0失败
+  /// (ERROR_NOT_SUPPORTED(6) 不支持
+  /// ERROR_INVALID_STATE(8) 非法状态
+  /// )
+  int SyncV3HealthDataCustomResource(
+    int data_type,
+  ) {
+    return _SyncV3HealthDataCustomResource(
+      data_type,
+    );
+  }
+
+  late final _SyncV3HealthDataCustomResourcePtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int)>>(
+          'SyncV3HealthDataCustomResource');
+  late final _SyncV3HealthDataCustomResource =
+      _SyncV3HealthDataCustomResourcePtr.asFunction<int Function(int)>();
+
+  /// @brief:查找输入的数据同步类型支不支持
+  /// @param data_type 数据同步类型
+  /// 1  同步血氧
+  /// 2  同步压力
+  /// 3  同步心率(v3)
+  /// 4  同步多运动数据(v3)
+  /// 5  同步GPS数据(v3)
+  /// 6  同步游泳数据
+  /// 7  同步眼动睡眠数据
+  /// 8  同步运动数据
+  /// 9  同步噪音数据
+  /// 10 同步温度数据
+  /// 12 同步血压数据
+  /// 14 同步呼吸频率数据
+  /// 15 同步身体电量数据
+  /// 16 同步HRV(心率变异性水平)数据
+  ///
+  /// @return:
+  /// true:支持 false:不支持
+  /// 方法实现前需获取功能表跟初始化c库
+  int IsSupportSyncHealthDataType(
+    int data_type,
+  ) {
+    return _IsSupportSyncHealthDataType(
+      data_type,
+    );
+  }
+
+  late final _IsSupportSyncHealthDataTypePtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int)>>(
+          'IsSupportSyncHealthDataType');
+  late final _IsSupportSyncHealthDataType =
+      _IsSupportSyncHealthDataTypePtr.asFunction<int Function(int)>();
 
   /// ------------------------------ v2同步多运动、GPS数据进度回调注册 ------------------------------
   /// /**
@@ -2527,6 +2771,10 @@ typedef data_tran_complete_cb_handle = ffi.Pointer<
 /// 回调处理函数,传输文件进度回调
 typedef data_tran_progress_cb_handle
     = ffi.Pointer<ffi.NativeFunction<ffi.Void Function(ffi.Int rate)>>;
+
+/// 回调处理函数,上报json
+typedef protocol_report_json_cb_handle = ffi.Pointer<
+    ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Char> json_str)>>;
 
 /// 回调处理函数,v3血压校准完成通知回调
 typedef protocol_bp_cal_complete_cb_handle

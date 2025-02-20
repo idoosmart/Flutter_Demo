@@ -76,13 +76,20 @@ class ScanManager() : BaseLeScanner() {
                     return@let
                 }
 
-                val name = result.device?.name ?: ""
+                var name = result.device?.name ?: ""
+                if (name.isEmpty() && it.scanRecord != null) {
+                    try {
+                        name = result.scanRecord?.deviceName ?: ""
+                    } catch (e: Exception) {
+                        Logger.p("[ScanManager] decodeDeviceName failed: $e")
+                    }
+                }
                 if (filterEmptyDeviceName && name.isEmpty()) return
                 if (!allowDuplicates && !address.isNullOrEmpty()) {//过滤重复的
                     if (macDeviceScanned.contains(address)) return
                     macDeviceScanned.add(address)
                 }
-                callbackOnLeScan(ProtoMaker.makeScanResult(result.device, result))
+                callbackOnLeScan(ProtoMaker.makeScanResult(name,result.device, result))
             }
         }
 

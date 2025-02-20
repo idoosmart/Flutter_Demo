@@ -14,8 +14,12 @@ class IconHelp {
     try {
       final dirPath = await _libMgr.messageIcon.getIconDirPath();
       /// 存放路径
-      final filePath = "${dirPath}/${packName}${'_46'}.png";
+      var filePath = "${dirPath}/${packName}${'_46'}.png";
+      if (iconWidth > 60) {
+         filePath = "${dirPath}/${packName}${'_$iconWidth'}.png";
+      }
       if (File(filePath).existsSync()) {
+        logger?.e('icon file exists, not cropPicture');
         return Future(() => File(filePath));
       }
       if (!File(path).existsSync()) {
@@ -27,16 +31,21 @@ class IconHelp {
         logger?.e('icon file not exists path 2 == ${path}');
         return Future(() => null);
       }
+      logger?.v("cropPicture - imageCompressToPng");
       /// 格式转换
       final pngImage = await _libMgr.tools.imageCompressToPng(path) ?? image;
-      /// 图片裁圆
-      final circleImage = pkg_img.copyCropCircle(pngImage);
+      logger?.v("cropPicture - copyResize");
       /// 缩放
-      var resizeImage = pkg_img.copyResize(circleImage!,width:iconWidth, height:iconHeight,interpolation: pkg_img.Interpolation.cubic);
+      final resizeImage = pkg_img.copyResize(pngImage,width:iconWidth, height:iconHeight,interpolation: pkg_img.Interpolation.cubic);
+      logger?.v("cropPicture - copyCropCircle");
+      /// 图片裁圆
+      final circleImage = pkg_img.copyCropCircle(resizeImage);
+      logger?.v("cropPicture - writeAsBytes");
       /// 写入文件
-      file = await File(filePath).writeAsBytes(pkg_img.encodePng(resizeImage));
-      ///图片压缩
-      _coreMgr.compressToPNG(inputFilePath: file.path, outputFilePath: file.path);
+      file = await File(filePath).writeAsBytes(pkg_img.encodePng(circleImage));
+      logger?.v("cropPicture - done");
+      ///图片压缩 (暂时不压缩处理)
+      // _coreMgr.compressToPNG(inputFilePath: file.path, outputFilePath: file.path);
     }catch (e){
        logger?.e("cutting picture error == $e");
     }

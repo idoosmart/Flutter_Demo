@@ -16,9 +16,13 @@ Pod::Spec.new do |s|
   s.platform         = :ios, '9.0'
   s.libraries  = 'iconv','z','c++'
 
+  # s.resource_bundles = {
+  #    'protocol_ffi' => ['Resources/PrivacyInfo.xcprivacy']
+  # }
+
   s.vendored_frameworks = [
     'protocol_c.framework',
-    ]
+  ]
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = {

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ffi' as ffi;
 
@@ -244,6 +245,83 @@ extension IDOProtocolAPIExtRegisterCallback on IDOProtocolAPI {
     );
   }
 
+  /// 音频采样率转换进度回调注册
+  void registerAudioSRConversionProgress({
+    required CallbackAudioSRConversionProgressCbHandle func,
+  }) {
+    _callbackAudioSRConversionProgressCbHandle = func;
+    bindings.AudioSRConversionProgressCallbackReg(
+      ffi.Pointer.fromFunction(_registerAudioSRConversionProgress),
+    );
+  }
+
+
+  // ----------------------------- 设备传输文件到APP -----------------------------
+
+  /// 设备->app文件传输完成事件回调注册
+  int registerDataTranToAppCompleteCallback({
+    required CallbackDataTranProgressCbHandle func,
+  }) {
+    _callbackDataTranToAppCompleteCbHandle = func;
+    return bindings.Device2AppDataTranCompleteCallbackReg(
+        ffi.Pointer.fromFunction(_registerDataTranToAppCompleteCallback));
+  }
+
+  /// 设备->app文件传输进度事件回调注册
+  int registerDataTranToAppProgressCallbackReg({
+    required CallbackDataTranProgressCbHandle func,
+  }) {
+    _callbackDataTranToAppProgressCbHandle = func;
+    return bindings.Device2AppDataTranProgressCallbackReg(
+      ffi.Pointer.fromFunction(_registerDataTranToAppProgressCallbackReg),
+    );
+  }
+
+  /// ```dart
+  /// 设备->app, 设备传输文件到APP的传输请求事件回调注册
+  ///
+  /// 备注：收到回调后，10s没有使用该方法device2AppDataTranRequestReply回复设备，会结束传输
+  /// json字符串内容:
+  /// file_type 文件类型:
+  /// typedef enum{
+  /// DATA_TRAN_FILE_TYPE_UNKNOWN,           //无效
+  /// DATA_TRAN_FILE_TYPE_FW,                //固件升级文件
+  /// DATA_TRAN_FILE_TYPE_FZBIN,             //图片资源升级
+  /// DATA_TYPE_FILE_TYPE_BIN,               //字库升级
+  /// DATA_TYPE_FILE_TYPE_LANG,              //语言包
+  /// DATA_TYPE_FILE_TYPE_BT,                //BT文件
+  /// DATA_TYPE_FILE_TYPE_IWF,               //云表盘文件
+  /// DATA_TYPE_FILE_TYPE_WALLPAPER,         //本地壁纸文件
+  /// DATA_TYPE_FILE_TYPE_ML,                //通讯录文件
+  /// DATA_TYPE_FILE_TYPE_UBX,               //AGPS文件
+  /// DATA_TYPE_FILE_TYPE_GPS,               //GPS文件
+  /// DATA_TYPE_FILE_TYPE_MP3,               //MP3文件
+  /// DATA_TYPE_FILE_TYPE_MESSAGE,           //消息图标
+  /// DATA_TYPE_FILE_TYPE_SPORT,             //运动图片 单图
+  /// DATA_TYPE_FILE_TYPE_MOVE_SPORTS,       //运动图片 多图
+  /// DATA_TYPE_FILE_TYPE_EPO,               //EPO文件
+  /// DATA_TYPE_FILE_TYPE_TONE,              //提示音
+  /// DATA_TYPE_FILE_TYPE_BP_CALIBRATE,      //血压校准文件
+  /// DATA_TYPE_FILE_TYPE_BP_ALGORITHM,      //血压模型算法文件
+  /// DATA_TYPE_FILE_TYPE_VOICE = 0x13       //语音备忘录文件
+  /// }TRAN_FILE_TYPE;
+  /// file_size 文件大小
+  /// file_compression_type 文件压缩类型 0不压缩
+  /// file_name 文件名称
+  ///
+  /// @param func 函数指针
+  /// @return:SUCCESS(0)成功
+  /// ```
+  int registerDevice2AppDataTranRequestCallbackReg({
+    required CallbackDataTranToAppReportJsonCbHandle func,
+  }) {
+    _callbackDataTranToAppReportJsonCbHandle = func;
+    return bindings.Device2AppDataTranRequestCallbackReg(
+      ffi.Pointer.fromFunction(_registerDataTranToAppReportJsonReg),
+    );
+  }
+
+
   // ----------------------------- Alexa -----------------------------
 
   /// app传输语音文件状态回调注册
@@ -412,6 +490,24 @@ extension IDOProtocolAPIExtRegisterCallback on IDOProtocolAPI {
     }
   }
 
+  // 将 C 风格字符串转换为 Dart 字符串
+  static String convertToJsonString(ffi.Pointer<ffi.Char> jsonData) {
+    final StringBuffer buffer = StringBuffer();
+    try {
+      ffi.Pointer<ffi.Int8> currentChar = jsonData.cast<ffi.Int8>();
+      // 循环遍历直到遇到空字符（C 风格字符串的结尾）
+      while (currentChar.value != 0) {
+        // 将当前字符添加到缓冲区
+        buffer.write(String.fromCharCode(currentChar.value & 0xFF));
+        // 移动到下一个字符
+        currentChar = currentChar.elementAt(1).cast<ffi.Int8>();
+      }
+    }catch (e) {
+      logger?.e('_registerJsonDataTransferCbEvt error2: ${e.toString()}');
+    }
+    return buffer.toString();
+  }
+
   static CallbackJsonDataTransferCbEvt? _jsonDataTransferCbEvt;
   static void _registerJsonDataTransferCbEvt(
       ffi.Pointer<ffi.Char> jsonData, int evt, int retCode) {
@@ -422,8 +518,15 @@ extension IDOProtocolAPIExtRegisterCallback on IDOProtocolAPI {
         //logger?.v('call _registerJsonDataTransferCbEvt2');
         _jsonDataTransferCbEvt!(json, evt, retCode);
       } catch (e) {
-        _jsonDataTransferCbEvt!('{}', evt, 11); // 11 无效数据
-        logger?.e('error: ${e.toString()}');
+        //logger?.e('_registerJsonDataTransferCbEvt 解析异常，使用备选方案再次尝试一次');
+        // 解析异常时，使用备选方案再次尝试一次
+        final jsonStr = convertToJsonString(jsonData);
+        if (jsonStr.isNotEmpty) {
+          _jsonDataTransferCbEvt!(jsonStr, evt, retCode);
+        } else {
+          _jsonDataTransferCbEvt!('{}', evt, -8); // -8 异常数据
+          logger?.e('_registerJsonDataTransferCbEvt error1: ${e.toString()}');
+        }
       }
       //logger?.v('call _registerJsonDataTransferCbEvt3');
     } else {
@@ -463,6 +566,16 @@ extension IDOProtocolAPIExtRegisterCallback on IDOProtocolAPI {
     }
   }
 
+  static CallbackDataTranProgressCbHandle? _callbackDataTranToAppCompleteCbHandle;
+  static void _registerDataTranToAppCompleteCallback(int error) {
+    if (_callbackDataTranToAppCompleteCbHandle != null) {
+      //logger?.d('call _registerDataTranToAppCompleteCallback');
+      _callbackDataTranToAppCompleteCbHandle!(error);
+    } else {
+      //logger?.d('call _registerDataTranToAppCompleteCallback is null');
+    }
+  }
+
   static CallbackSyncGpsProgressCbHandle? _callbackDataTranProgressCbHandle;
   static void _registerDataTranProgressCallbackReg(int rate) {
     if (_callbackDataTranProgressCbHandle != null) {
@@ -470,6 +583,28 @@ extension IDOProtocolAPIExtRegisterCallback on IDOProtocolAPI {
       _callbackDataTranProgressCbHandle!(rate);
     } else {
       //logger?.d('call _registerDataTranProgressCallbackReg is null');
+    }
+  }
+
+  static CallbackSyncGpsProgressCbHandle? _callbackDataTranToAppProgressCbHandle;
+  static void _registerDataTranToAppProgressCallbackReg(int rate) {
+    if (_callbackDataTranToAppProgressCbHandle != null) {
+      //logger?.d('call _callbackDataTranToAppProgressCbHandle');
+      _callbackDataTranToAppProgressCbHandle!(rate);
+    } else {
+      //logger?.d('call _callbackDataTranToAppProgressCbHandle is null');
+    }
+  }
+
+  static CallbackDataTranToAppReportJsonCbHandle? _callbackDataTranToAppReportJsonCbHandle;
+  static void _registerDataTranToAppReportJsonReg(
+      ffi.Pointer<ffi.Char> jsonData) {
+    if (_callbackDataTranToAppReportJsonCbHandle != null) {
+      final json = jsonData.cast<pkg_ffi.Utf8>().toDartString();
+      logger?.d('call _registerDataTranToAppReportJsonReg json: $json');
+      _callbackDataTranToAppReportJsonCbHandle!(json);
+    } else {
+      logger?.d('call _callbackDataTranToAppReportJsonCbHandle is null');
     }
   }
 
@@ -669,6 +804,16 @@ extension IDOProtocolAPIExtRegisterCallback on IDOProtocolAPI {
       _callbackSyncV2HealthProgressCbHandle!(progress);
     } else {
       //logger?.d('call _callbackSyncV2HealthProgressCbHandle is null');
+    }
+  }
+
+  static CallbackAudioSRConversionProgressCbHandle? _callbackAudioSRConversionProgressCbHandle;
+  static void _registerAudioSRConversionProgress(int progress) {
+    if (_callbackAudioSRConversionProgressCbHandle != null) {
+      //logger?.d('call _callbackAudioSRConversionProgressCbHandle');
+      _callbackAudioSRConversionProgressCbHandle!(progress);
+    } else {
+      //logger?.d('call _callbackAudioSRConversionProgressCbHandle is null');
     }
   }
 }

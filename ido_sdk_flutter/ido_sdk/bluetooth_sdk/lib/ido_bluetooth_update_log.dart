@@ -2,10 +2,27 @@
 
 class IDOBluetoothUpdateLog{
   String getSdkVersion() {
-    return "4.1.2";
+    return "4.2.1";
   }
 }
-
+/// 4.2.0
+/// 屏蔽gatt 错误回调，避免自动重连的过程中app触发重连（Android ）
+/// 4.1.9
+/// 优化获取系统设备列表(ios)
+/// 4.1.8
+/// 添加关闭蓝牙通知功能(ios)
+/// 4.1.7
+/// 修复android btMacAddress字段为空问题
+/// 添加IDOBluetoothDeviceModel字段值变更通知（原生对外SDK需要用到）
+///4.1.6
+///移除path_provider库
+///iOS添加PrivacyInfo.xcprivacy隐私说明（苹果要求）
+///4.1.5
+///增加spp状态获取
+///4.1.4
+///增加恒玄平台 2024-03-28 何东阳
+///4.1.3
+///spp使用独立通道
 /// 4.1.2
 /// 解析广播包兼容思恻平台
 ///4.1.1

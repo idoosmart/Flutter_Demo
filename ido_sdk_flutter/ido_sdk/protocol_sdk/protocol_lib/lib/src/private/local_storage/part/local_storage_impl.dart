@@ -17,6 +17,7 @@ class _LocalStorage implements LocalStorage {
   static const _keyBindAuthData = 'bind-auth-data';
   static const _keyFwVersion = 'device-fw-info';
   static const _keyIconInfo = 'app-icon-info';
+  static const _keyUserMsgIconInfo = 'msg-icon-user_set';
 
   static const _keyIsAuthCodeBindMode = 'bind-mode-code-data1';
   static const _keyIsBindState = 'bind-state1';
@@ -24,12 +25,17 @@ class _LocalStorage implements LocalStorage {
   static const _keyConfigLogProtocol = 'log-protocol';
   static const _keyConfigLogClib = 'log-clib';
 
+  static const _keyOtaInfo = 'ota-info';
+
   String? _pathSDK;
   String? _pathMsgIcon;
   String? _pathDevices;
   String? _pathDeviceLog;
   String? _pathAlexa;
   String? _pathCLibFuncTable;
+  String? _pathDevicesOTA;
+
+  final _debouncer = _Debouncer(milliseconds: 100);
 
   final _deviceExtMap = <String, DeviceInfoExtModel>{};
 
@@ -72,6 +78,7 @@ class _LocalStorage implements LocalStorage {
   @override
   DeviceInfoExtModel? loadDeviceInfoExtWith(String? macAddress) {
     macAddress ??= config.macAddress;
+    logger?.d('devInfo ext - _deviceExtMap: ${_deviceExtMap.toString()} macAddress: $macAddress');
     return _deviceExtMap[macAddress];
   }
 
@@ -132,6 +139,20 @@ class _LocalStorage implements LocalStorage {
       return Future(() => FunctionTableModel.fromJson(jsonDecode(json)));
     }
     return Future(() => null);
+  }
+
+  @override
+  Future<List<DeviceInfoModel>> loadDeviceInfoListByDisk({bool sortDesc = true}) async {
+    final rsList = <DeviceInfoModel>[];
+    final list = await loadDeviceExtListByDisk(sortDesc: sortDesc);
+    final storage = await getStorage();
+    for (var e in list) {
+      final json = storage.read<String>(k(_keyDeviceInfo, e.macAddress));
+      if (json != null) {
+        rsList.add(DeviceInfoModel.fromJson(jsonDecode(json)));
+      }
+    }
+    return rsList;
   }
 
   @override
@@ -227,23 +248,27 @@ class _LocalStorage implements LocalStorage {
         oldExt.macAddressBt != null &&
         oldExt.macAddressBt != deviceInfoExt.macAddressBt) {
       deviceInfoExt.macAddressBt = oldExt.macAddressBt;
+      logger?.d("devInfo ext - btAddress不相同，使用新值");
     }
     _deviceExtMap[deviceInfoExt.macAddress] = deviceInfoExt;
+    logger?.d("devInfo ext - _deviceExtMap: ${_deviceExtMap.toString()} macAddress: ${deviceInfoExt.macAddress}");
     return _saveDeviceExtListToDisk();
   }
 
   @override
   Future<List<DeviceInfoExtModel>> loadDeviceExtListByDisk(
       {bool sortDesc = true}) async {
-    final map = await _loadDeviceExtListByDisk();
-    if (map != null) {
-      _deviceExtMap.clear();
-      _deviceExtMap.addAll(map);
-    }
-    final list = _deviceExtMap.values.toList();
-    list.sort((a, b) =>
-        sortDesc ? b.updateTime - a.updateTime : a.updateTime - b.updateTime);
-    return Future(() => list);
+    return _debouncer.run(() async {
+      final map = await _loadDeviceExtListByDisk();
+      if (map != null) {
+        _deviceExtMap.clear();
+        _deviceExtMap.addAll(map);
+      }
+      final list = _deviceExtMap.values.toList();
+      list.sort((a, b) =>
+      sortDesc ? b.updateTime - a.updateTime : a.updateTime - b.updateTime);
+      return list;
+    });
   }
 
   @override
@@ -262,12 +287,38 @@ class _LocalStorage implements LocalStorage {
   }
 
   @override
+  Future<IDOAppIconInfoModel?> loadUserDefaultMsgIconByDisk() async {
+    final json = await getString(key: _keyUserMsgIconInfo);
+    if (json != null) {
+      logger?.d(' load user msg_icon info json len: ${json.length}');
+      return Future(() => IDOAppIconInfoModel.fromJson(jsonDecode(json)));
+    }
+    return Future(() => null);
+  }
+
+  @override
+  Future<bool> saveUserDefaultMsgIconToDisk(IDOAppIconInfoModel model) {
+    final map = model.toJson();
+    final json = jsonEncode(map);
+    logger?.d(' save user set msg_icon info json len: ${json.length}');
+    return setString(key: _keyUserMsgIconInfo, value: json);
+  }
+
+  @override
+  Future<bool> cleanUserMsgDefaultIcon() {
+    // TODO: implement cleanAll
+    throw UnimplementedError();
+  }
+
+
+  @override
   Future<IDOAppIconInfoModel?> loadIconInfoDataByDisk() async {
     final json = await getString(key: _keyIconInfo);
     if (json != null) {
-      // logger?.d(' load icon info data : $json');
+      //logger?.d(' load icon info data : $json');
       return Future(() => IDOAppIconInfoModel.fromJson(jsonDecode(json)));
     }
+    logger?.d('loadIconInfoDataByDisk json len: ${(json ?? '').length}');
     return Future(() => null);
   }
 
@@ -275,7 +326,8 @@ class _LocalStorage implements LocalStorage {
   Future<bool> saveIconInfoDataToDisk(IDOAppIconInfoModel model) {
     final map = model.toJson();
     final json = jsonEncode(map);
-    logger?.d(' save icon info data: $json');
+    //logger?.d(' save icon info data: $json');
+    logger?.d('saveIconInfoDataToDisk json len: ${json.length}');
     return setString(key: _keyIconInfo, value: json);
   }
 
@@ -326,6 +378,18 @@ class _LocalStorage implements LocalStorage {
     final path = await _createDir(cachePath);
     _pathCLibFuncTable = path;
     return Future(() => _pathCLibFuncTable!);
+  }
+
+  @override
+  Future<String> pathOTA() async {
+    if (_pathDevicesOTA != null) {
+      return Future(() => _pathDevicesOTA!);
+    }
+    final rootDir = await createRootDir();
+    final cachePath = '$rootDir/${_LocalStorage._devicesDirName}/ota';
+    final path = await _createDir(cachePath);
+    _pathDevicesOTA = path;
+    return Future(() => _pathDevicesOTA!);
   }
 
   @override
@@ -467,6 +531,30 @@ class _LocalStorage implements LocalStorage {
       return Future(() => _pathSDKStatic!);
     }
   }
+
+  @override
+  Future<IDODeviceOtaInfo?> loadOtaInfoByDisk() async {
+    final json = await getString(key: _keyOtaInfo);
+    if (json != null) {
+      logger?.d('load ota info: $json');
+      return Future(() => IDODeviceOtaInfo.fromJson(jsonDecode(json)));
+    }
+    return Future(() => null);
+  }
+
+  @override
+  Future<bool> saveOtaInfoToDisk(IDODeviceOtaInfo otaInfo) {
+    final map = otaInfo.toJson();
+    final json = jsonEncode(map);
+    logger?.d('save ota info: $json');
+    return setString(key: _keyOtaInfo, value: json);
+  }
+
+  @override
+  Future<bool> removeOtaInfo(String macAddress) async {
+    return remove(key: _keyOtaInfo, macAddress: macAddress);
+  }
+
 }
 
 extension _LocalStorageExt on _LocalStorage {
@@ -536,10 +624,14 @@ extension _LocalStorageExt on _LocalStorage {
     if (!await file.exists()) {
       file.createSync(recursive: true);
     }
+    if (!file.existsSync()) {
+      logger?.e("devInfo ext - 文件$indexFilePath 创建失败");
+    }
     final jsonObj =
         _deviceExtMap.map((key, value) => MapEntry(key, value.toJson()));
     final jsonStr = jsonEncode(jsonObj);
     final rs = await (await file.writeAsString(jsonStr, flush: true)).exists();
+    logger?.d("devInfo ext - saveDeviceExtListToDisk rs = $rs  json:$jsonStr}");
     return Future(() => rs);
   }
 
@@ -551,15 +643,29 @@ extension _LocalStorageExt on _LocalStorage {
     if (!await file.exists()) {
       file.createSync(recursive: true);
       await file.writeAsString('{}');
+      logger?.d("devInfo ext - 初始创建文件：$indexFilePath json:{} rs: ${file.existsSync()}");
       return Future(() => {});
     }
     final jsonStr = await file.readAsString();
-    final jsonObj = jsonDecode(jsonStr) as Map;
-    final map = <String, DeviceInfoExtModel>{};
-    for (var key in jsonObj.keys) {
-      map[key] = DeviceInfoExtModel.fromJson(jsonObj[key]);
+    logger?.d("devInfo ext - 读取文件：$indexFilePath json:$jsonStr");
+    if (jsonStr.isNotEmpty) {
+      try {
+        final jsonObj = jsonDecode(jsonStr) as Map;
+        logger?.d("devInfo ext - jsonObj = $jsonObj");
+        final map = <String, DeviceInfoExtModel>{};
+        for (var key in jsonObj.keys) {
+          map[key] = DeviceInfoExtModel.fromJson(jsonObj[key]);
+        }
+        logger?.d("devInfo ext - map = $jsonObj");
+        return Future(() => map);
+      } catch (e) {
+        logger?.e("_loadDeviceExtListByDisk jsonStr $jsonStr $e");
+        return Future(() => {});
+      }
+    }else {
+      logger?.e("devInfo ext - 文件$indexFilePath 不存在");
+      return Future(() => {});
     }
-    return Future(() => map);
   }
 
   /// key
@@ -567,5 +673,30 @@ extension _LocalStorageExt on _LocalStorage {
     final aKey = '_pm_${macAddress ?? config.macAddress}_$key'.toUpperCase();
     //logger?.d('aKey = $aKey');
     return aKey;
+  }
+}
+
+
+/// 节流器
+class _Debouncer {
+  final int milliseconds;
+  Timer? _timer;
+
+  _Debouncer({required this.milliseconds});
+
+  Future<T> run<T>(Future<T> Function() action) async {
+    if (_timer != null) {
+      _timer!.cancel();
+    }
+    final completer = Completer<T>();
+    _timer = Timer(Duration(milliseconds: milliseconds), () async {
+      try {
+        final result = await action();
+        completer.complete(result);
+      } catch (e) {
+        completer.completeError(e);
+      }
+    });
+    return completer.future;
   }
 }

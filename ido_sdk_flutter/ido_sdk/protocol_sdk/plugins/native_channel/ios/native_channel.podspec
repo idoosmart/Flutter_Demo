@@ -11,13 +11,19 @@ A new Flutter project.
                        DESC
   s.homepage         = 'http://example.com'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.author           = { 'iDo.' => 'huc@idosmart.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
+  s.resources = ['Resources/icon_assets.bundle']
   s.resource_bundles = {
-       'ido_assets' => ['Assets/*.jpg','Assets/*.png']
-     }
+       'native_channel' => ['Resources/PrivacyInfo.xcprivacy']
+  }
+  s.static_framework = true
+  s.vendored_frameworks = [
+      'IDOUtils.framework',
+  ]
   s.dependency 'Flutter'
+  s.frameworks = "CoreBluetooth"
   s.platform = :ios, '9.0'
 
   # Flutter.framework does not contain a i386 slice.

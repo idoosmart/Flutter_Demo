@@ -33,6 +33,9 @@ enum FileTranDataType {
 
   /// alexa 语音
   voice_alexa,
+
+  /// 固件
+  fw
 }
 
 /// 文件传输优先级（默认 normal)
@@ -68,6 +71,13 @@ class FileTranItem {
   /// 使用spp传输
   bool useSpp = false;
 
+  /// 设备macAddress
+  String? macAddress;
+
+  /// 设备平台 0:nordic, 10:realtek 8762x, 20:cypress psoc6, 30:Apollo3, 40:汇顶, 50:nordic+泰凌微,
+  /// 60:泰凌微+5340+no nand flash, 70:汇顶+富瑞坤, 80:5340, 90: 炬芯, 97: 恒玄, 98: 思澈1, 99: 思澈2
+  int? platform;
+
   FileTranItem({
     required this.filePath,
     required this.fileName,
@@ -76,5 +86,7 @@ class FileTranItem {
     this.tranPriority = FileTranPriority.normal,
     this.fileSize = 0,
     this.originalFileSize = 0,
+    this.macAddress,
+    this.platform,
   });
 }

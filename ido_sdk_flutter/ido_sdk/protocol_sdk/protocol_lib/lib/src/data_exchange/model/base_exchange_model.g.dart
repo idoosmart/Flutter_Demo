@@ -418,6 +418,18 @@ IDOAppActivityDataV3ExchangeModel _$IDOAppActivityDataV3ExchangeModelFromJson(
       inClassCalories: json['in_class_calories'] as int?,
       completionRate: json['completion_rate'] as int?,
       hrCompletionRate: json['hr_completion_rate'] as int?,
+      segmentItemNum: json['segdata_item_num'] as int?,
+      segmentTotalTime: json['segdata_total_time'] as int?,
+      segmentTotalDistance: json['segdata_total_distance'] as int?,
+      segmentTotalPace: json['segdata_total_pace'] as int?,
+      segmentTotalAvgHr: json['segdata_total_avg_hr'] as int?,
+      segmentTotalAvgStepFrequency:
+          json['segdata_total_avg_step_frequency'] as int?,
+      paceHiit: json['pace_hiit'] as int?,
+      paceAnaerobic: json['pace_anaerobic'] as int?,
+      paceLacticAcidThreshold: json['pace_lactic_acid_threshold'] as int?,
+      paceMarathon: json['pace_marathon'] as int?,
+      paceEasyRun: json['pace_easy_run'] as int?,
       kmSpeeds:
           (json['km_speed_s'] as List<dynamic>?)?.map((e) => e as int).toList(),
       stepsFrequency: (json['steps_frequency'] as List<dynamic>?)
@@ -433,6 +445,9 @@ IDOAppActivityDataV3ExchangeModel _$IDOAppActivityDataV3ExchangeModelFromJson(
           ?.map((e) => e as int)
           .toList(),
       actionData: (json['items'] as List<dynamic>?)
+          ?.map((e) => e as Map<String, dynamic>)
+          .toList(),
+      segmentItems: (json['seg_items'] as List<dynamic>?)
           ?.map((e) => e as Map<String, dynamic>)
           .toList(),
     )
@@ -495,11 +510,23 @@ Map<String, dynamic> _$IDOAppActivityDataV3ExchangeModelToJson(
       'in_class_calories': instance.inClassCalories,
       'completion_rate': instance.completionRate,
       'hr_completion_rate': instance.hrCompletionRate,
+      'segdata_item_num': instance.segmentItemNum,
+      'segdata_total_time': instance.segmentTotalTime,
+      'segdata_total_distance': instance.segmentTotalDistance,
+      'segdata_total_pace': instance.segmentTotalPace,
+      'segdata_total_avg_hr': instance.segmentTotalAvgHr,
+      'segdata_total_avg_step_frequency': instance.segmentTotalAvgStepFrequency,
+      'pace_hiit': instance.paceHiit,
+      'pace_anaerobic': instance.paceAnaerobic,
+      'pace_lactic_acid_threshold': instance.paceLacticAcidThreshold,
+      'pace_marathon': instance.paceMarathon,
+      'pace_easy_run': instance.paceEasyRun,
       'km_speed_s': instance.kmSpeeds,
       'steps_frequency': instance.stepsFrequency,
       'items_mi_speed': instance.itemsMiSpeed,
       'item_real_speed': instance.itemRealSpeed,
       'pace_speed_items': instance.paceSpeedItems,
+      'seg_items': instance.segmentItems,
       'items': instance.actionData,
     };
 

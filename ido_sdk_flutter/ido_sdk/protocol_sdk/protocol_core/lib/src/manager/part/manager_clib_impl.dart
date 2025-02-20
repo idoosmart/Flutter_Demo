@@ -20,6 +20,12 @@ class _IDOProtocolClibManager implements IDOProtocolClibManager {
   late final _streamAlexaReportVoicePcmData =
       StreamController<Tuple2<Uint8List, int>>.broadcast();
 
+  late final _streamDataTranToAppComplete = StreamController<int>.broadcast();
+
+  late final _streamDataTranToAppProgress = StreamController<int>.broadcast();
+
+  late final _streamDataTranToAppRequest = StreamController<String>.broadcast();
+
   late final _handleMap = <int, _TimerHandle>{};
   static int _lastTimerId = 1;
   bool _isInitClib = false;
@@ -65,6 +71,15 @@ class _IDOProtocolClibManager implements IDOProtocolClibManager {
   @override
   StreamController<Tuple2<Uint8List, int>> get streamAlexaReportVoicePcmData =>
       _streamAlexaReportVoicePcmData;
+
+  @override
+  StreamController<int> get streamDataTranToAppComplete => _streamDataTranToAppComplete;
+
+  @override
+  StreamController<int> get streamDataTranToAppProgress => _streamDataTranToAppProgress;
+
+  @override
+  StreamController<String> get streamDataTranToAppRequest => _streamDataTranToAppRequest;
 
   _initialize() {
     // 初始化定时器
@@ -140,6 +155,23 @@ class _IDOProtocolClibManager implements IDOProtocolClibManager {
           }
         }
       }
+    });
+
+    // ------------------------------- 设备传文件到app -------------------------------
+
+    // 设备->app文件传输完成事件回调注册
+    cLib.registerDataTranToAppCompleteCallback(func: (int error) {
+        _streamDataTranToAppComplete.sink.add(error);
+    });
+
+    // 设备->app文件传输进度事件回调注册
+    cLib.registerDataTranToAppProgressCallbackReg(func: (int progress) {
+        _streamDataTranToAppProgress.sink.add(progress);
+    });
+
+    // 设备->app, 设备传输文件到APP的传输请求事件回调注册
+    cLib.registerDevice2AppDataTranRequestCallbackReg(func: (String json) {
+        _streamDataTranToAppRequest.sink.add(json);
     });
 
     // ------------------------------- Alexa -------------------------------

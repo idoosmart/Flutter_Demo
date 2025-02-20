@@ -5,7 +5,7 @@ import android.util.Log
 import com.example.flutter_bluetooth.BuildConfig
 
 object Logger {
-    var enableLogPrint = false
+    var enableLogPrint = true
 
     @JvmStatic
     fun d(message: String?) {

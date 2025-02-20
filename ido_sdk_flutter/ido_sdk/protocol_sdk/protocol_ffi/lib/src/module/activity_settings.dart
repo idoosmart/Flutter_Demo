@@ -49,6 +49,10 @@ extension IDOProtocolAPIExtSports on IDOProtocolAPI {
     final jsonUtf8 = json.toNativeUtf8();
     final utf8List = utf8.encode(json); // 处理非unicode字符长度问题
     final rsUtf8 = bindings.smoothData(jsonUtf8.cast(), utf8List.length).cast<pkg_ffi.Utf8>();
+    //TODO: 当json中的数据为空时，rsUtf8 会有问题，暂时由业务层判定不要传入空值
+    // if (rsUtf8.address == 0) {
+    //
+    // }
     final rsStr = rsUtf8.toDartString();
     return rsStr;
   }

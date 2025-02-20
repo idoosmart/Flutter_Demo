@@ -13,7 +13,11 @@ class NormalFileModel extends BaseFileModel {
       {required super.fileType,
       required super.filePath,
       required super.fileName,
-      super.fileSize});
+      super.fileSize,
+        this.needCheckWriteFileComplete = true});
+
+  /// 是否需要写完成（默认为true)
+  bool needCheckWriteFileComplete = true;
 
   @override
   String toString() {

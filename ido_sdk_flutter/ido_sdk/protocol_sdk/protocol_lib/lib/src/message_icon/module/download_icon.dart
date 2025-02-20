@@ -40,15 +40,15 @@ extension _DownloadIconExt on _DownloadIcon {
 
   /// 地址映射包名
   String _getPackNameWithPath(String? path,List<IDOAppIconItemModel> items) {
-     for (var i = 0; i < items.length; i++) {
-        final item = items[i];
-        final path1 = item.iconCloudPath??'';
-        final path2 = path??'';
-        if (path2.isNotEmpty && path1.contains(path2)) {
-            return item.packName ?? '';
-        }
-     }
-     return '';
+    for (var i = 0; i < items.length; i++) {
+      final item = items[i];
+      final path1 = item.iconCloudPath??'';
+      final path2 = path??'';
+      if (path2.isNotEmpty && path1.contains(path2)) {
+        return item.packName ?? '';
+      }
+    }
+    return '';
   }
 
   /// 执行下载图片
@@ -91,19 +91,21 @@ extension _DownloadIconExt on _DownloadIcon {
         }
         final filePath = "${dirPath}/${packName}${'_100'}.png";
         return response.stream.toBytes().then((value) {
-         return File(filePath).writeAsBytes(value).then((file1) {
-           return IconHelp.cropPicture(filePath, packName, model.iconWidth ?? 46, model.iconHeight ?? 46).then((file2) {
-             logger?.d('download icon success == ${packName}');
+          return File(filePath).writeAsBytes(value).then((file1) {
+            return IconHelp.cropPicture(filePath, packName, model.iconWidth ?? 46, model.iconHeight ?? 46).then((file2) {
+              logger?.d('download icon success == ${packName}');
               return Tuple2(file1.path,file2?.path??'');
             });
           });
         });
       }).onError((error, stackTrace) {
+        logger?.d('download message icon error == $error');
         return Tuple2('', '');
       }).timeout(const Duration(seconds: 10),
           onTimeout: (){
-        return Tuple2('', '');
-      });
+            logger?.d('download message icon timeout');
+            return Tuple2('', '');
+          });
       futures.add(future);
     });
     Future allTasks = Future.wait(futures);
@@ -114,14 +116,15 @@ extension _DownloadIconExt on _DownloadIcon {
           final tuple = element as Tuple2;
           final path1 = tuple.item1 as String;
           final path2 = tuple.item2 as String;
-          logger?.d("big icon path === $path1");
-          logger?.d("smart icon path === $path2");
           if (path1.contains(item.packName)) {
+            logger?.d("big icon path === $path1");
+            logger?.d("smart icon path === $path2");
             item?.iconLocalPathBig = path1;
             item?.iconLocalPath = path2;
           }
         });
       });
+
       _completer?.complete(model);
       _completer = null;
     });
