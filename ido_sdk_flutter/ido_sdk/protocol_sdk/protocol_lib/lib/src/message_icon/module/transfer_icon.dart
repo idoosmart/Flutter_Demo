@@ -236,7 +236,8 @@ extension _TransferIconExt on _TransferIcon {
     final dic = jsonDecode(response.json!) as Map<String,dynamic>;
     _iconWidth = dic['icon_width'] as int? ?? 0;
     _iconHeight = dic['icon_height'] as int? ?? 0;
-    if (_iconWidth == 0 || _iconHeight == 0) {
+    if (_iconWidth == 0 || _iconHeight == 0 || _iconWidth! >= 200 || _iconHeight! >= 200) {
+      logger?.d('android error: icon width == ${_iconWidth!} icon height == ${_iconHeight!}');
         _iconWidth = 60;
         _iconHeight = 60;
     }

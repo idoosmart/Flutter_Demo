@@ -1,5 +1,6 @@
 package com.example.flutter_bluetooth.utils
 
+import android.os.Build
 import android.text.TextUtils
 import com.example.flutter_bluetooth.logger.Logger
 import java.util.Locale
@@ -15,6 +16,11 @@ object OSUtil {
     private var mOSName: String? = null
     private var mOSBrand: String? = null
     private var mIsMagic = false
+
+    /**
+     * 可配置的需要忽略的手机型号
+     */
+    private var mSppBlackList = arrayListOf<String>()
 
     private fun getSystemProperty(key: String, defaultValue: String): String {
         try {
@@ -42,6 +48,36 @@ object OSUtil {
         } catch (_: Exception) {
         }
         return mIsMagic
+    }
+
+    fun setSppBlackList(models: List<String>?) {
+        mSppBlackList.clear()
+        if (models != null) {
+            mSppBlackList.addAll(models)
+        }
+    }
+
+    /**
+     * 手机型号是否要忽略,true：表示忽略
+     */
+    @JvmStatic
+    fun checkSppBlackList(): Boolean {
+        try {
+            val model: String = Build.MODEL
+            if (TextUtils.isEmpty(model)) {
+                Logger.p("not ignore, model is empty!")
+                return false
+            }
+            if (mSppBlackList.isEmpty()) {
+                Logger.p("not ignore, config list is empty!")
+                return false
+            }
+            val configPhoneModel = mSppBlackList.filter { model == it }
+            Logger.p("config phone model : $configPhoneModel, model: $model")
+            return configPhoneModel.isNotEmpty()
+        } catch (e: Exception) {
+        }
+        return false
     }
 
 }

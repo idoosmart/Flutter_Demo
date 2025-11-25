@@ -58,7 +58,7 @@ class _IDOSyncData implements IDOSyncData {
   @override
   List<SyncDataType> getSupportSyncDataTypeList() {
     // 目前支持单项同步的类型
-    final syncTypes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15, 16];
+    final syncTypes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15, 16, 20];
     final supportSyncDataTypes = <int>[];
     for (var type in syncTypes) {
       final rs = IDOProtocolCoreManager().isSupportSyncHealthDataType(type);
@@ -85,7 +85,17 @@ extension _IDOSyncDataExt on _IDOSyncData {
          }  
          return Future(() => false);
       }
-      if (libManager.otaType != IDOOtaType.none) {
+
+      // fix: 当使用第三方ota库时，在执行ota时需屏蔽数据同步
+      // 屏蔽思澈平台ota中的所有指令发送
+      if ((libManager.deviceInfo.isSilfiPlatform()
+          && libManager.transFile.isTransmitting
+          && libManager.transFile.transFileType == FileTransType.fw) ||
+          (libManager.deviceInfo.isPersimwearPlatform() && libManager.isPersimwearOtaUpgrading)) {
+        logger?.e('In OTA, sync data is not allowed');
+        funcCompleted(ErrorCode.ota_mode);
+        return Future(() => false);
+      }else if (libManager.otaType != IDOOtaType.none) {
         logger?.e('sync data device is ota mode == ${libManager.otaType}');
         if (funcCompleted != null) {
             funcCompleted(ErrorCode.ota_mode);

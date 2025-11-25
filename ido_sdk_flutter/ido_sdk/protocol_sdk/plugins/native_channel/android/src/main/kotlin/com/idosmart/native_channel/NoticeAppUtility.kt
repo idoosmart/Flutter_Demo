@@ -13,6 +13,7 @@ import android.os.Handler
 import android.os.Looper
 import com.idosmart.native_channel.models.NotificationGroup
 import com.idosmart.native_channel.models.TranferIconModel
+import com.idosmart.native_channel.pigeon_generate.api_get_app_info.DifferenceModel
 import java.io.File
 import java.io.FileOutputStream
 import java.util.*
@@ -59,6 +60,8 @@ object NoticeAppUtility {
 
     private var mLoadAppListener: LoadAppListener? = null
 
+    private var differenceModel: DifferenceModel? = null
+
     var loadFinish: Boolean = false
 
     fun setLoadAppListener(loadAppListener: LoadAppListener?) {
@@ -83,6 +86,18 @@ object NoticeAppUtility {
      */
     private fun convertPkg2Type(pkg: String, name: String): Int {
         var value = 0
+
+        // 特殊处理
+        if (differenceModel != null && differenceModel!!.useMissedCall485 == true) {
+            // Missed calls 类型值固定为485
+            if (AppPackageNameConstant.missCall == pkg) {
+                value = 485
+                allNoticeAppTypeBeans[value] = pkg
+                NativeChannelPlugin.instance().androidLog("android packet name $pkg 固定485")
+                return value
+            }
+        }
+
         value = convertPackageToNumber(pkg)
         val pkgName = convertType2Pkg(value)
         if (pkgName != null && pkgName != pkg) {
@@ -161,6 +176,11 @@ object NoticeAppUtility {
         return allNoticeAppBeans
     }
 
+    @JvmStatic
+    fun setDifferenceModel(model: DifferenceModel) {
+        differenceModel = model
+    }
+
     /**
      * 获取已安装非系统应用
      */
@@ -170,18 +190,42 @@ object NoticeAppUtility {
                 allNoticeAppTypeBeans.clear()
                 val listAppcations =
                     context.packageManager.getInstalledApplications(0)
-                Collections.sort(
-                    listAppcations,
-                    ApplicationInfo.DisplayNameComparator(context.packageManager)
-                ) // 字典排序
+                NativeChannelPlugin.instance().androidLog(
+                    "loadInstallApp 开始排序, app count = ${listAppcations.size}"
+                )
+                val packageManager = context.packageManager
+                val appEntries = listAppcations.map { app ->
+                    val stableLabel = runCatching {
+                        packageManager.getApplicationLabel(app)?.toString()
+                    }.getOrNull()?.takeIf { it.isNotBlank() } ?: app.packageName
+                    app to stableLabel
+                }
+                val sortedApps = try {
+                    appEntries.sortedWith(
+                        compareBy<Pair<ApplicationInfo, String>> { it.second.lowercase(Locale.ROOT) }
+                            .thenBy { it.first.packageName }
+                    ).also {
+                        NativeChannelPlugin.instance().androidLog("loadInstallApp 排序成功")
+                    }
+                } catch (throwable: Throwable) {
+                    NativeChannelPlugin.instance().androidLog(
+                        "loadInstallApp 排序失败, throwable = ${throwable::class.java.simpleName}:${throwable.message}, 尝试使用包名兜底排序"
+                    )
+                    appEntries.sortedBy { it.first.packageName }.also {
+                        NativeChannelPlugin.instance().androidLog("loadInstallApp 包名兜底排序成功")
+                    }
+                }
                 var bean: TranferIconModel
-                for (app in listAppcations) {
+                for ((app, label) in sortedApps) {
                     if (   app.flags and ApplicationInfo.FLAG_SYSTEM <= 0
                         || app.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0
                     ) {
                         //非系统程序
                         //本来是系统程序，被用户手动更新后，该系统程序也成为第三方应用程序了
                         bean = getAppInfo(context, app)
+                        if (bean.appName.isEmpty()) {
+                            bean.appName = label
+                        }
                         bean.type = convertPkg2Type(bean.pkgName,bean.appName)
                         bean.group = NotificationGroup.THIRD_PARTY
                         allNoticeAppBeansWithoutCompose[bean.pkgName] = bean

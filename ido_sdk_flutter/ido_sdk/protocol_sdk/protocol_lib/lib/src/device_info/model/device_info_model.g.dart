@@ -8,26 +8,27 @@ part of 'device_info_model.dart';
 
 DeviceInfoModel _$DeviceInfoModelFromJson(Map<String, dynamic> json) =>
     DeviceInfoModel(
-      battStatus: json['batt_status'] as int?,
-      bindConfirmMethod: json['bind_confirm_method'] as int?,
-      bindConfirmTimeout: json['bind_confirm_timeout'] as int?,
-      bootloadVersion: json['bootload_version'] as int?,
+      battStatus: (json['batt_status'] as num?)?.toInt(),
+      bindConfirmMethod: (json['bind_confirm_method'] as num?)?.toInt(),
+      bindConfirmTimeout: (json['bind_confirm_timeout'] as num?)?.toInt(),
+      bootloadVersion: (json['bootload_version'] as num?)?.toInt(),
       btName: json['bt_name'],
-      cloudClockDialVersion: json['cloud_clock_dial_version'] as int?,
-      deivceId: json['deivce_id'] as int?,
-      devType: json['dev_type'] as int?,
-      energe: json['energe'] as int?,
-      firmwareVersion: json['firmware_version'] as int?,
-      mode: json['mode'] as int?,
-      pairFlag: json['pair_flag'] as int?,
-      platform: json['platform'] as int?,
-      reboot: json['reboot'] as int?,
-      shape: json['shape'] as int?,
-      showBindChoiceUi: json['show_bind_choice_ui'] as int?,
+      cloudClockDialVersion:
+          (json['cloud_clock_dial_version'] as num?)?.toInt(),
+      deivceId: (json['deivce_id'] as num?)?.toInt(),
+      devType: (json['dev_type'] as num?)?.toInt(),
+      energe: (json['energe'] as num?)?.toInt(),
+      firmwareVersion: (json['firmware_version'] as num?)?.toInt(),
+      mode: (json['mode'] as num?)?.toInt(),
+      pairFlag: (json['pair_flag'] as num?)?.toInt(),
+      platform: (json['platform'] as num?)?.toInt(),
+      reboot: (json['reboot'] as num?)?.toInt(),
+      shape: (json['shape'] as num?)?.toInt(),
+      showBindChoiceUi: (json['show_bind_choice_ui'] as num?)?.toInt(),
       userDefinedDialMainVersion:
-          json['user_defined_dial_main_version'] as int?,
+          (json['user_defined_dial_main_version'] as num?)?.toInt(),
       sn: json['sn'],
-      gpsPlatform: json['gps_platform'] as int?,
+      gpsPlatform: (json['gps_platform'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$DeviceInfoModelToJson(DeviceInfoModel instance) =>

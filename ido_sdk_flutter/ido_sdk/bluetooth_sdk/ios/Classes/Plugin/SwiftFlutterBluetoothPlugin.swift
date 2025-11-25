@@ -4,6 +4,7 @@ import UIKit
 public class SwiftFlutterBluetoothPlugin: NSObject, FlutterPlugin {
     static let instance = SwiftFlutterBluetoothPlugin()
     static var channel: FlutterMethodChannel?
+    static var bindStateChannel: FlutterBasicMessageChannel?
     static var eventChannel: FlutterEventChannel?
     var eventSink: FlutterEventSink?
     
@@ -12,6 +13,8 @@ public class SwiftFlutterBluetoothPlugin: NSObject, FlutterPlugin {
         channel = FlutterMethodChannel(name: "flutter_bluetooth_IDO", binaryMessenger: registrar.messenger())
         registrar.addMethodCallDelegate(instance, channel: channel!)
         
+        bindStateChannel = FlutterBasicMessageChannel(name: "method_channel_device_bind", binaryMessenger: registrar.messenger())
+       
         eventChannel = FlutterEventChannel.init(name: "bluetoothState", binaryMessenger: registrar.messenger())
         eventChannel?.setStreamHandler(instance)
         
@@ -41,7 +44,7 @@ public class SwiftFlutterBluetoothPlugin: NSObject, FlutterPlugin {
                 writeLog("connect error format" + String(describing: call.arguments))
                 return
             }
-            writeLog("channel connect");
+            writeLog("channel connect arg:\(arg) ,device platform: \(String(describing: device.platform)), isBind: \(String(describing: device.isBind))");
             BluetoothManager.singleton.getCharacteristics(dict: arg)
             BluetoothManager.singleton.connect(device)
         case .cancelConnect:
@@ -105,6 +108,22 @@ public class SwiftFlutterBluetoothPlugin: NSObject, FlutterPlugin {
             "method" : "handle",
             "detail" : detail,]
         SwiftFlutterBluetoothPlugin.channel?.invokeMethod(MethodChannel.writeLog.rawValue, arguments: json);
+    }
+    
+    //查询设备是否已经绑定
+    public func requestDeviceBindState(macAddress: String,completion: @escaping (Bool) -> Void){
+        let json: [String : Any] = ["mac": macAddress]
+        
+        SwiftFlutterBluetoothPlugin.bindStateChannel?.sendMessage(json, reply: { [self] res in
+            if let isBind = res as? Bool{
+                completion(isBind)
+                self.writeLog("requestDeviceBindState: isBind \(isBind)")
+            }else{
+                completion(false)
+                self.writeLog("requestDeviceBindState: isBind \(false)")
+            }
+        })
+
     }
 }
 

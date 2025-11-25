@@ -4,6 +4,10 @@ import UIKit
 fileprivate var _apiSifliFlutter: ApiSifliFlutter?
 
 public class IdoSifliPlugin: NSObject, FlutterPlugin, ApiSifliHost, IDOUpdateSFManagerDelegate {
+    public func checkOtaDoing(completion: @escaping (NSNumber?, FlutterError?) -> Void) {
+        completion(NSNumber(0), nil);
+    }
+    
     public static func register(with registrar: FlutterPluginRegistrar) {
         let messenger: FlutterBinaryMessenger = registrar.messenger()
         let api: ApiSifliHost & IDOUpdateSFManagerDelegate & NSObjectProtocol = IdoSifliPlugin.init()
@@ -27,6 +31,29 @@ public class IdoSifliPlugin: NSObject, FlutterPlugin, ApiSifliHost, IDOUpdateSFM
             return nil;
         }
         return  FlutterStandardTypedData(bytes: sfData!);
+    }
+    
+    public func sifliEBin(fromPngsPngDatas pngDatas: [FlutterStandardTypedData], eColor: String, type: NSNumber, binType: NSNumber, boardType: IDOSFBoardType, error: AutoreleasingUnsafeMutablePointer<FlutterError?>) -> FlutterStandardTypedData? {
+        
+        let sfData = IDOUpdateSFManager.siFliEBin(fromPngSequence: pngDatas.map({ $0.data }), eColor: eColor, eType: type.uint8Value, binType: binType.uint8Value, boardType: boardType);
+        
+        if (sfData == nil){
+            return nil;
+        }
+        return  FlutterStandardTypedData(bytes: sfData!);
+    }
+    
+    public func asyncSifliEBin(fromPngsPngDatas pngDatas: [FlutterStandardTypedData], eColor: String, type: NSNumber, binType: NSNumber, boardType: IDOSFBoardType, isGif: NSNumber, completion: @escaping (FlutterStandardTypedData?, FlutterError?) -> Void) {
+        DispatchQueue.global().async {
+            let sfData = IDOUpdateSFManager.siFliEBin(fromPngSequence: pngDatas.map({ $0.data }), eColor: eColor, eType: type.uint8Value, binType: binType.uint8Value, boardType: boardType);
+            DispatchQueue.main.async {
+                if (sfData == nil){
+                    completion(nil, FlutterError(code: "-1001", message: "Sifli制作bin失败", details: nil))
+                }else {
+                    completion(FlutterStandardTypedData(bytes: sfData!), nil)
+                }
+            }
+        }
     }
     
     // MARK: IDOUpdateSFManagerDelegate

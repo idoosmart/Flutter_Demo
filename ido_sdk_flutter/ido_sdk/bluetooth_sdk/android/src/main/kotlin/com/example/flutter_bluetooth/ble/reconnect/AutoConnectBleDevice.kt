@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter
 import android.os.Build
 import com.example.flutter_bluetooth.ble.DeviceManager
 import com.example.flutter_bluetooth.ble.device.AbsIDOBleDevice
+import com.example.flutter_bluetooth.ble.device.DeviceBusinessManager
 import com.example.flutter_bluetooth.dfu.BLEDevice
 import com.example.flutter_bluetooth.logger.Logger
 import com.example.flutter_bluetooth.utils.OSUtil
@@ -165,6 +166,21 @@ open class AutoConnectBleDevice(deviceAddress: String) : AbsIDOBleDevice(deviceA
         }
     }
 
+    override fun callOnDeviceHasBeenReset() {
+        Logger.p("[AutoConnectBle]  callOnDeviceHasBeenReset")
+        super.callOnDeviceHasBeenReset()
+    }
+
+    override fun callOnConnectTerminated() {
+        Logger.p("[AutoConnectBle]  callOnConnectTerminated")
+        super.callOnConnectTerminated()
+    }
+
+    override fun callOnDeviceAlreadyBindAndNotSupportRebind() {
+        Logger.p("[AutoConnectBle]  callOnDeviceAlreadyBindAndNotSupportRebind")
+        super.callOnDeviceAlreadyBindAndNotSupportRebind()
+    }
+
     override fun callOnConnectFailedByErrorMacAddress() {
         stopReconnect()
         super.callOnConnectFailedByErrorMacAddress()
@@ -240,6 +256,19 @@ open class AutoConnectBleDevice(deviceAddress: String) : AbsIDOBleDevice(deviceA
             stopReconnect()
             return
         }
+
+        DeviceBusinessManager.autoConnectIntercept(macAddress = deviceAddress) {
+            if (it) {
+                Logger.e("[AutoConnectBle]  tryReconnect() is intercepted, device($deviceAddress) is in OTA mode.")
+                callOnConnectTerminated()
+                stopReconnect()
+            } else {
+                startReconnect()
+            }
+        }
+    }
+
+    private fun startReconnect(){
         ReconnectTask.start(object : ReconnectTask.IStateChangeListener {
             override fun onTry(count: Int) {
                 if (count < 2) {

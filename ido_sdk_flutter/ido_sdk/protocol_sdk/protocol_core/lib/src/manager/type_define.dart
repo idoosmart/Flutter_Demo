@@ -55,7 +55,7 @@ enum CmdPriority { veryHigh, high, normal, low}
 
 /// 同步数据类型
 /// 数据类型 1:步数 2:心率 3:睡眠 4:血压 5:血氧 6:压力 7:噪音 8:皮温 9:呼吸率 10:身体电量 11:HRV 12:多运动 13:GPS 14:游泳
-/// 15: V2步数 16: V2睡眠 17: V2心率 18: V2血压 19: V2 GPS 20: V2多运动
+/// 15: V2步数 16: V2睡眠 17: V2心率 18: V2血压 19: V2 GPS 20: V2多运动 21: 情绪健康
 enum SyncJsonType {
   nullType,
   stepCount,
@@ -77,7 +77,8 @@ enum SyncJsonType {
   v2HeartRate,
   v2BloodPressure,
   v2GPS,
-  v2Activity
+  v2Activity,
+  emotionType
 }
 
 /// 同步类型 1:v2健康 2:v2多运动 3:v2 gps 4: v3数据
@@ -207,5 +208,8 @@ abstract class ErrorCode {
   /// 执行中的指令被中断
   /// 注：由于发出的指令不能被实际取消，故存在修改指令被中断后还会实际修改的情况
   static const task_interrupted = -7;
+
+  /// 相机预览中，无关基础指令将被拦截并返回该错误码
+  static const onCameraPreview = -8;
 
 }

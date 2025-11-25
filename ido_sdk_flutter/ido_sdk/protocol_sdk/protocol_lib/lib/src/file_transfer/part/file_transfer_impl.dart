@@ -18,6 +18,9 @@ class _IDOFileTransfer implements IDOFileTransfer {
   late final _subjectTranFileTypeChanged =
       StreamController<FileTransType?>.broadcast();
 
+  late final _subjectSifliOtaFinished =
+      StreamController<int>.broadcast();
+
   CallbackFileTransStatusMultiple? _funcStatus;
   CallbackFileTransProgressMultiple? _funcProgress;
   CallbackFileTransErrorCode? _funError;
@@ -63,6 +66,12 @@ class _IDOFileTransfer implements IDOFileTransfer {
   StreamSubscription listenTransFileTypeChanged(
       void Function(FileTransType? fileType) func) {
     return _subjectTranFileTypeChanged.stream.listen(func);
+  }
+
+  @override
+  StreamSubscription listenSilfiOtaFinished(
+      void Function(int platform) func) {
+    return _subjectSifliOtaFinished.stream.listen(func);
   }
 
   @override
@@ -316,6 +325,10 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
           if (_completer != null && !_completer!.isCompleted) {
             _completer?.complete(_resultList);
             logger?.d('trans rs: $_resultList');
+            if (__fileTransType == FileTransType.fw && _libMgr.lastDevicePlatform == 98) {
+              logger?.d('trans send SifliOtaFinished notification, lastDevicePlatform:${_libMgr.lastDevicePlatform}');
+              _subjectSifliOtaFinished.add(_libMgr.lastDevicePlatform);
+            }
             _cleanFileTransType();
             _cancelableOperation = null;
             return _completer!.future;
@@ -375,6 +388,7 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
         break;
       case FileTransType.iwf_lz:
       case FileTransType.wallpaper_z:
+      case FileTransType.wallpaper_device:
         bf = WatchFile(type, item);
         break;
       case FileTransType.ml:
@@ -542,6 +556,12 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
       final flag = [24, 25].contains(error);
       final newErrorVal = flag ? error : errorVal;
       final finishingTime = flag ? errorVal : 0;
+
+      // 处理gtr1 设备壁纸 8, 21错误码
+      if (error == 8 && errorVal == 21) {
+        error = 21;
+      }
+
       // 状态回调
       if (error == 0) {
         const p = 1.0; // 进度补满

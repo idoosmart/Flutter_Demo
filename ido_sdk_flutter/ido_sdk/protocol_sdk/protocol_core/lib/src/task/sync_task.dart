@@ -260,6 +260,8 @@ extension _SyncTask on SyncTask {
         dataType = SyncJsonType.GPS;
       }else if (type == 7006) {
         dataType = SyncJsonType.swim;
+      }else if (type == 7018) {
+        dataType = SyncJsonType.emotionType;
       }
       logger?.d('sync data type: $dataType data: $json error code: $errorCode');
       if (dataCallback != null) {

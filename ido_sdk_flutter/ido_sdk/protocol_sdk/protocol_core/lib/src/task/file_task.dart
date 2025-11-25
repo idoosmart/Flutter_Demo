@@ -477,7 +477,7 @@ extension _FileTaskSilfi on FileTask {
       };
       logger?.d("silfi - 4, ${Platform.isAndroid?"macAddress: ":"uuid: "}${fileTranItem.macAddress}");
       _lastLoggedState = OTAUpdateState.init;
-      await _coreMgr.sifliChannel?.sifliHost.startOTANor(fileList, fileTranItem.macAddress!,  fileTranItem.platform!, false);
+      await _coreMgr.sifliChannel?.sifliHost.startOTANor(fileList, fileTranItem.macAddress!,  fileTranItem.platform!, true);
     } catch (e) {
       logger?.e("silfi -$e");
       _status = TaskStatus.stopped;
@@ -495,7 +495,7 @@ extension _FileTaskSilfi on FileTask {
     final inputStream = InputFileStream(zipFilePath);
     final archive = ZipDecoder().decodeBuffer(inputStream);
     logger?.d('silfi - unzip $zipFilePath \n\t to $targetDir');
-    extractArchiveToDisk(archive, targetDir);
+    await extractArchiveToDisk(archive, targetDir);
     // 目标目录为空，记录日志
     if (dir.listSync().isEmpty) {
       logger?.e(

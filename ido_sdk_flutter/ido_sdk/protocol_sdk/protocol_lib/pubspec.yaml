@@ -1,24 +1,24 @@
 name: protocol_lib
 description: ido protocol_lib (private)
-version: 4.0.29
+version: 4.1.10
 homepage:
 publish_to: none
 
 environment:
-  sdk: '>=2.18.0 <3.3.1'
-  flutter: ">=2.5.0"
+  sdk: '>=3.5.0'
+  flutter: '>=3.24.3'
 
 dependencies:
   flutter:
     sdk: flutter
   plugin_platform_interface: ^2.0.20
   rxdart: ^0.27.5
-  json_annotation: 4.8.0
+  json_annotation: ^4.8.0
   path: ^1.8.2
-  archive: 3.3.7
+  archive: ^3.6.1
   crypto: ^3.0.2
   image: ^4.0.15
-  http: ^0.13.5
+  http: ^1.4.0
   hive: ^2.2.3
 
   get_storage_lite:
@@ -34,8 +34,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
-  json_serializable: 6.6.0
+  flutter_lints: ^5.0.0
+  json_serializable: ^6.9.0
   build_runner: ^2.3.2
 
 # For information on the generic Dart part of this file, see the

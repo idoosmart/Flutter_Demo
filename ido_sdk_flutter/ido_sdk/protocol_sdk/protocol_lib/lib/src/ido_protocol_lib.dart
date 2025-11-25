@@ -10,6 +10,7 @@ import 'package:protocol_lib/src/private/local_storage/ido_storage.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:ido_logger/ido_logger.dart';
 import 'package:protocol_core/protocol_core.dart';
+import 'package:native_channel/native_channel.dart';
 
 import '../protocol_lib.dart';
 import 'device_info/model/device_info_ext_model.dart';
@@ -80,6 +81,9 @@ abstract class IDOProtocolLibManager {
     required String iosUUID,
     required int platform,
     required int deviceId});
+
+  /// 思澈ota执行中，查询思澈sdk中的值（Android专用）
+  Future<bool> checkSiceOtaDoing();
 
   /// 基础指令调用
   Stream<CmdResponse> send({required CmdEvtType evt, String? json = '{}',
@@ -176,6 +180,9 @@ abstract class IDOProtocolLibManager {
   /// 形如：16进制时间戳
   String get getSdkBuildNum;
 
+  /// 注：仅限SDK内部使用, 默认返回-1
+  int get lastDevicePlatform;
+
   /// 代理设置
   IDOProtocolLibDelegate? delegate;
 
@@ -201,8 +208,26 @@ abstract class IDOProtocolLibManager {
   /// 连接状态变更（内部使用）
   StreamSubscription listenConnectStatusChanged(void Function(bool isConnected) func);
 
+  /// 状态变更（内部使用）
+  StreamSubscription listenAllStateChanged(void Function(void) func);
+
+
+  /// 设备原始数据采集（内部使用）
+  /// dataType 上报类型 1: 算法原始数据采集， 2: 预留字段
+  /// data 数据
+  /// ```dart
+  /// final ss = libManager.listenDeviceRawDataReport<T>((dataType, jsonStr) {
+  ///    ...
+  /// });
+  /// ss.cancel(); 注：不使用时，需要取消监听
+  /// ```
+  StreamSubscription listenDeviceRawDataReport(void Function(int dataType,String jsonStr) func);
+
   /// 设置persimwear ota升级中（内部使用）
   void setPersimwearOtaUpgrading(bool upgrading);
+
+  /// 获取persimwear ota升级中
+  bool get isPersimwearOtaUpgrading;
 }
 
 

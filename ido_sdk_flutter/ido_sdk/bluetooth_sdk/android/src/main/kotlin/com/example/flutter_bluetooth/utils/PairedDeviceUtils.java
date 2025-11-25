@@ -136,4 +136,33 @@ public class PairedDeviceUtils {
             Logger.e(e.getMessage() + "");
         }
     }
+
+    public static boolean cancelBondProcess(BluetoothDevice device) {
+        try {
+            Logger.e("PairedDeviceUtils", "cancelBondProcess: " + device.getBondState());
+            Method m = device.getClass().getMethod("cancelBondProcess");
+            Boolean result = (Boolean) m.invoke(device);
+            Logger.e("PairedDeviceUtils", "cancelBondProcess, result = " + result);
+            if (result == null) {
+                return false;
+            }
+            return result;
+        } catch (Exception e) {
+            Logger.e("PairedDeviceUtils", e.getMessage());
+        }
+        return false;
+    }
+
+    public static void createLeBond(BluetoothDevice device) {
+        try {
+            initSystemPermission();
+            Logger.e("PairedDeviceUtils", "createBond: " + device);
+            Method m = device.getClass().getMethod("createBond",
+                    Integer.TYPE);
+            m.invoke(device, BluetoothDevice.DEVICE_TYPE_LE);
+
+        }catch (Exception e){
+            Logger.e("PairedDeviceUtils", e.getMessage());
+        }
+    }
 }

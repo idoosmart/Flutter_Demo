@@ -38,6 +38,61 @@ private func nilOrValue<T>(_ value: Any?) -> T? {
   return value as! T?
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct DifferenceModel {
+  /// 未接电话类型使用485
+  var useMissedCall485: Bool? = nil
+
+  static func fromList(_ list: [Any?]) -> DifferenceModel? {
+    let useMissedCall485: Bool? = nilOrValue(list[0])
+
+    return DifferenceModel(
+      useMissedCall485: useMissedCall485
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      useMissedCall485,
+    ]
+  }
+}
+
+private class ApiGetAppInfoCodecReader: FlutterStandardReader {
+  override func readValue(ofType type: UInt8) -> Any? {
+    switch type {
+      case 128:
+        return DifferenceModel.fromList(self.readValue() as! [Any?])
+      default:
+        return super.readValue(ofType: type)
+    }
+  }
+}
+
+private class ApiGetAppInfoCodecWriter: FlutterStandardWriter {
+  override func writeValue(_ value: Any) {
+    if let value = value as? DifferenceModel {
+      super.writeByte(128)
+      super.writeValue(value.toList())
+    } else {
+      super.writeValue(value)
+    }
+  }
+}
+
+private class ApiGetAppInfoCodecReaderWriter: FlutterStandardReaderWriter {
+  override func reader(with data: Data) -> FlutterStandardReader {
+    return ApiGetAppInfoCodecReader(data: data)
+  }
+
+  override func writer(with data: NSMutableData) -> FlutterStandardWriter {
+    return ApiGetAppInfoCodecWriter(data: data)
+  }
+}
+
+class ApiGetAppInfoCodec: FlutterStandardMessageCodec {
+  static let shared = ApiGetAppInfoCodec(readerWriter: ApiGetAppInfoCodecReaderWriter())
+}
+
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol ApiGetAppInfo {
   /// 读取所有安装的APP信息
@@ -46,6 +101,8 @@ protocol ApiGetAppInfo {
   func readInstallAppInfoList(force: Bool, completion: @escaping (Result<[[AnyHashable: Any?]], Error>) -> Void)
   /// 读取默认的APP信息
   /// Map => {type: $type, iconFilePath: $iconFilePath, appName: $appName, pkgName: $pkgName}
+  /// 读取 ios 默认的APP信息
+  /// Map => {type: $type, iconFilePath: $iconFilePath, appName: $appName, pkgName: $pkgName, scheme: $scheme}
   func readDefaultAppList(completion: @escaping (Result<[[AnyHashable: Any?]], Error>) -> Void)
   /// 根据事件类型获取当前APP信息
   /// Map => {type: $type, iconFilePath: $iconFilePath, appName: $appName, pkgName: $pkgName}
@@ -61,17 +118,20 @@ protocol ApiGetAppInfo {
   func androidAppIconDirPath(completion: @escaping (Result<String, Error>) -> Void)
   /// 复制应用图标
   func copyAppIcon(completion: @escaping (Result<Bool, Error>) -> Void)
+  /// 标记差异配置
+  func markDifferenceConfig(model: DifferenceModel, completion: @escaping (Result<Void, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
 class ApiGetAppInfoSetup {
   /// The codec used by ApiGetAppInfo.
+  static var codec: FlutterStandardMessageCodec { ApiGetAppInfoCodec.shared }
   /// Sets up an instance of `ApiGetAppInfo` to handle messages through the `binaryMessenger`.
   static func setUp(binaryMessenger: FlutterBinaryMessenger, api: ApiGetAppInfo?) {
     /// 读取所有安装的APP信息
     /// Map => {type: $type, iconFilePath: $iconFilePath, appName: $appName, pkgName: $pkgName}
     /// 邮件、未接电话、日历、短信 （名称使用默认英语）
-    let readInstallAppInfoListChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.native_channel.ApiGetAppInfo.readInstallAppInfoList", binaryMessenger: binaryMessenger)
+    let readInstallAppInfoListChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.native_channel.ApiGetAppInfo.readInstallAppInfoList", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       readInstallAppInfoListChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
@@ -90,7 +150,9 @@ class ApiGetAppInfoSetup {
     }
     /// 读取默认的APP信息
     /// Map => {type: $type, iconFilePath: $iconFilePath, appName: $appName, pkgName: $pkgName}
-    let readDefaultAppListChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.native_channel.ApiGetAppInfo.readDefaultAppList", binaryMessenger: binaryMessenger)
+    /// 读取 ios 默认的APP信息
+    /// Map => {type: $type, iconFilePath: $iconFilePath, appName: $appName, pkgName: $pkgName, scheme: $scheme}
+    let readDefaultAppListChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.native_channel.ApiGetAppInfo.readDefaultAppList", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       readDefaultAppListChannel.setMessageHandler { _, reply in
         api.readDefaultAppList() { result in
@@ -108,7 +170,7 @@ class ApiGetAppInfoSetup {
     /// 根据事件类型获取当前APP信息
     /// Map => {type: $type, iconFilePath: $iconFilePath, appName: $appName, pkgName: $pkgName}
     /// 邮件、未接电话、日历、短信 （名称使用默认英语）
-    let readCurrentAppInfoChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.native_channel.ApiGetAppInfo.readCurrentAppInfo", binaryMessenger: binaryMessenger)
+    let readCurrentAppInfoChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.native_channel.ApiGetAppInfo.readCurrentAppInfo", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       readCurrentAppInfoChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
@@ -126,7 +188,7 @@ class ApiGetAppInfoSetup {
       readCurrentAppInfoChannel.setMessageHandler(nil)
     }
     /// 事件号获取包名
-    let convertEventType2PackageNameChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.native_channel.ApiGetAppInfo.convertEventType2PackageName", binaryMessenger: binaryMessenger)
+    let convertEventType2PackageNameChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.native_channel.ApiGetAppInfo.convertEventType2PackageName", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       convertEventType2PackageNameChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
@@ -144,7 +206,7 @@ class ApiGetAppInfoSetup {
       convertEventType2PackageNameChannel.setMessageHandler(nil)
     }
     /// 包名获取事件号
-    let convertEventTypeByPackageNameChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.native_channel.ApiGetAppInfo.convertEventTypeByPackageName", binaryMessenger: binaryMessenger)
+    let convertEventTypeByPackageNameChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.native_channel.ApiGetAppInfo.convertEventTypeByPackageName", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       convertEventTypeByPackageNameChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
@@ -162,7 +224,7 @@ class ApiGetAppInfoSetup {
       convertEventTypeByPackageNameChannel.setMessageHandler(nil)
     }
     /// 判断是否为默认app
-    let isDefaultAppChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.native_channel.ApiGetAppInfo.isDefaultApp", binaryMessenger: binaryMessenger)
+    let isDefaultAppChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.native_channel.ApiGetAppInfo.isDefaultApp", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       isDefaultAppChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
@@ -180,7 +242,7 @@ class ApiGetAppInfoSetup {
       isDefaultAppChannel.setMessageHandler(nil)
     }
     /// Android 应用图标存放目录
-    let androidAppIconDirPathChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.native_channel.ApiGetAppInfo.androidAppIconDirPath", binaryMessenger: binaryMessenger)
+    let androidAppIconDirPathChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.native_channel.ApiGetAppInfo.androidAppIconDirPath", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       androidAppIconDirPathChannel.setMessageHandler { _, reply in
         api.androidAppIconDirPath() { result in
@@ -196,7 +258,7 @@ class ApiGetAppInfoSetup {
       androidAppIconDirPathChannel.setMessageHandler(nil)
     }
     /// 复制应用图标
-    let copyAppIconChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.native_channel.ApiGetAppInfo.copyAppIcon", binaryMessenger: binaryMessenger)
+    let copyAppIconChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.native_channel.ApiGetAppInfo.copyAppIcon", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       copyAppIconChannel.setMessageHandler { _, reply in
         api.copyAppIcon() { result in
@@ -210,6 +272,24 @@ class ApiGetAppInfoSetup {
       }
     } else {
       copyAppIconChannel.setMessageHandler(nil)
+    }
+    /// 标记差异配置
+    let markDifferenceConfigChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.native_channel.ApiGetAppInfo.markDifferenceConfig", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      markDifferenceConfigChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let modelArg = args[0] as! DifferenceModel
+        api.markDifferenceConfig(model: modelArg) { result in
+          switch result {
+            case .success:
+              reply(wrapResult(nil))
+            case .failure(let error):
+              reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      markDifferenceConfigChannel.setMessageHandler(nil)
     }
   }
 }

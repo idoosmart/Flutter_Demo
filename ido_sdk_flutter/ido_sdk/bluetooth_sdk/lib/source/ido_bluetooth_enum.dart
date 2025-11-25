@@ -69,6 +69,9 @@ enum IDOBluetoothDeviceConnectErrorType {
   pairFail,
   informationFail,
   cancelByUser,
+  deviceAlreadyBindAndNotSupportRebind,//设备已绑定并且不支持重复绑定
+  deviceHasBeenReset,  //app 绑定的设备被重置了
+  connectTerminated  //连接被终止，比如在 ota 中，不需要执行重连了
 }
 
 /*

@@ -13,20 +13,27 @@ A new Flutter project.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'iDo.' => 'huc@idosmart.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
+  s.source_files = 'Classes/**/*.{h,m,swift,c}'
   s.resources = ['Resources/icon_assets.bundle']
   s.resource_bundles = {
        'native_channel' => ['Resources/PrivacyInfo.xcprivacy']
   }
   s.static_framework = true
   s.vendored_frameworks = [
-      'IDOUtils.framework',
+    'IDOUtils.xcframework',
   ]
+
   s.dependency 'Flutter'
+  s.dependency 'ZIPFoundation', '~> 0.9.19'
   s.frameworks = "CoreBluetooth"
-  s.platform = :ios, '9.0'
+  s.platform = :ios, '12.0'
 
   # Flutter.framework does not contain a i386 slice.
-  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
+  s.pod_target_xcconfig = {
+    'DEFINES_MODULE' => 'YES',
+    'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386',
+    'OTHER_LDFLAGS' => '-lc++'
+   }
+  #s.xcconfig = { 'OTHER_LDFLAGS' => '-ObjC' }
   s.swift_version = '5.0'
 end

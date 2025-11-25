@@ -14,8 +14,8 @@
         android:usesPermissionFlags="neverForLocation" />
     <!--    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />-->
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <!--在后台访问位置信息 on Android 10 (API level 29) or Android 11-->
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+<!--    &lt;!&ndash;在后台访问位置信息 on Android 10 (API level 29) or Android 11&ndash;&gt;-->
+<!--    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />-->
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>

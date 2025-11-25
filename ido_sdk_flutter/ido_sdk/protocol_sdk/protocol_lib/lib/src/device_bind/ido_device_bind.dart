@@ -61,4 +61,8 @@ abstract class IDODeviceBind {
   /// 监听解绑 (SDK内部使用）
   StreamSubscription listenUnbindNotification(
       void Function(String macAddress) func);
+
+  /// 监听绑定状态变更 (SDK内部使用）
+  StreamSubscription listenBindStateChangedNotification(
+      void Function(void) func);
 }

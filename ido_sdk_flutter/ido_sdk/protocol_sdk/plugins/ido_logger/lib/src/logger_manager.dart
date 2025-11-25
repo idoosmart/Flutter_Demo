@@ -38,7 +38,7 @@ class LoggerManager {
       }
 
       if (config.writeToFile || !kDebugMode) {
-        final file = _getFile(); //File('${config.dirPath}/${_fileName()}');
+        final file = _getFileToday();//_getFile(); //File('${config.dirPath}/${_fileName()}');
         if (!file.existsSync()) {
           file.createSync(recursive: true);
         }
@@ -64,27 +64,27 @@ class LoggerManager {
   }
 
   v(dynamic message, [dynamic error, StackTrace? stackTrace]) {
-    _logger?.v(message, error, stackTrace);
+    _logger?.v(message, error: error, stackTrace: stackTrace);
   }
 
   d(dynamic message, [dynamic error, StackTrace? stackTrace]) {
-    _logger?.d(message, error, stackTrace);
+    _logger?.d(message, error: error, stackTrace: stackTrace);
   }
 
   i(dynamic message, [dynamic error, StackTrace? stackTrace]) {
-    _logger?.i(message, error, stackTrace);
+    _logger?.i(message, error: error, stackTrace: stackTrace);
   }
 
   w(dynamic message, [dynamic error, StackTrace? stackTrace]) {
-    _logger?.w(message, error, stackTrace);
+    _logger?.w(message, error: error, stackTrace: stackTrace);
   }
 
   e(dynamic message, [dynamic error, StackTrace? stackTrace]) {
-    _logger?.e(message, error, stackTrace);
+    _logger?.e(message, error: error, stackTrace: stackTrace);
   }
 
   wtf(dynamic message, [dynamic error, StackTrace? stackTrace]) {
-    _logger?.wtf(message, error, stackTrace);
+    _logger?.wtf(message, error: error, stackTrace: stackTrace);
   }
 }
 
@@ -146,6 +146,53 @@ extension _LoggerManagerExt on LoggerManager {
     } catch (e) {
       // 返回新文件
       return File('${config.dirPath}/${_fileName()}');
+    }
+  }
+
+  /// 获取需要的文件（按天分）
+  File _getFileToday() {
+    final dir = Directory(config.dirPath);
+    if (!dir.existsSync()) {
+      dir.createSync(recursive: true);
+    }
+    final date = DateTime.now();
+    final fileName = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}.log';
+
+    try {
+      final list = dir
+          .listSync(recursive: false, followLinks: false)
+          .where((e) => e.path.endsWith('.log'))
+          .toList();
+
+      // 删除历史数据yyyy-MM-dd_HHmm.log
+      list.removeWhere((e) => e.uri.pathSegments.last.length > "yyyy-MM-dd.log".length);
+
+      final fileCount = list.length;
+      if (list.length < config.maximumNumberOfLogFiles) {
+        return File('${config.dirPath}/$fileName');
+      }
+      //print('按文件名降序前：\n${list.map((e) => e.uri.pathSegments.last).toList()}');
+      list.sort((a, b) {
+        return b.uri.pathSegments.last.compareTo(a.uri.pathSegments.last); // 按文件名降序
+      });
+      //print('按文件名降序后：\n${list.map((e) => e.uri.pathSegments.last).toList()}');
+      // 控制文件数量
+      if (fileCount > config.maximumNumberOfLogFiles) {
+        final start = fileCount - config.maximumNumberOfLogFiles + 1;
+        final end = fileCount;
+        // 删除对应文件
+        list.getRange(start, end).forEach((e) {
+          //print('删除: ${e.path}');
+          File(e.path).deleteSync();
+        });
+        list.removeRange(start, end);
+        //print('删除后：\n${list.map((e) => e.path).toList()}');
+      }
+      // 返回新文件
+      return File('${config.dirPath}/$fileName');
+    } catch (e) {
+      // 返回新文件
+      return File('${config.dirPath}/$fileName');
     }
   }
 }

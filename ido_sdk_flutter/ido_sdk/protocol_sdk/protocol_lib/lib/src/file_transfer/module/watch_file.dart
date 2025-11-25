@@ -1,5 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
+import 'package:native_channel/pigeon_generate/sifli.g.dart';
+import 'package:native_channel/pigeon_impl/sifli_impl.dart';
 import 'package:path/path.dart' as path;
 
 import 'package:protocol_core/protocol_core.dart';
@@ -20,6 +23,8 @@ class WatchFile extends BaseFile {
       return _createIwfLz();
     } else if (type == FileTransType.wallpaper_z) {
       return _createWallpaperZ();
+    } else if(type == FileTransType.wallpaper_device) {
+      return _createWallpaperDevice();
     } else {
       logger?.d('type mismatch');
       throw ArgumentError('类型不匹配');
@@ -136,6 +141,39 @@ extension _WatchFileExt on WatchFile {
       await removeFile(imgFilePath);
       await removeFile(imgFilePathComp);
     }
+
+    return Future(() => newItem);
+  }
+
+  /// 设备壁纸制作压缩（目前仅思澈）
+  Future<BaseFileModel> _createWallpaperDevice() async {
+    final item = fileItem;
+    if (item.fileName.isEmpty) {
+      logger?.e("fileName is empty");
+      throw UnsupportedError("fileName is empty");
+    }
+    // 文件hash
+    final fileHash = await getFileChecksum(File(item.filePath));
+    // 创建目录
+    final rootPath = await createTransferDirIfNeed(subPath: fileHash);
+    final ext = path.extension(item.filePath).toLowerCase();
+    final alwfFilePath = '$rootPath/0$ext';
+    final fileName = "${path.basenameWithoutExtension(item.fileName)}$ext";
+
+    final newItem = NormalFileModel(
+        fileType: item.fileType,
+        filePath: alwfFilePath,
+        fileName: fileName,
+        fileSize: item.fileSize);
+    newFileItem = newItem;
+
+    // 存在缓存
+    if (useCache && await File(alwfFilePath).exists()) {
+      return Future(() => newItem);
+    }
+
+    // 复制要处理的文件
+    await copyFileIfNeed(item.filePath, alwfFilePath);
 
     return Future(() => newItem);
   }

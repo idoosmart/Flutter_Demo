@@ -185,4 +185,8 @@ abstract class LocalStorage {
   Future<IDODeviceOtaInfo?> loadOtaInfoByDisk();
   Future<bool> saveOtaInfoToDisk(IDODeviceOtaInfo otaInfo);
   Future<bool> removeOtaInfo(String macAddress);
+
+  // 删除clib功能表缓存(常用于解绑时调用）
+  Future<bool> removeCLibFuncTableCache(String macAddress);
+  Future<String?> getCLibFuncTableCachePath(String macAddress);
 }

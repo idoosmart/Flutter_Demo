@@ -10,6 +10,7 @@ import 'model/device_info_ext_model.dart';
 import 'model/firmware_version_model.dart';
 import '../private/local_storage/local_storage.dart';
 import '../private/notification/notification.dart';
+import 'model/watch_dail_info.dart';
 
 class IDODeviceInfo {
   IDODeviceInfo._internal() {
@@ -496,6 +497,36 @@ extension IDODeviceInfoExt on IDODeviceInfo {
 
   /// 芯与物 icoe gps平台
   bool isIcoeGpsPlatform() => gpsPlatform == 3;
+
+  /// 获取表盘信息
+  /// ```dart
+  /// {
+  ///     "blockSize": 1024,
+  ///     "familyName": "ID205G",
+  ///     "format": 133,
+  ///     "height": 240,
+  ///     "sizex100": 0,
+  ///     "width": 240
+  /// }
+  /// ```
+  Future<WatchDailInfo?> getWatchDialInfo() async {
+    const keyDialInfo = "dial_info";
+    final json = await storage?.getString(key: keyDialInfo);
+    if (json != null && json.length > 2) {
+      return WatchDailInfo.fromJson(jsonDecode(json));
+    }
+
+    final res = await _libMgr.send(evt: CmdEvtType.getWatchDialInfo).first;
+    if (res.code == 0 && res.json != null && res.json is String) {
+      final json = jsonDecode(res.json!);
+      // 缓存表盘信息
+      await storage?.setString(key: keyDialInfo, value: res.json!);
+      return WatchDailInfo.fromJson(jsonDecode(json));
+    } else {
+      logger?.e('getWatchDialInfo failed');
+      throw UnsupportedError('getWatchDialInfo failed');
+    }
+  }
 
 }
 

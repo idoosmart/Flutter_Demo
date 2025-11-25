@@ -72,6 +72,7 @@ extension _IDOEPOManagerListener on _IDOEPOManager {
         _statusModel.lastMacAddress = libManager.macAddress;
       } else {
         _statusModel.lastMacAddress = '';
+        _stopHotGpsTimer(); // 连接断开，停止自动热启参数更新
       }
     });
 

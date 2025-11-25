@@ -64,27 +64,27 @@ class LoggerManager {
   }
 
   v(dynamic message, [dynamic error, StackTrace? stackTrace]) {
-    _logger?.v(message, error, stackTrace);
+    _logger?.v(message, error: error, stackTrace: stackTrace);
   }
 
   d(dynamic message, [dynamic error, StackTrace? stackTrace]) {
-    _logger?.d(message, error, stackTrace);
+    _logger?.d(message, error: error, stackTrace: stackTrace);
   }
 
   i(dynamic message, [dynamic error, StackTrace? stackTrace]) {
-    _logger?.i(message, error, stackTrace);
+    _logger?.i(message, error: error, stackTrace: stackTrace);
   }
 
   w(dynamic message, [dynamic error, StackTrace? stackTrace]) {
-    _logger?.w(message, error, stackTrace);
+    _logger?.w(message, error: error, stackTrace: stackTrace);
   }
 
   e(dynamic message, [dynamic error, StackTrace? stackTrace]) {
-    _logger?.e(message, error, stackTrace);
+    _logger?.e(message, error: error, stackTrace: stackTrace);
   }
 
   wtf(dynamic message, [dynamic error, StackTrace? stackTrace]) {
-    _logger?.wtf(message, error, stackTrace);
+    _logger?.wtf(message, error: error, stackTrace: stackTrace);
   }
 }
 

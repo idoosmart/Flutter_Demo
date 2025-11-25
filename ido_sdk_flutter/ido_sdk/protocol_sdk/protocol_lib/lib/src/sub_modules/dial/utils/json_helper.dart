@@ -1,17 +1,6 @@
-import 'dart:convert';
-import 'dart:io';
+part of dial_manager;
 
-import 'package:path/path.dart' as path;
-import 'package:protocol_lib/src/private/local_storage/local_storage.dart';
-
-import '../../../../protocol_lib.dart';
-import '../../../private/logger/logger.dart';
-import 'package:archive/archive_io.dart';
-
-import '../model/dial_json_obj.dart';
-import 'ido_file_manager.dart';
-
-class JsonHelper {
+class _JsonHelper {
   //读取Json文件
   static Future<String> readJsonContent(String path, [fileName = 'iwf']) async {
     try {
@@ -37,15 +26,15 @@ class JsonHelper {
   }
 
   ///保存DialJsonObj对象 app.json
-  static void writeAppJsonToDocument(DialJsonObj? obj, String path) async {
-    if (obj == null) {
-      return;
-    }
-    var jsonMap = obj.toJson();
-    var jsonStr = json.encode(jsonMap);
-    final file = File('$path/app.json');
-    file.writeAsString(jsonStr);
-  }
+  // static void writeAppJsonToDocument(DialJsonObj? obj, String path) async {
+  //   if (obj == null) {
+  //     return;
+  //   }
+  //   var jsonMap = obj.toJson();
+  //   var jsonStr = json.encode(jsonMap);
+  //   final file = File('$path/app.json');
+  //   file.writeAsString(jsonStr);
+  // }
 
   ///保存对象 iwf.json
   static Future<void> writeDialIwfToDocument(Map? obj, String path, [fileName = 'iwf']) async {
@@ -73,7 +62,7 @@ class JsonHelper {
       final archive = ZipDecoder().decodeBuffer(inputStream);
       //解压
       // extractFileToDisk(savePath, extractPath);
-      extractArchiveToDisk(archive, '$savePath/$folderName');
+      await extractArchiveToDisk(archive, '$savePath/$folderName');
       return '$savePath/$folderName';
     } catch (e) {
       logger?.i('解压压缩包 error $e');
@@ -85,12 +74,11 @@ class JsonHelper {
   static Future<String?> unarchiveToDisk({required String zipPath,  required String targetPath}) async {
     //await storage?.removeDir(absoluteDirPath: targetPath);
     try {
-      IDOFileManager.removeDirectory(targetPath);
-      //await IdoNativeHost().unzipFileAtPath('$savePath/$folderName.zip', '$savePath/$folderName');
+      _FileManager.removeDirectory(targetPath);
       final inputStream = InputFileStream(zipPath);
       final archive = ZipDecoder().decodeBuffer(inputStream);
-      extractArchiveToDisk(archive, targetPath);
-      final unzipPath = await IDOFileManager.findFileInDirectory(targetPath);
+      await extractArchiveToDisk(archive, targetPath);
+      final unzipPath = await _FileManager.findFileInDirectory(targetPath);
       return unzipPath;
     } catch (e) {
       logger?.i('解压压缩包 error $e');
@@ -116,7 +104,7 @@ class JsonHelper {
       final archive = ZipDecoder().decodeBuffer(inputStream);
       //解压
       // extractFileToDisk(savePath, extractPath);
-      extractArchiveToDisk(archive, '$savePath/$folderName');
+      extractArchiveToDiskSync(archive, '$savePath/$folderName');
       return '$savePath/$folderName';
     } catch (e) {
       logger?.i('解压压缩包 error $e');

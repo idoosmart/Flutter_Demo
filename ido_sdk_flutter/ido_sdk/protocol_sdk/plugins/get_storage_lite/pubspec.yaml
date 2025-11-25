@@ -4,12 +4,13 @@ version: 2.1.1
 homepage: https://github.com/jonataslaw/get_storage
 
 environment:
-  sdk: ">=2.16.0 <3.0.0"
+  sdk: '>=3.5.0'
+  flutter: '>=3.24.3'
 
 dependencies:
   flutter:
     sdk: flutter
-  get: ">=4.0.0 <6.0.0"
+  get: ">=4.6.6 <6.0.0"
 
   native_channel:
     path: ../native_channel

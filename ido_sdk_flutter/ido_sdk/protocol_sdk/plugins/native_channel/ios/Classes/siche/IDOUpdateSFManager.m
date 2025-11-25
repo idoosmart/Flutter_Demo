@@ -9,11 +9,12 @@
 #import "IDOUpdateSFManager.h"
 
 #import <CoreBluetooth/CoreBluetooth.h>
-#import <IDOUtils/eZIPSDKA.h>
-#import <IDOUtils/SifliOtaSDKA-Swift.h>
+//#import <IDOUtils/IDOUtils.h>
+//#import <IDOUtils/eZIPSDKA.h>
+#import <IDOUtils.h>
+#import <native_channel/native_channel-Swift.h>
 
-
-@interface IDOUpdateSFManager ()<SFOTAManagerDelegate>
+@interface IDOUpdateSFManager ()<SFOTAManagerDelegate, SFOTALogManagerDelegate>
 
 @property (nonatomic,strong) NSString *deviceUUID;
 
@@ -34,11 +35,23 @@ static IDOUpdateSFManager *_mgr = nil;
     dispatch_once(&onceToken, ^{
         _mgr = [[IDOUpdateSFManager alloc] init];
     });
+    // test
+    // NSLog(@"[SFOTAManager SDKVersion]: %@", [SFOTAManager SDKVersion]);
+    // [ImageConvertor EBinFromPngSequence:@[NSData.new] eColor:@"" eType:1 binType:1 boardType:SFBoardType55X];
     return _mgr;
 }
 
 - (instancetype)init{
     if(self = [super init]){
+//        [SFOTALogManager share].logEnable = YES;
+//        [QBleLogManager share].openLog = YES;
+        #ifdef DEBUG
+            [SFOTALogManager share].logEnable = YES;
+            [QBleLogManager share].openLog = YES;
+        #else
+            [SFOTALogManager share].logEnable = NO;
+            [QBleLogManager share].openLog = NO;
+        #endif
     }
     return self;
 }
@@ -103,6 +116,9 @@ static IDOUpdateSFManager *_mgr = nil;
         }else if ([file hasSuffix:@"outdyn.bin"]){
             SFNandImageFileInfo *info = [[SFNandImageFileInfo alloc]initWithPath:url imageID:NandImageIDDYN];
             [imagefiles addObject:info];
+        }else if ([file hasSuffix:@"outmusic.bin"]){
+            SFNandImageFileInfo *info = [[SFNandImageFileInfo alloc]initWithPath:url imageID:NandImageIDMUSIC];
+            [imagefiles addObject:info];
         }
     }
     
@@ -116,10 +132,6 @@ static IDOUpdateSFManager *_mgr = nil;
         [SFOTAManager share].delegate = self;
     }
     
-    #ifdef DEBUG
-    [SFOTALogManager share].logEnable = NO;
-    [QBleLogManager share].openLog = NO;
-    #endif
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [[SFOTAManager share] startOTANandWithTargetDeviceIdentifier:self.deviceUUID
                                                         resourcePath:zipURL
@@ -172,6 +184,9 @@ static IDOUpdateSFManager *_mgr = nil;
         }else if ([file hasSuffix:@"ota_manager.bin"]){
             SFNorImageFileInfo *info = [[SFNorImageFileInfo alloc]initWithPath:url imageID:NorImageIDOTA_MANAGER];
             [imagefiles addObject:info];
+        }else if ([file hasSuffix:@"outmusic.bin"]){
+//            SFNorImageFileInfo *info = [[SFNorImageFileInfo alloc]initWithPath:url imageID:NorImageIDFONT_OR_MAX];
+//            [imagefiles addObject:info];
         }
     }
     
@@ -184,11 +199,6 @@ static IDOUpdateSFManager *_mgr = nil;
     if(![SFOTAManager share].delegate){
         [SFOTAManager share].delegate = self;
     }
-    
-    #ifdef DEBUG
-    [SFOTALogManager share].logEnable = NO;
-    [QBleLogManager share].openLog = NO;
-    #endif
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [[SFOTAManager share] startOTANorV2WithTargetDeviceIdentifier:deviceUUID
@@ -313,6 +323,10 @@ static IDOUpdateSFManager *_mgr = nil;
 
 - (void)stop {
     [[SFOTAManager share] stop];
+}
+
+- (void)otaLogManagerWithManager:(SFOTALogManager * _Nonnull)manager onLog:(SFOTALogModel * _Null_unspecified)log logLevel:(enum OTALogLevel)level { 
+    [self saveLog:log.message];
 }
 
 @end

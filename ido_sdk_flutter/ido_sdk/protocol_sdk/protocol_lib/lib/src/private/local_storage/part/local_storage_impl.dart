@@ -555,6 +555,37 @@ class _LocalStorage implements LocalStorage {
     return remove(key: _keyOtaInfo, macAddress: macAddress);
   }
 
+  @override
+  Future<bool> removeCLibFuncTableCache(String macAddress) async {
+    if (macAddress.isEmpty) {
+      logger?.d('removeCLibFuncTableCache macAddress is empty');
+      return false;
+    }
+    final rootDir = await createRootDir();
+    final cachePath =
+        '$rootDir/${_LocalStorage._devicesDirName}/${macAddress.toLowerCase()}/c_files';
+    final rs = await removeDir(absoluteDirPath: cachePath);
+    logger?.d('removeCLibFuncTableCache rs:$rs dir: $cachePath');
+    return rs;
+  }
+
+
+  @override
+  Future<String?> getCLibFuncTableCachePath(String macAddress) async {
+    if (macAddress.isEmpty) {
+      logger?.d('getCLibFuncTableCachePath macAddress is empty');
+      return null;
+    }
+    final rootDir = await createRootDir();
+    final cachePath =
+        '$rootDir/${_LocalStorage._devicesDirName}/${macAddress.toLowerCase()}/c_files';
+    final dir = Directory(cachePath);
+    if (dir.existsSync()) {
+      return cachePath;
+    }
+    return null;
+  }
+
 }
 
 extension _LocalStorageExt on _LocalStorage {

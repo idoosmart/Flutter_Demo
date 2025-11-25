@@ -9,13 +9,16 @@ PODS:
     - Flutter
   - native_channel (1.0.0):
     - Flutter
-  - permission_handler_apple (9.1.1):
+    - ZIPFoundation (~> 0.9.19)
+  - permission_handler_apple (9.3.0):
     - Flutter
   - protocol_ffi (0.0.1):
     - Flutter
   - ReachabilitySwift (5.0.0)
   - webview_flutter_wkwebview (0.0.1):
     - Flutter
+    - FlutterMacOS
+  - ZIPFoundation (0.9.20)
 
 DEPENDENCIES:
   - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
@@ -25,11 +28,12 @@ DEPENDENCIES:
   - native_channel (from `.symlinks/plugins/native_channel/ios`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - protocol_ffi (from `.symlinks/plugins/protocol_ffi/ios`)
-  - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/ios`)
+  - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/darwin`)
 
 SPEC REPOS:
   trunk:
     - ReachabilitySwift
+    - ZIPFoundation
 
 EXTERNAL SOURCES:
   connectivity_plus:
@@ -47,19 +51,20 @@ EXTERNAL SOURCES:
   protocol_ffi:
     :path: ".symlinks/plugins/protocol_ffi/ios"
   webview_flutter_wkwebview:
-    :path: ".symlinks/plugins/webview_flutter_wkwebview/ios"
+    :path: ".symlinks/plugins/webview_flutter_wkwebview/darwin"
 
 SPEC CHECKSUMS:
-  connectivity_plus: 481668c94744c30c53b8895afb39159d1e619bdf
-  device_info_plus: 335f3ce08d2e174b9fdc3db3db0f4e3b1f66bd89
-  Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
-  flutter_bluetooth: 9a3b7c9221aff38963591595b347abd2056167c7
-  native_channel: 8a98b420cacc9ba8596707e63d7e227868965543
-  permission_handler_apple: 3787117e48f80715ff04a3830ca039283d6a4f29
-  protocol_ffi: bd880c2b0cdb5868542dc95468c33aa4d67061f9
+  connectivity_plus: bf0076dd84a130856aa636df1c71ccaff908fa1d
+  device_info_plus: c6fb39579d0f423935b0c9ce7ee2f44b71b9fce6
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  flutter_bluetooth: b89fe1bdcb81f312e3df9b2ddaecbc3d69285df5
+  native_channel: 4c106d5c56fa9947e1df011fa891ee94f6dcdf84
+  permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
+  protocol_ffi: 080e8d65dffd666b5b5170d3f5a42eb2034e644d
   ReachabilitySwift: 985039c6f7b23a1da463388634119492ff86c825
-  webview_flutter_wkwebview: 75789e80e2ad25e78ac88a17e5c2f82019277c53
+  webview_flutter_wkwebview: a4af96a051138e28e29f60101d094683b9f82188
+  ZIPFoundation: dfd3d681c4053ff7e2f7350bc4e53b5dba3f5351
 
-PODFILE CHECKSUM: ef19549a9bc3046e7bb7d2fab4d021637c0c58a3
+PODFILE CHECKSUM: c4c93c5f6502fe2754f48404d3594bf779584011
 
 COCOAPODS: 1.16.2

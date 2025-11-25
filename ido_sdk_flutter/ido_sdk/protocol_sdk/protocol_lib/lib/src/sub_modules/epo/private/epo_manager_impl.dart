@@ -24,6 +24,10 @@ class _IDOEPOManager implements IDOEPOManager {
   bool _needAutoUpdateOnIdle = false; // 未启用
   bool _enableAutoUpgrade = false;
 
+  // 每30分钟主动更新热启动参数
+  Timer? _timerHotGpsStart;
+  final _hotGpsStartDelay = 30 * 60; // 30分钟
+
   @override
   bool get enableAutoUpgrade => _enableAutoUpgrade;
 
@@ -159,7 +163,7 @@ extension _IDOEPOManagerPrivate on _IDOEPOManager {
   bool _isSupported() {
     return (libManager.funTable.setAirohaGpsChip
         && (libManager.funTable.syncGps || libManager.funTable.syncV3Gps))
-        || libManager.deviceInfo.gpsPlatform == 3;
+        || libManager.deviceInfo.gpsPlatform > 0;
   }
 
   ///检查前置条件
@@ -278,9 +282,12 @@ extension _IDOEPOManagerPrivate on _IDOEPOManager {
   }
 
   void _updateGpsHotStartParam() async {
-    if (!libManager.funTable.getSupportSendGpsLongitudeAndLatitude) {
+    if (!(libManager.funTable.getSupportSendGpsLongitudeAndLatitude || libManager.deviceInfo.gpsPlatform > 0)) {
       logger?.d("EPO: funTable.getSupportSendGpsLongitudeAndLatitude = false");
       return;
+    }
+    if (delegateGetGps == null) {
+      logger?.e("EPO: _updateGpsHotStartParam delegateGetGps = null");
     }
     delegateGetGps?.getAppGpsInfo().then((value) {
       if (value != null) {
@@ -289,6 +296,9 @@ extension _IDOEPOManagerPrivate on _IDOEPOManager {
         });
       }
     });
+
+    // 每30分钟执行一次
+    _startHotGpsTimer();
   }
 
   /// 清除缓存文件
@@ -341,6 +351,19 @@ extension _IDOEpoManagerTimer on _IDOEPOManager {
   void _stopAutoUpgradeTimer() {
     _timerAutoUpgrade?.cancel();
     _timerAutoUpgrade = null;
+  }
+
+  void _startHotGpsTimer() {
+    _timerHotGpsStart?.cancel();
+    _timerHotGpsStart = Timer(Duration(seconds: _hotGpsStartDelay), () {
+      logger?.v('EPO: Update hot GPS start parameters every 30 minutes (if needed)');
+      _updateGpsHotStartParam();
+    });
+  }
+
+  void _stopHotGpsTimer() {
+    _timerHotGpsStart?.cancel();
+    _timerHotGpsStart = null;
   }
 }
 

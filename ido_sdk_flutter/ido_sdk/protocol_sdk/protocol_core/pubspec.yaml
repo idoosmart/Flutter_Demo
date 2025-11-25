@@ -5,8 +5,8 @@ homepage:
 publish_to: none
 
 environment:
-  sdk: '>=2.18.0 <3.3.1'
-  flutter: ">=2.11.0"
+  sdk: '>=3.5.0'
+  flutter: '>=3.24.3'
 
 dependencies:
   flutter:
@@ -14,8 +14,8 @@ dependencies:
   async: ^2.9.0
   tuple: ^2.0.1
   crypto: ^3.0.3
-  archive: 3.3.7
-  path: 1.8.2
+  archive: ^3.3.7
+  path: ^1.9.0
 
   protocol_ffi:
     path: ../protocol_ffi/

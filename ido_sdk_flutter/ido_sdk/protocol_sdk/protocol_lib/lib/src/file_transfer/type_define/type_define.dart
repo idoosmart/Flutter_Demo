@@ -120,7 +120,7 @@ enum FileTransType {
   epo({'.DAT'}),
 
   /// gps
-  gps({'.gps'}),
+  gps({}),
 
   bpbin({'.bpbin'}),
 
@@ -138,7 +138,10 @@ enum FileTransType {
   /// hid: 检测引导程序hid更新(android专用)
   /// xx: xxxxx
   /// ```
-  other({});
+  other({}),
+
+  /// 设备壁纸
+  wallpaper_device({'.alwf', '.alwfs'});
 
   const FileTransType(this.typeNameSet);
   final Set<String> typeNameSet;

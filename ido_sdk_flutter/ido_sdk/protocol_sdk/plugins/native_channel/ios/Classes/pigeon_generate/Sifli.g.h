@@ -60,6 +60,23 @@ NSObject<FlutterMessageCodec> *ApiSifliHostGetCodec(void);
 /// boardType 主板芯片类型 @See SFBoardType 0:55x 1:56x  2:52x
 /// @return ezip or apng result, nil for fail
 - (nullable FlutterStandardTypedData *)sifliEBinFromPngPngDatas:(FlutterStandardTypedData *)pngDatas eColor:(NSString *)eColor type:(NSNumber *)type binType:(NSNumber *)binType boardType:(IDOSFBoardType)boardType error:(FlutterError *_Nullable *_Nonnull)error;
+/// 将png格式文件序列转为ezipBin类型。转换失败返回nil。V2.2
+/// pngDatas png文件数据序列数组 （如果数组是多张图片，则会几张图片组合拼接成一张图片）
+/// eColor 颜色字符串 color type as below: rgb565, rgb565A, rbg888, rgb888A
+/// eType eizp类型 0 keep original alpha channel;1 no alpha chanel
+/// binType bin类型 0 to support rotation; 1 for no rotation
+/// boardType 主板芯片类型 @See SFBoardType 0:55x 1:56x  2:52x
+/// @return ezip or apng result, nil for fail
+- (nullable FlutterStandardTypedData *)sifliEBinFromPngsPngDatas:(NSArray<FlutterStandardTypedData *> *)pngDatas eColor:(NSString *)eColor type:(NSNumber *)type binType:(NSNumber *)binType boardType:(IDOSFBoardType)boardType error:(FlutterError *_Nullable *_Nonnull)error;
+/// 将png格式文件序列转为ezipBin类型。转换失败返回nil。V2.2
+/// pngDatas png文件数据序列数组 （如果数组是多张图片，则会几张图片组合拼接成一张图片）
+/// eColor 颜色字符串 color type as below: rgb565, rgb565A, rbg888, rgb888A
+/// eType eizp类型 0 keep original alpha channel;1 no alpha chanel
+/// binType bin类型 0 to support rotation; 1 for no rotation
+/// boardType 主板芯片类型 @See SFBoardType 0:55x 1:56x  2:52x
+/// @return ezip or apng result, nil for fail
+- (void)asyncSifliEBinFromPngsPngDatas:(NSArray<FlutterStandardTypedData *> *)pngDatas eColor:(NSString *)eColor type:(NSNumber *)type binType:(NSNumber *)binType boardType:(IDOSFBoardType)boardType isGif:(NSNumber *)isGif completion:(void (^)(FlutterStandardTypedData *_Nullable, FlutterError *_Nullable))completion;
+- (void)checkOtaDoingWithCompletion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
 @end
 
 extern void ApiSifliHostSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<ApiSifliHost> *_Nullable api);

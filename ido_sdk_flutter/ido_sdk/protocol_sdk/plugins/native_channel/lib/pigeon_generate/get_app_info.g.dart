@@ -8,6 +8,51 @@ import 'dart:typed_data' show Float64List, Int32List, Int64List, Uint8List;
 import 'package:flutter/foundation.dart' show ReadBuffer, WriteBuffer;
 import 'package:flutter/services.dart';
 
+class DifferenceModel {
+  DifferenceModel({
+    this.useMissedCall485,
+  });
+
+  /// 未接电话类型使用485
+  bool? useMissedCall485;
+
+  Object encode() {
+    return <Object?>[
+      useMissedCall485,
+    ];
+  }
+
+  static DifferenceModel decode(Object result) {
+    result as List<Object?>;
+    return DifferenceModel(
+      useMissedCall485: result[0] as bool?,
+    );
+  }
+}
+
+class _ApiGetAppInfoCodec extends StandardMessageCodec {
+  const _ApiGetAppInfoCodec();
+  @override
+  void writeValue(WriteBuffer buffer, Object? value) {
+    if (value is DifferenceModel) {
+      buffer.putUint8(128);
+      writeValue(buffer, value.encode());
+    } else {
+      super.writeValue(buffer, value);
+    }
+  }
+
+  @override
+  Object? readValueOfType(int type, ReadBuffer buffer) {
+    switch (type) {
+      case 128: 
+        return DifferenceModel.decode(readValue(buffer)!);
+      default:
+        return super.readValueOfType(type, buffer);
+    }
+  }
+}
+
 class ApiGetAppInfo {
   /// Constructor for [ApiGetAppInfo].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
@@ -16,7 +61,7 @@ class ApiGetAppInfo {
       : _binaryMessenger = binaryMessenger;
   final BinaryMessenger? _binaryMessenger;
 
-  static const MessageCodec<Object?> codec = StandardMessageCodec();
+  static const MessageCodec<Object?> codec = _ApiGetAppInfoCodec();
 
   /// 读取所有安装的APP信息
   /// Map => {type: $type, iconFilePath: $iconFilePath, appName: $appName, pkgName: $pkgName}
@@ -50,6 +95,8 @@ class ApiGetAppInfo {
 
   /// 读取默认的APP信息
   /// Map => {type: $type, iconFilePath: $iconFilePath, appName: $appName, pkgName: $pkgName}
+  /// 读取 ios 默认的APP信息
+  /// Map => {type: $type, iconFilePath: $iconFilePath, appName: $appName, pkgName: $pkgName, scheme: $scheme}
   Future<List<Map?>> readDefaultAppList() async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.native_channel.ApiGetAppInfo.readDefaultAppList', codec,
@@ -234,6 +281,29 @@ class ApiGetAppInfo {
       );
     } else {
       return (replyList[0] as bool?)!;
+    }
+  }
+
+  /// 标记差异配置
+  Future<void> markDifferenceConfig(DifferenceModel arg_model) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.native_channel.ApiGetAppInfo.markDifferenceConfig', codec,
+        binaryMessenger: _binaryMessenger);
+    final List<Object?>? replyList =
+        await channel.send(<Object?>[arg_model]) as List<Object?>?;
+    if (replyList == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyList.length > 1) {
+      throw PlatformException(
+        code: replyList[0]! as String,
+        message: replyList[1] as String?,
+        details: replyList[2],
+      );
+    } else {
+      return;
     }
   }
 }

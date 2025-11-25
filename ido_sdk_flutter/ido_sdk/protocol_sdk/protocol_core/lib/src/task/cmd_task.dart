@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:protocol_ffi/protocol_ffi.dart';
 import 'package:protocol_core/protocol_core.dart';
@@ -71,6 +72,10 @@ extension _CommandTask on CommandTask {
       if (tuple.item3.trimLeft().startsWith("{")) {
         json = tuple.item3;
       }
+
+      // 添加返回结果修改
+      json = _updateJsonContentIfNeed(errorCode, tuple.item2, json);
+
       final res =
           CmdResponse(code: errorCode, evtType: tuple.item2, json: json);
       _completer?.complete(res);
@@ -104,6 +109,49 @@ extension _CommandTask on CommandTask {
     _completer?.complete(res);
     return _completer?.future;
   }
+
+  String? _updateJsonContentIfNeed(int errorCode, int evtType, String? json) {
+    if (errorCode != 0) return json;
+
+    // 312（getGpsInfo） 获取gps信息, 根据fw_version值提取并转换为XX.XX.XX格式
+    if (evtType == 312 && json != null && json.isNotEmpty) {
+      try {
+        final map = jsonDecode(json);
+        final fwVersion = map["fw_version"];
+        if (fwVersion != null) {
+          final strVer = _getGpsThirdVersion(fwVersion as int);
+          map["fw_version_str"] = strVer;
+          json = jsonEncode(map);
+          logger?.d("add 'fw_version_str' ");
+          logger?.d(
+              'new response evtType:$evtType code:$errorCode json:$json');
+        }
+      }catch(e) {
+        logger?.e('312（getGpsInfo）change fw_version failed');
+      }
+    }
+    return json;
+  }
+
+  /// gps版本转为字符串
+  String _getGpsThirdVersion(int gpsVersion) {
+    String version = "";
+    if (gpsVersion > 0) {
+      // 低8位
+      final int firstCode = gpsVersion & 0xFF;
+      final int secondCode = (gpsVersion >> 8) & 0xFF;
+      final int thirdCode = (gpsVersion >> 16) & 0xFF;
+      if (thirdCode > 0 || secondCode > 0) {
+        String secondCodeStr = secondCode.toString().padLeft(2, '0');
+        String firstCodeStr = firstCode.toString().padLeft(2, '0');
+        version = "$thirdCode.$secondCodeStr.$firstCodeStr";
+      } else if (firstCode > 0) {
+        version = "$firstCode.00.00";
+      }
+    }
+    return version;
+  }
+
 }
 
 // ExchangeTask
@@ -120,7 +168,8 @@ class ExchangeTask extends BaseTask {
 
   @override
   Future<CmdResponse> call() async {
-    return _exec().timeout(const Duration(seconds: 12), onTimeout: () {
+    // fix: 12 -> 60s, 12秒太短，现调整为60
+    return _exec().timeout(const Duration(seconds: 60), onTimeout: () {
       return _onTimeout();
     });
   }

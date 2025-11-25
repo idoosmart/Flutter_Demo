@@ -269,4 +269,15 @@ abstract class AbsIDOBleDevice(val deviceAddress: String) : BytesDataConnect(dev
         mBluetoothCallback?.callOnServices(services)
     }
 
+    override fun callOnDeviceHasBeenReset() {
+        mBluetoothCallback?.callOnDeviceHasBeenReset()
+    }
+
+    override fun callOnDeviceAlreadyBindAndNotSupportRebind() {
+        mBluetoothCallback?.callOnDeviceAlreadyBindAndNotSupportRebind()
+    }
+
+    override fun callOnConnectTerminated() {
+        mBluetoothCallback?.callOnConnectTerminated()
+    }
 }

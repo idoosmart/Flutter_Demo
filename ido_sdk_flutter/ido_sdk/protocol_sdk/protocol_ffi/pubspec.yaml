@@ -2,24 +2,23 @@ name: protocol_ffi
 description: ido protocol_ffi lib (private)
 version: 0.0.1
 publish_to: none
-homepage:
 
 environment:
-  sdk: '>=2.17.0 <3.3.1'
-  flutter: ">=2.11.0"
+  sdk: '>=3.5.0'
+  flutter: '>=3.24.3'
 
 dependencies:
   flutter:
     sdk: flutter
   plugin_platform_interface: ^2.0.2
-  ffi: ^2.0.1
+  ffi: ^2.1.3
   ido_logger:
     path: ../plugins/ido_logger/
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+  flutter_lints: ^5.0.0
   ffigen: ^7.1.0
 
 # For information on the generic Dart part of this file, see the

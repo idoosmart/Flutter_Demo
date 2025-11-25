@@ -1,8 +1,7 @@
 import 'dart:convert';
 
+import 'package:logger/logger.dart';
 import 'package:logger/src/logger.dart';
-import 'package:logger/src/log_printer.dart';
-import 'package:logger/src/ansi_color.dart';
 
 /// Default implementation of [LogPrinter].
 ///
@@ -31,6 +30,8 @@ class CustomPrinter extends LogPrinter {
     Level.warning: AnsiColor.fg(208),
     Level.error: AnsiColor.fg(196),
     Level.wtf: AnsiColor.fg(199),
+    Level.trace: AnsiColor.fg(199),
+    Level.fatal: AnsiColor.fg(199),
   };
 
   static final levelEmojis = {
@@ -40,6 +41,8 @@ class CustomPrinter extends LogPrinter {
     Level.warning: '⚠️ ',
     Level.error: '⛔ ',
     Level.wtf: '👾 ',
+    Level.trace: '',
+    Level.fatal: '',
   };
 
   static final levelPrefixes = {
@@ -49,6 +52,8 @@ class CustomPrinter extends LogPrinter {
     Level.warning: '[W] ',
     Level.error: '[E] ',
     Level.wtf: '[WTF] ',
+    Level.trace: '[T]',
+    Level.fatal: '[F]',
   };
 
   /// Matches a stacktrace line as generated on Android/iOS devices.

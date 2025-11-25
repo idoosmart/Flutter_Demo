@@ -1,10 +1,9 @@
-
 import 'package:protocol_lib/protocol_lib.dart';
 
 extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
-
   /// app 发起ble暂停、ble恢复
-  appStartBle2AppData(int day, int hour, int minute, int second, int sportType) {
+  appStartBle2AppData(
+      int day, int hour, int minute, int second, int sportType) {
     this.day = day;
     this.hour = hour;
     this.minute = minute;
@@ -18,9 +17,21 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
   }
 
   /// app 发起ble停止
-  appStartBleEnd2AppData(int day, int hour, int minute, int second, int sportType, int duration, int calories, int distance,
-      int avgHr, int maxHr, int burnFatMins, int aerobicMins, int limitMins, int isSave
-      ) {
+  appStartBleEnd2AppData(
+      int day,
+      int hour,
+      int minute,
+      int second,
+      int sportType,
+      int duration,
+      int calories,
+      int distance,
+      int avgHr,
+      int maxHr,
+      int burnFatMins,
+      int aerobicMins,
+      int limitMins,
+      int isSave) {
     this.day = day;
     this.hour = hour;
     this.minute = minute;
@@ -38,7 +49,8 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
   }
 
   /// app 发起ble停止 app回复
-  appStartBleEnd2AppReplyData(int duration, int calories, int distance, int errCode) {
+  appStartBleEnd2AppReplyData(
+      int duration, int calories, int distance, int errCode) {
     this.durations = duration;
     this.calories = calories;
     this.distance = distance;
@@ -46,7 +58,8 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
   }
 
   /// ble 开始
-  bleStart2AppData(int day, int hour, int minute, int second, int sportType,int operate) {
+  bleStart2AppData(
+      int day, int hour, int minute, int second, int sportType, int operate) {
     this.day = day;
     this.hour = hour;
     this.minute = minute;
@@ -83,7 +96,8 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
   }
 
   /// ble 交换中
-  bleIng2AppData(int day, int hour, int minute, int second, int sportType,int distance) {
+  bleIng2AppData(
+      int day, int hour, int minute, int second, int sportType, int distance) {
     this.day = day;
     this.hour = hour;
     this.minute = minute;
@@ -93,9 +107,18 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
   }
 
   /// app 开始
-  appStart2BleData(int day, int hour, int minute, int second,
-      int sportType,int targetType,int targetValue,int forceStart,
-      int vo2Max,int recoverTime,int avgWeekActivityTime) {
+  appStart2BleData(
+      int day,
+      int hour,
+      int minute,
+      int second,
+      int sportType,
+      int targetType,
+      int targetValue,
+      int forceStart,
+      int vo2Max,
+      int recoverTime,
+      int avgWeekActivityTime) {
     this.day = day;
     this.hour = hour;
     this.minute = minute;
@@ -115,8 +138,8 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
   }
 
   /// app 结束
-  appEnd2BleData(int day, int hour, int minute, int second,
-      int sportType,int duration,int calories,int distance,int isSave) {
+  appEnd2BleData(int day, int hour, int minute, int second, int sportType,
+      int duration, int calories, int distance, int isSave) {
     this.day = day;
     this.hour = hour;
     this.minute = minute;
@@ -129,8 +152,8 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
   }
 
   /// app 结束 ble回复
-  appEnd2BleReplyData(int retCode,int calories,int distance,int step,
-      int avgHr,int maxHr,int burnFatMins,int aerobicMins,int limitMins) {
+  appEnd2BleReplyData(int retCode, int calories, int distance, int step,
+      int avgHr, int maxHr, int burnFatMins, int aerobicMins, int limitMins) {
     this.retCode = retCode;
     this.calories = calories;
     this.distance = distance;
@@ -161,9 +184,18 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
   }
 
   /// app 交换中
-  appIng2BleData(int day, int hour, int minute, int second,
-      int sportType,int duration,int calories,
-      int distance,int speed,int version,int signal) {
+  appIng2BleData(
+      int day,
+      int hour,
+      int minute,
+      int second,
+      int sportType,
+      int duration,
+      int calories,
+      int distance,
+      int speed,
+      int version,
+      int signal) {
     this.day = day;
     this.hour = hour;
     this.minute = minute;
@@ -178,33 +210,46 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
   }
 
   /// app 交换中 ble回复
-  appIng2BleReplyData(int version,int heartRate,int distance,int duration,int realTimeCalories,
-      int realTimeSpeed,int kmSpeed,int steps,int swimPosture,int status,int realTimeSpeedPace,
-      int trainingEffect,int anaerobicTrainingEffect,int actionType,int countHour,int countMinute,
-      int countSecond
-      ) {
-      this.version = version;
-      this.curHr = heartRate;
-      this.distance = distance;
-      this.durations = duration;
-      this.calories = realTimeCalories;
-      this.realTimeSpeed = realTimeSpeed;
-      this.kmSpeed = kmSpeed;
-      this.step = steps;
-      this.swimPosture = swimPosture;
-      this.status  = status;
-      this.realTimePace = realTimeSpeedPace;
-      this.trainingEffect = trainingEffect;
-      this.anaerobicTrainingEffect = anaerobicTrainingEffect;
-      this.actionType = actionType;
-      this.countHour = countHour;
-      this.countMinute = countMinute;
-      this.countSecond = countSecond;
-   }
+  appIng2BleReplyData(
+      int version,
+      int heartRate,
+      int distance,
+      int duration,
+      int realTimeCalories,
+      int realTimeSpeed,
+      int kmSpeed,
+      int steps,
+      int swimPosture,
+      int status,
+      int realTimeSpeedPace,
+      int trainingEffect,
+      int anaerobicTrainingEffect,
+      int actionType,
+      int countHour,
+      int countMinute,
+      int countSecond) {
+    this.version = version;
+    this.curHr = heartRate;
+    this.distance = distance;
+    this.durations = duration;
+    this.calories = realTimeCalories;
+    this.realTimeSpeed = realTimeSpeed;
+    this.kmSpeed = kmSpeed;
+    this.step = steps;
+    this.swimPosture = swimPosture;
+    this.status = status;
+    this.realTimePace = realTimeSpeedPace;
+    this.trainingEffect = trainingEffect;
+    this.anaerobicTrainingEffect = anaerobicTrainingEffect;
+    this.actionType = actionType;
+    this.countHour = countHour;
+    this.countMinute = countMinute;
+    this.countSecond = countSecond;
+  }
 
   /// app 运动计划操作
-  appPlan2BleData(int day, int hour, int minute, int second,
-      int sportType,int operate, int trainingOffset, int planType) {
+  appPlan2BleData(int day, int hour, int minute, int second, int sportType,
+      int operate, int trainingOffset, int planType) {
     this.day = day;
     this.hour = hour;
     this.minute = minute;
@@ -216,11 +261,21 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
   }
 
   /// ble 运动计划操作
-  blePlan2AppData(int trainingDay, int hour, int minute, int second,
-      int sportType,int operate, int planType, int actionType,
-      int errorCode, int trainingYear, int trainingMonth, int time,
-      int lowHeart, int heightHeart
-      ) {
+  blePlan2AppData(
+      int trainingDay,
+      int hour,
+      int minute,
+      int second,
+      int sportType,
+      int operate,
+      int planType,
+      int actionType,
+      int errorCode,
+      int trainingYear,
+      int trainingMonth,
+      int time,
+      int lowHeart,
+      int heightHeart) {
     this.day = trainingDay;
     this.hour = hour;
     this.minute = minute;
@@ -238,7 +293,7 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
   }
 
   /// app 操作 ble 回复
-  appPlan2BleReplyData(int operate,int retCode,int planType,int actionType) {
+  appPlan2BleReplyData(int operate, int retCode, int planType, int actionType) {
     this.retCode = retCode;
     this.operate = operate;
     this.planType = planType;
@@ -246,8 +301,8 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
   }
 
   /// 获取心率数据
-  getHrData(int day, int hour, int minute, int second,
-      int sportType, int version, int length, int interval, List<int> heartRates) {
+  getHrData(int day, int hour, int minute, int second, int sportType,
+      int version, int length, int interval, List<int> heartRates) {
     this.day = day;
     this.hour = hour;
     this.minute = minute;
@@ -260,22 +315,76 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
   }
 
   /// 获取最后运动数据
-  getActivityData(int day, int hour, int minute, int second,
-      int sportType,int year,int month,int version,int hrInterval,
-      int step, int durations, int calories, int distance, int burnFatMins,
-      int aerobicMins, int limitMins, int warmUp, int fatBurning, int aerobicExercise,
-      int anaerobicExercise, int extremeExercise, int warmUpTime, int fatBurningTime,
-      int aerobicExerciseTime, int anaerobicExerciseTime, int extremeExerciseTime,
-      int avgSpeed, int avgStepStride, int maxStepStride, int kmSpeed, int maxSpeed,
-      int fastKmSpeed, int avgStepFrequency, int maxStepFrequency, int avgHrValue,
-      int maxHrValue, int kmSpeedCount, int actionDataCount, int stepsFrequencyCount,
-      int miSpeedCount, int recoverTime, int vo2max, int trainingEffect, int grade,
-      int realSpeedCount, int paceSpeedCount, int inClassCalories,
-      int completionRate, int hrCompletionRate, List<int> kmSpeeds, List<int> stepsFrequency,
-      List<int> itemsMiSpeed, List<int> itemRealSpeed, List<int> paceSpeedItems, List<Map<String,dynamic>> actionData,
-      int segmentItemNum, int segmentTotalTime, int segmentTotalDistance, int segmentTotalPace, int segmentTotalAvgHr,
-      int segmentTotalAvgStepFrequency, int paceHiit, int paceAnaerobic, int paceLacticAcidThreshold, int paceMarathon,
-      int paceEasyRun, List<Map<String, dynamic>> segmentItems) {
+  getActivityData(
+      int day,
+      int hour,
+      int minute,
+      int second,
+      int sportType,
+      int year,
+      int month,
+      int version,
+      int hrInterval,
+      int step,
+      int durations,
+      int calories,
+      int distance,
+      int burnFatMins,
+      int aerobicMins,
+      int limitMins,
+      int warmUp,
+      int fatBurning,
+      int aerobicExercise,
+      int anaerobicExercise,
+      int extremeExercise,
+      int warmUpTime,
+      int fatBurningTime,
+      int aerobicExerciseTime,
+      int anaerobicExerciseTime,
+      int extremeExerciseTime,
+      int avgSpeed,
+      int avgStepStride,
+      int maxStepStride,
+      int kmSpeed,
+      int maxSpeed,
+      int fastKmSpeed,
+      int avgStepFrequency,
+      int maxStepFrequency,
+      int avgHrValue,
+      int maxHrValue,
+      int kmSpeedCount,
+      int actionDataCount,
+      int stepsFrequencyCount,
+      int miSpeedCount,
+      int recoverTime,
+      int vo2max,
+      int trainingEffect,
+      int grade,
+      int realSpeedCount,
+      int paceSpeedCount,
+      int inClassCalories,
+      int completionRate,
+      int hrCompletionRate,
+      List<int> kmSpeeds,
+      List<int> stepsFrequency,
+      List<int> itemsMiSpeed,
+      List<int> itemRealSpeed,
+      List<int> paceSpeedItems,
+      List<Map<String, dynamic>> actionData,
+      int segmentItemNum,
+      int segmentTotalTime,
+      int segmentTotalDistance,
+      int segmentTotalPace,
+      int segmentTotalAvgHr,
+      int segmentTotalAvgStepFrequency,
+      int paceHiit,
+      int paceAnaerobic,
+      int paceLacticAcidThreshold,
+      int paceMarathon,
+      int paceEasyRun,
+      List<Map<String, dynamic>> segmentItems,
+      int cumulativeClimb,
+      int cumulativeDecline) {
     this.day = day;
     this.hour = hour;
     this.minute = minute;
@@ -313,12 +422,13 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
     this.avgHr = avgHrValue;
     this.maxHr = maxHrValue;
     this.recoverTime = recoverTime;
-    this.vo2Max  = vo2max;
+    this.vo2Max = vo2max;
     this.trainingEffect = trainingEffect;
     this.grade = grade;
     this.kmSpeedCount = (this.kmSpeedCount ?? 0) + kmSpeedCount;
     this.actionDataCount = (this.actionDataCount ?? 0) + actionDataCount;
-    this.stepsFrequencyCount = (this.stepsFrequencyCount ?? 0) + stepsFrequencyCount;
+    this.stepsFrequencyCount =
+        (this.stepsFrequencyCount ?? 0) + stepsFrequencyCount;
     this.mileCount = (this.mileCount ?? 0) + miSpeedCount;
     this.realSpeedCount = (this.realSpeedCount ?? 0) + realSpeedCount;
     this.paceSpeedCount = (this.paceSpeedCount ?? 0) + paceSpeedCount;
@@ -343,11 +453,21 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
     this.paceMarathon = paceMarathon;
     this.paceEasyRun = paceEasyRun;
     this.segmentItems?.addAll(segmentItems);
+    this.cumulativeClimb = cumulativeClimb;
+    this.cumulativeDecline = cumulativeDecline;
   }
 
   /// 获取云端GPS数据
-  getActivityGpsData(int day, int hour, int minute, int second, int sportType,
-      int version,int intervalSecond,int gpsCount,List<Map<String,dynamic>> gpsData) {
+  getActivityGpsData(
+      int day,
+      int hour,
+      int minute,
+      int second,
+      int sportType,
+      int version,
+      int intervalSecond,
+      int gpsCount,
+      List<Map<String, dynamic>> gpsData) {
     this.day = day;
     this.hour = hour;
     this.minute = minute;
@@ -376,19 +496,18 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
   }
 
   /// ble 操作 app 回复
-  blePlan2AppReplyData(int operate,int retCode,int planType,int actionType) {
+  blePlan2AppReplyData(int operate, int retCode, int planType, int actionType) {
     this.retCode = retCode;
     this.operate = operate;
     this.planType = planType;
     this.actionType = actionType;
   }
-
 }
 
 extension IDOV2ExchangeDataExtension on IDOV2ExchangeModel {
-
   /// app 发起ble暂停、ble
-  appStartBle2AppData(int day, int hour, int minute, int second, int sportType) {
+  appStartBle2AppData(
+      int day, int hour, int minute, int second, int sportType) {
     this.day = day;
     this.hour = hour;
     this.minute = minute;
@@ -402,9 +521,21 @@ extension IDOV2ExchangeDataExtension on IDOV2ExchangeModel {
   }
 
   /// app 发起ble停止
-  appStartBleEnd2AppData(int day, int hour, int minute, int second, int sportType, int duration, int calories, int distance,
-      int avgHr, int maxHr, int burnFatMins, int aerobicMins, int limitMins, int isSave
-      ) {
+  appStartBleEnd2AppData(
+      int day,
+      int hour,
+      int minute,
+      int second,
+      int sportType,
+      int duration,
+      int calories,
+      int distance,
+      int avgHr,
+      int maxHr,
+      int burnFatMins,
+      int aerobicMins,
+      int limitMins,
+      int isSave) {
     this.day = day;
     this.hour = hour;
     this.minute = minute;
@@ -422,7 +553,8 @@ extension IDOV2ExchangeDataExtension on IDOV2ExchangeModel {
   }
 
   /// app 发起ble停止 app回复
-  appStartBleEnd2AppReplyData(int duration, int calories, int distance, int errCode) {
+  appStartBleEnd2AppReplyData(
+      int duration, int calories, int distance, int errCode) {
     this.durations = duration;
     this.calories = calories;
     this.distance = distance;
@@ -430,7 +562,8 @@ extension IDOV2ExchangeDataExtension on IDOV2ExchangeModel {
   }
 
   /// ble 开始
-  bleStart2AppData(int day, int hour, int minute, int second, int sportType,int operate) {
+  bleStart2AppData(
+      int day, int hour, int minute, int second, int sportType, int operate) {
     this.day = day;
     this.hour = hour;
     this.minute = minute;
@@ -467,7 +600,8 @@ extension IDOV2ExchangeDataExtension on IDOV2ExchangeModel {
   }
 
   /// ble 交换中
-  bleIng2AppData(int day, int hour, int minute, int second, int sportType,int distance) {
+  bleIng2AppData(
+      int day, int hour, int minute, int second, int sportType, int distance) {
     this.day = day;
     this.hour = hour;
     this.minute = minute;
@@ -477,8 +611,8 @@ extension IDOV2ExchangeDataExtension on IDOV2ExchangeModel {
   }
 
   /// app 开始
-  appStart2BleData(int day, int hour, int minute, int second,
-      int sportType,int targetType,int targetValue,int forceStart) {
+  appStart2BleData(int day, int hour, int minute, int second, int sportType,
+      int targetType, int targetValue, int forceStart) {
     this.day = day;
     this.hour = hour;
     this.minute = minute;
@@ -494,10 +628,9 @@ extension IDOV2ExchangeDataExtension on IDOV2ExchangeModel {
     this.retCode = retCode;
   }
 
-
   /// app 结束
-  appEnd2BleData(int day, int hour, int minute, int second,
-      int sportType,int duration,int calories,int distance,int isSave) {
+  appEnd2BleData(int day, int hour, int minute, int second, int sportType,
+      int duration, int calories, int distance, int isSave) {
     this.day = day;
     this.hour = hour;
     this.minute = minute;
@@ -510,8 +643,8 @@ extension IDOV2ExchangeDataExtension on IDOV2ExchangeModel {
   }
 
   /// app 结束 ble回复
-  appEnd2BleReplyData(int retCode,int calories,int distance,int step,
-      int avgHr,int maxHr,int burnFatMins,int aerobicMins,int limitMins) {
+  appEnd2BleReplyData(int retCode, int calories, int distance, int step,
+      int avgHr, int maxHr, int burnFatMins, int aerobicMins, int limitMins) {
     this.retCode = retCode;
     this.calories = calories;
     this.distance = distance;
@@ -542,8 +675,8 @@ extension IDOV2ExchangeDataExtension on IDOV2ExchangeModel {
   }
 
   /// app 交换中
-  appIng2BleData(int day, int hour, int minute, int second,
-      int sportType,int duration,int calories,int distance,int status) {
+  appIng2BleData(int day, int hour, int minute, int second, int sportType,
+      int duration, int calories, int distance, int status) {
     this.day = day;
     this.hour = hour;
     this.minute = minute;
@@ -556,14 +689,13 @@ extension IDOV2ExchangeDataExtension on IDOV2ExchangeModel {
   }
 
   /// app 交换中 ble回复
-  appIng2BleReplyData(int heartRate,int distance,int calories,
-      int hrSerial,int interval,int steps,int status,List<int> hrValues
-      ) {
+  appIng2BleReplyData(int heartRate, int distance, int calories, int hrSerial,
+      int interval, int steps, int status, List<int> hrValues) {
     this.curHr = heartRate;
     this.distance = distance;
     this.calories = calories;
     this.step = steps;
-    this.status  = status;
+    this.status = status;
     this.hrSerial = hrSerial;
     this.interval = interval;
     this.hrValues?.addAll(hrValues);
@@ -584,5 +716,4 @@ extension IDOV2ExchangeDataExtension on IDOV2ExchangeModel {
   bleIng2AppReplyData(int distance) {
     this.distance = distance;
   }
-
 }

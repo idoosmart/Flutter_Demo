@@ -8,9 +8,9 @@ part of 'device_trans_item.dart';
 
 DeviceTransItem _$DeviceTransItemFromJson(Map<String, dynamic> json) =>
     DeviceTransItem(
-      fileType: json['file_type'] as int?,
-      fileSize: json['file_size'] as int?,
-      fileCompressionType: json['file_compression_type'] as int?,
+      fileType: (json['file_type'] as num?)?.toInt(),
+      fileSize: (json['file_size'] as num?)?.toInt(),
+      fileCompressionType: (json['file_compression_type'] as num?)?.toInt(),
       fileName: json['file_name'] as String?,
       filePath: json['file_path'] as String?,
     );

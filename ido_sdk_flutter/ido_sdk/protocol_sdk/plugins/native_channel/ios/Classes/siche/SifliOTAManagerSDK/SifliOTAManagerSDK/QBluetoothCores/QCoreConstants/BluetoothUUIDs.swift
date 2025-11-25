@@ -1,0 +1,7 @@
+import Foundation
+
+let DeviceServiceUUID = "00000000-0000-0000-6473-5F696C666973"
+
+let ReadCharacteristicUUID = "00000000-0000-0200-6473-5F696C666973"
+
+let WriteCharacteristicUUID = "00000000-0000-0200-6473-5F696C666973"

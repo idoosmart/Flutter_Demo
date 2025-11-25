@@ -51,28 +51,40 @@ enum MethodChannel: String {
     
     /// iPhone11及以下设备
     case isIphone11OrLower
+    
+    /// 查询设备绑定状态
+    case requestDeviceBindState
 }
 
 
 //连接错误
 enum ConnectError: Int {
-//    无状态
+    //无状态
     case none
-//    UUID或Mac地址异常
+    //UUID或Mac地址异常
     case abnormalUUIDMacAddress
-//    蓝牙关闭
+    //蓝牙关闭
     case bluetoothOff
-//    主动断开连接
+    //主动断开连接
     case Conectcancel
-//    连接失败
+    //连接失败
     case fail
-//    连接超时
+    //连接超时
     case timeOut
-//    发现服务失败
+    //发现服务失败
     case ServiceFial
-//    发现特征失败
+    //发现特征失败
     case CharacteristicsFial
-//    配对异常
+    //配对异常
     case pairFail
+//
+    case informationFail
+//用户取消连接，关闭蓝牙
+    case cancelByUser
+//设备已绑定并且不支持重复绑定
+    case deviceAlreadyBindAndNotSupportRebind
+//app 绑定的设备被重置了
+    case deviceHasBeenReset
+
 
 }

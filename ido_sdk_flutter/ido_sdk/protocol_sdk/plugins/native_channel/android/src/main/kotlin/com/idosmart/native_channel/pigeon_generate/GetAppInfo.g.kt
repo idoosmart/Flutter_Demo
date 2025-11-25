@@ -43,6 +43,49 @@ class FlutterError (
   val details: Any? = null
 ) : Throwable()
 
+/** Generated class from Pigeon that represents data sent in messages. */
+data class DifferenceModel (
+  /** 未接电话类型使用485 */
+  val useMissedCall485: Boolean? = null
+
+) {
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromList(list: List<Any?>): DifferenceModel {
+      val useMissedCall485 = list[0] as Boolean?
+      return DifferenceModel(useMissedCall485)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      useMissedCall485,
+    )
+  }
+}
+
+@Suppress("UNCHECKED_CAST")
+private object ApiGetAppInfoCodec : StandardMessageCodec() {
+  override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
+    return when (type) {
+      128.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          DifferenceModel.fromList(it)
+        }
+      }
+      else -> super.readValueOfType(type, buffer)
+    }
+  }
+  override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
+    when (value) {
+      is DifferenceModel -> {
+        stream.write(128)
+        writeValue(stream, value.toList())
+      }
+      else -> super.writeValue(stream, value)
+    }
+  }
+}
+
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface ApiGetAppInfo {
   /**
@@ -54,6 +97,8 @@ interface ApiGetAppInfo {
   /**
    * 读取默认的APP信息
    * Map => {type: $type, iconFilePath: $iconFilePath, appName: $appName, pkgName: $pkgName}
+   * 读取 ios 默认的APP信息
+   * Map => {type: $type, iconFilePath: $iconFilePath, appName: $appName, pkgName: $pkgName, scheme: $scheme}
    */
   fun readDefaultAppList(callback: (Result<List<Map<Any, Any?>>>) -> Unit)
   /**
@@ -72,11 +117,13 @@ interface ApiGetAppInfo {
   fun androidAppIconDirPath(callback: (Result<String>) -> Unit)
   /** 复制应用图标 */
   fun copyAppIcon(callback: (Result<Boolean>) -> Unit)
+  /** 标记差异配置 */
+  fun markDifferenceConfig(model: DifferenceModel, callback: (Result<Unit>) -> Unit)
 
   companion object {
     /** The codec used by ApiGetAppInfo. */
     val codec: MessageCodec<Any?> by lazy {
-      StandardMessageCodec()
+      ApiGetAppInfoCodec
     }
     /** Sets up an instance of `ApiGetAppInfo` to handle messages through the `binaryMessenger`. */
     @Suppress("UNCHECKED_CAST")
@@ -228,6 +275,25 @@ interface ApiGetAppInfo {
               } else {
                 val data = result.getOrNull()
                 reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.native_channel.ApiGetAppInfo.markDifferenceConfig", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val modelArg = args[0] as DifferenceModel
+            api.markDifferenceConfig(modelArg) { result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                reply.reply(wrapResult(null))
               }
             }
           }

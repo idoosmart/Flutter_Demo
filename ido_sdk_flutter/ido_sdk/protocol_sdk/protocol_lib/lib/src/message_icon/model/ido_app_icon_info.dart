@@ -1,4 +1,6 @@
 
+import 'dart:math';
+
 import 'package:protocol_lib/src/private/logger/logger.dart';
 
 class IDOAppInfo {
@@ -161,10 +163,24 @@ class IDOAppIconInfoModel {
   });
 
   factory IDOAppIconInfoModel.fromJson(Map<String, dynamic> json) {
+
+    var w = (json['icon_width'] as int?) ?? 60;
+    var h = (json['icon_height'] as int?) ?? 60;
+
+    if (w <= 0 || w >= 200) {
+      logger?.e("ios icon size error w:$w");
+      w = 60;
+    }
+
+    if (h <= 0 || h >= 200) {
+      logger?.e("ios icon size error h:$h");
+      h = 60;
+    }
+
     final model = IDOAppIconInfoModel(
       version: json['version'] as int?,
-      iconWidth: json['icon_width'] as int?,
-      iconHeight: json['icon_height'] as int?,
+      iconWidth: w,
+      iconHeight: h,
       colorFormat: json['format'] as int?,
       blockSize: json['block_size'] as int?,
       totalNum: json['package_num'] as int?,

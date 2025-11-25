@@ -15,3 +15,5 @@ export 'model/ido_bluetooth_media_state.dart';
 
 export 'source/ido_bluetooth_enum.dart';
 export 'source/ido_bluetooth_source.dart';
+
+export 'delegate/ido_bluetooth_bind_state_delegate.dart';

@@ -1,6 +1,6 @@
-import 'dart:ui';
+part of dial_manager;
 
-extension DailStringExt on String {
+extension _DailStringExt on String {
   String get assetsPath => 'packages/device_dial/assets/images/$this';
 
   bool isLocalDial() {
@@ -34,7 +34,7 @@ extension DailStringExt on String {
 
 }
 
-class HexColor extends Color {
+class _HexColor extends Color {
   static int _getColorFromHex(String hexColor) {
     hexColor = hexColor.toUpperCase().replaceAll("#", "");
     if (hexColor.length == 6) {
@@ -43,6 +43,6 @@ class HexColor extends Color {
     return int.parse(hexColor, radix: 16);
   }
 
-  HexColor(final String hexColor) : super(_getColorFromHex(hexColor));
+  _HexColor(final String hexColor) : super(_getColorFromHex(hexColor));
 }
 

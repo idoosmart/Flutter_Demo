@@ -28,7 +28,10 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
   /// 数据交换相关：620, 624, 626, 628, 622, 5055, 610, 612, 614
   /// 快速短信回复：580
   /// 设置v2/v3热启动参数：158, 5070
-  late final _noQueueNoResCmds = [620, 624, 626, 628, 622, 5055, 610, 612, 614, 580, 158, 5070];
+  /// 相机预览：567，568，569
+  /// 清理clib健康数据offset值：7952
+  late final _noQueueNoResCmds = [620, 624, 626, 628, 622, 5055, 610, 612,
+    614, 580, 158, 5070, 567, 568, 569, 7952];
 
   /// 不使用队列但需要响应的指令
   ///

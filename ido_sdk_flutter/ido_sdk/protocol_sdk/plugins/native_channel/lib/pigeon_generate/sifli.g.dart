@@ -134,6 +134,91 @@ class ApiSifliHost {
       return (replyList[0] as Uint8List?);
     }
   }
+
+  /// 将png格式文件序列转为ezipBin类型。转换失败返回nil。V2.2
+  /// pngDatas png文件数据序列数组 （如果数组是多张图片，则会几张图片组合拼接成一张图片）
+  /// eColor 颜色字符串 color type as below: rgb565, rgb565A, rbg888, rgb888A
+  /// eType eizp类型 0 keep original alpha channel;1 no alpha chanel
+  /// binType bin类型 0 to support rotation; 1 for no rotation
+  /// boardType 主板芯片类型 @See SFBoardType 0:55x 1:56x  2:52x
+  /// @return ezip or apng result, nil for fail
+  Future<Uint8List?> sifliEBinFromPngs(List<Uint8List?> arg_pngDatas, String arg_eColor, int arg_type, int arg_binType, IDOSFBoardType arg_boardType) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.native_channel.ApiSifliHost.sifliEBinFromPngs', codec,
+        binaryMessenger: _binaryMessenger);
+    final List<Object?>? replyList =
+        await channel.send(<Object?>[arg_pngDatas, arg_eColor, arg_type, arg_binType, arg_boardType.index]) as List<Object?>?;
+    if (replyList == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyList.length > 1) {
+      throw PlatformException(
+        code: replyList[0]! as String,
+        message: replyList[1] as String?,
+        details: replyList[2],
+      );
+    } else {
+      return (replyList[0] as Uint8List?);
+    }
+  }
+
+  /// 将png格式文件序列转为ezipBin类型。转换失败返回nil。V2.2
+  /// pngDatas png文件数据序列数组 （如果数组是多张图片，则会几张图片组合拼接成一张图片）
+  /// eColor 颜色字符串 color type as below: rgb565, rgb565A, rbg888, rgb888A
+  /// eType eizp类型 0 keep original alpha channel;1 no alpha chanel
+  /// binType bin类型 0 to support rotation; 1 for no rotation
+  /// boardType 主板芯片类型 @See SFBoardType 0:55x 1:56x  2:52x
+  /// @return ezip or apng result, nil for fail
+  Future<Uint8List?> asyncSifliEBinFromPngs(List<Uint8List?> arg_pngDatas, String arg_eColor, int arg_type, int arg_binType, IDOSFBoardType arg_boardType, bool arg_isGif) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.native_channel.ApiSifliHost.asyncSifliEBinFromPngs', codec,
+        binaryMessenger: _binaryMessenger);
+    final List<Object?>? replyList =
+        await channel.send(<Object?>[arg_pngDatas, arg_eColor, arg_type, arg_binType, arg_boardType.index, arg_isGif]) as List<Object?>?;
+    if (replyList == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyList.length > 1) {
+      throw PlatformException(
+        code: replyList[0]! as String,
+        message: replyList[1] as String?,
+        details: replyList[2],
+      );
+    } else {
+      return (replyList[0] as Uint8List?);
+    }
+  }
+
+  Future<bool> checkOtaDoing() async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.native_channel.ApiSifliHost.checkOtaDoing', codec,
+        binaryMessenger: _binaryMessenger);
+    final List<Object?>? replyList =
+        await channel.send(null) as List<Object?>?;
+    if (replyList == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyList.length > 1) {
+      throw PlatformException(
+        code: replyList[0]! as String,
+        message: replyList[1] as String?,
+        details: replyList[2],
+      );
+    } else if (replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (replyList[0] as bool?)!;
+    }
+  }
 }
 
 abstract class ApiSifliFlutter {

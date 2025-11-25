@@ -9,16 +9,16 @@ part of 'firmware_version_model.dart';
 FirmwareVersionModel _$FirmwareVersionModelFromJson(
         Map<String, dynamic> json) =>
     FirmwareVersionModel(
-      firmwareVersion1: json['firmware_version1'] as int?,
-      firmwareVersion2: json['firmware_version2'] as int?,
-      firmwareVersion3: json['firmware_version3'] as int?,
-      btFlag: json['BT_flag'] as int?,
-      btVersion1: json['BT_version1'] as int?,
-      btVersion2: json['BT_version2'] as int?,
-      btVersion3: json['BT_version3'] as int?,
-      btMatchVersion1: json['BT_match_version1'] as int?,
-      btMatchVersion2: json['BT_match_version2'] as int?,
-      btMatchVersion3: json['BT_match_version3'] as int?,
+      firmwareVersion1: (json['firmware_version1'] as num?)?.toInt(),
+      firmwareVersion2: (json['firmware_version2'] as num?)?.toInt(),
+      firmwareVersion3: (json['firmware_version3'] as num?)?.toInt(),
+      btFlag: (json['BT_flag'] as num?)?.toInt(),
+      btVersion1: (json['BT_version1'] as num?)?.toInt(),
+      btVersion2: (json['BT_version2'] as num?)?.toInt(),
+      btVersion3: (json['BT_version3'] as num?)?.toInt(),
+      btMatchVersion1: (json['BT_match_version1'] as num?)?.toInt(),
+      btMatchVersion2: (json['BT_match_version2'] as num?)?.toInt(),
+      btMatchVersion3: (json['BT_match_version3'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$FirmwareVersionModelToJson(

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:path/path.dart' as path;
 
 import 'package:protocol_core/protocol_core.dart';
 import 'package:archive/archive_io.dart';
@@ -174,6 +175,45 @@ class IDOTool {
     return SifliChannelImpl().sifliHost.sifliEBinFromPng(pngDatas, eColor, type, binType, IDOSFBoardType.values[boardType.index]);
   }
 
+  /// 制作思澈设备壁纸
+  /// ```dart
+  /// inputFilePath 素材文件绝对路径（png, gif, jpeg, jpg)
+  /// fileName 文件名称（不要后缀）
+  /// 返回 制作成功后的文件绝对地址， 失败返回null
+  /// ```
+  Future<String?> makeSifliWallpaperFile({
+    required String inputFilePath,
+    required String fileName}) async {
+    final extImg = path.extension(inputFilePath).toLowerCase();
+    if (!File(inputFilePath).existsSync()) {
+      logger?.e("$inputFilePath not exists.");
+      return null;
+    }
+    if (!['.png', '.jpg', '.jpeg', '.gif'].contains(extImg)) {
+      logger?.e("Only '.png', '.jpg', '.jpeg', '.gif' are supported.");
+      return null;
+    }
+    final isGif = extImg == '.gif';
+    final alwfFileName = "$fileName.${isGif ? "alwfs" : "alwf"}";
+    final tmpFile = File('${path.dirname(inputFilePath)}/$alwfFileName');
+    if (tmpFile.existsSync()) {
+      await tmpFile.delete(); // 清理缓存文件
+    }
+    final fileData = await File(inputFilePath).readAsBytes();
+    final alwfData = await SifliChannelImpl().sifliHost.asyncSifliEBinFromPngs(
+        [fileData], "RGB888", 0, 1, isGif ? IDOSFBoardType.x52 : IDOSFBoardType.x56, isGif);
+    if (alwfData == null) {
+      logger?.d('failed to create .${isGif?"alwfs" : "alwf"} file');
+      return null;
+    }
+    await tmpFile.writeAsBytes(alwfData);
+    if (!await tmpFile.exists()) {
+      logger?.d('File write failed ${tmpFile.path}');
+      return null;
+    }
+
+    return tmpFile.path;
+  }
 
   /// 设置流数据是否输出开关
   ///
@@ -579,7 +619,7 @@ class IDOCache {
       {required String macAddress}) async {
     final macAddr = macAddress.replaceAll(':', '').toUpperCase();
     final ft = await storage?.loadFunctionTableWith(macAddress: macAddr);
-    logger?.d('loadFuncTableByDisk $macAddress rs:$ft');
+    logger?.d('loadFuncTableByDisk $macAddress len:${ft?.toJson().length}');
     if (ft == null) return null;
     return BaseFunctionTable()..initFunTableModel(ft);
   }
@@ -589,7 +629,7 @@ class IDOCache {
       {required String macAddress}) async {
     final macAddr = macAddress.replaceAll(':', '').toUpperCase();
     final ft = await storage?.loadFunctionTableWith(macAddress: macAddr);
-    logger?.d('loadFuncTableJsonByDisk $macAddress rs:$ft');
+    logger?.d('loadFuncTableJsonByDisk $macAddress len:${ft?.toJson().length}');
     if (ft == null) return null;
     return jsonEncode(ft.toJson());
   }
@@ -702,7 +742,7 @@ class CancellerFlashLog {
     if (_isCancelled || this != libManager.cache._cancellerFlashLog) {
         return;
     }
-    
+
     _isCancelled = true;
     await libManager.send(evt: CmdEvtType.getFlashLogStop).timeout(const Duration(seconds: 2)).first;
     libManager.deviceLog.cancel();

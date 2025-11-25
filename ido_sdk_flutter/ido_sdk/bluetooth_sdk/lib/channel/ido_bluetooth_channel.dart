@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/services.dart';
+import 'package:flutter_bluetooth/delegate/ido_bluetooth_bind_state_delegate.dart';
 import 'package:flutter_bluetooth/model/ido_bluetooth_dfu_state.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:flutter_bluetooth/ido_bluetooth.dart';
@@ -8,6 +9,8 @@ import '../model/ido_bluetooth_dfu_config.dart';
 import '../model/ido_bluetooth_media_state.dart';
 part 'firmware_data_channel.dart';
 part 'spp_data_channel.dart';
+part 'bind_state_channel.dart';
+part 'auto_connect_intercept_channel.dart';
 
 class IDOBluetoothChannel {
   final MethodChannel _channel = const MethodChannel('flutter_bluetooth_IDO');
@@ -15,6 +18,8 @@ class IDOBluetoothChannel {
   final BasicMessageChannel _sppSendChannel = const BasicMessageChannel('send_spp_data',StandardMessageCodec());
   final BasicMessageChannel _sppDataSendStateChannel = const BasicMessageChannel('send_spp_data_state',StandardMessageCodec());
   final BasicMessageChannel _sppReceiveChannel = const BasicMessageChannel('receive_spp_data',StandardMessageCodec());
+  final BasicMessageChannel _bindStateChannel = const BasicMessageChannel('method_channel_device_bind',StandardMessageCodec());
+  final BasicMessageChannel _autoConnectInterceptChannel = const BasicMessageChannel('method_channel_intercept_auto_connect',StandardMessageCodec());
   final EventChannel _stateChannel = const EventChannel('bluetoothState');
   final EventChannel _deviceStateChannel = const EventChannel('deviceState');
 
@@ -39,6 +44,15 @@ class IDOBluetoothChannel {
   //TODO 占时只维护pair的回调
   final isPairList = <Completer<IDOBluetoothPairType>>[];
 
+  //绑定代理
+  IDOBluetoothBindStateDelegate? _bindStateDelegate;
+
+  //异步绑定代理
+  IDOBluetoothBindStateAsyncDelegate? _bindStateAsyncDelegate;
+
+  //是否应该重连
+  IDOBluetoothAutoConnectInterceptor? _autoConnectInterceptor;
+
   //开始调用connect直到收到设备状态都为true
   bool isConnecting = false;
 
@@ -50,6 +64,8 @@ class IDOBluetoothChannel {
       callHandleSppData();
       deviceStateChannel();
     }
+    callCheckDeviceBindState();
+    callCheckAutoConnectIntercept();
   }
 
   callHandle() {
@@ -199,7 +215,7 @@ extension InvokeChannel on IDOBluetoothChannel {
     _channel.invokeMethod("stopScan");
   }
 
-  connect(IDOBluetoothDeviceModel device) {
+  connect(IDOBluetoothDeviceModel device, {bool isBind = false}) {
     // print('channel connect  ${device.macAddress}');
     bluetoothManager.addDeviceState(IDOBluetoothDeviceStateModel(
       uuid: device.uuid ?? "",
@@ -215,6 +231,7 @@ extension InvokeChannel on IDOBluetoothChannel {
       "platform":device.platform,
       "uuid": device.uuid,
       "macAddress": device.macAddress,
+      "isBind":isBind,
       "CharacteristicsUUID": characteristicUUID
     });
   }
@@ -293,7 +310,7 @@ extension InvokeChannel on IDOBluetoothChannel {
   }
 
   autoConnect(IDOBluetoothDeviceModel device,
-      {bool isDueToPhoneBluetoothSwitch = false}) {
+      {bool isDueToPhoneBluetoothSwitch = false, bool isBind = false}) {
     bluetoothManager.addDeviceState(IDOBluetoothDeviceStateModel(
       uuid: device.uuid ?? "",
       macAddress: device.macAddress ?? "",
@@ -309,6 +326,7 @@ extension InvokeChannel on IDOBluetoothChannel {
       "uuid": device.uuid,
       "macAddress": device.macAddress,
       "btMacAddress": device.btMacAddress,
+      "isBind":isBind,
       "isDueToPhoneBluetoothSwitch": isDueToPhoneBluetoothSwitch
     });
   }
@@ -369,6 +387,44 @@ extension DeviceStateChannel on IDOBluetoothChannel {
       }
     }
     return false;
+  }
+
+  Future<bool> setSppBlackList(List<String> models) async {
+    if (Platform.isAndroid) {
+      try {
+        final value =
+            await _channel.invokeMethod<bool>("setIgnorePhoneModels", {"models": models}) ??
+                false;
+        return value;
+      } catch (e) {
+        print(e);
+      }
+    }
+    return false;
+  }
+
+  setBindStateDelegate(IDOBluetoothBindStateDelegate delegate) {
+    _bindStateDelegate = delegate;
+  }
+
+  setBindStateAsyncDelegate(IDOBluetoothBindStateAsyncDelegate delegate) {
+    _bindStateAsyncDelegate = delegate;
+  }
+
+  setAutoConnectInterceptor(IDOBluetoothAutoConnectInterceptor interceptor){
+    _autoConnectInterceptor = interceptor;
+  }
+
+  Future<bool> isBind(String? deviceAddress) async {
+    bool isBind = false;
+    if (deviceAddress == null || deviceAddress.isEmpty) {
+      isBind = false;
+    } else if (_bindStateDelegate != null) {
+      isBind = _bindStateDelegate!(deviceAddress);
+    } else if (_bindStateAsyncDelegate != null) {
+      isBind = await _bindStateAsyncDelegate!(deviceAddress);
+    }
+    return isBind;
   }
 }
 

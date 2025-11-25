@@ -67,7 +67,9 @@ enum SyncDataType {
   /// V2 GPS
   v2GPS,
   /// V2 多运动
-  v2Activity
+  v2Activity,
+  /// 情绪健康
+  emotionHealth
 }
 
 /// 同步整体进度 0-100
@@ -245,6 +247,9 @@ extension SyncDataTypeExt on List<SyncDataType> {
         case SyncDataType.swim:
           list.add(6); // 6 同步游泳数据
           break;
+        case SyncDataType.emotionHealth:
+          list.add(20);// 20 情绪健康
+          break;
         case SyncDataType.v2StepCount:
           break;
         case SyncDataType.v2Sleep:
@@ -279,6 +284,7 @@ extension IntToSyncDataTypeExt on List<int> {
   /// 14 同步呼吸频率数据
   /// 15 同步身体电量数据
   /// 16 同步HRV(心率变异性水平)数据
+  /// 20 同步情绪健康
   List<SyncDataType> get mappingValues {
     final list = <SyncDataType>[];
     for (var e in this) {
@@ -324,6 +330,10 @@ extension IntToSyncDataTypeExt on List<int> {
           break;
         case 6:
           list.add(SyncDataType.swim); // 6 同步游泳数据
+          break;
+        case 20:
+          list.add(SyncDataType.emotionHealth); // 20 情绪健康
+          break;
       }
     }
     return list;

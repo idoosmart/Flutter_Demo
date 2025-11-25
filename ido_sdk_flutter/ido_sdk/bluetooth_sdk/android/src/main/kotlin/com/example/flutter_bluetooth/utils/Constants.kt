@@ -21,6 +21,7 @@ object Constants {
         const val GET_A2DP_STATE = "getMediaState"
         const val GET_SPP_STATE = "getSppState"
         const val GET_DOCUMENT_PATH = "getDocumentPath"
+        const val SET_IGNORE_PHONE_MODELS = "setIgnorePhoneModels"
     }
 
     object ResponseMethod {
@@ -84,6 +85,11 @@ object Constants {
         DISCOVER_SERVICE_FAILED,//发现服务失败
         DISCOVER_CHARACTERISTIC_FAILED,//发现特征失败
         GATT_ERROR,//gatt异常，需要重启蓝牙
+        INFORMATION_FAIL,
+        CANCEL_BY_USER,
+        DEVICE_ALREADY_BIND_AND_NOT_SUPPORT_REBIND,//设备已绑定并且不支持重复绑定
+        DEVICE_HAS_BEEN_RESET,    //app 绑定的设备被重置了
+        CONNECT_TERMINATED    //连接被终止，比如在 ota 中，不需要执行重连了
     }
 
     /**

@@ -55,10 +55,11 @@ extension _MsgFileFileExt on MsgFile {
         packName: msgItem.packName,
         fileSize: item.fileSize);
     newFileItem = newItem;
-    // 存在缓存
+    // 由于format调整为动态参数，msg文件不使用缓存
+    /*// 存在缓存
     if (useCache && await File(msgFilePath).exists()) {
       return Future(() => newItem);
-    }
+    }*/
 
     // 复制要处理的文件
     await copyFileIfNeed(item.filePath, aFilePath);
@@ -78,7 +79,7 @@ extension _MsgFileFileExt on MsgFile {
     int rs = coreMgr.makeFileCompression(
         fileName: imgFilePath,
         endName: '.msg',
-        format: ImageFormatType.rgb565.realValue);
+        format: _configReply?.format ?? ImageFormatType.rgb565.realValue);
     if (rs != 0 || !await File(imgFilePath).exists()) {
       logger?.d('failed to make .msg file');
       throw UnsupportedError('failed to make .msg file');

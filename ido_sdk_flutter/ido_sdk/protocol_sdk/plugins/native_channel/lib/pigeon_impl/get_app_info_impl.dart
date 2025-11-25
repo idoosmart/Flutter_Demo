@@ -40,6 +40,9 @@ abstract class GetAndroidAppInfo {
 
   /// 复制APP图标到指定目录
   Future<bool> copyAppIcon();
+
+  /// 标记差异配置
+  Future<void> markDifferenceConfig(DifferenceModel model);
   
 }
 
@@ -131,4 +134,8 @@ class GetAppInfoImpl extends ApiGetAppInfo implements GetAndroidAppInfo {
      }
   }
 
+  @override
+  Future<void> markDifferenceConfig(DifferenceModel model) async {
+    return await _getAppInfo.markDifferenceConfig(model);
+  }
 }

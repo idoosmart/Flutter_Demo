@@ -13,7 +13,7 @@ func deviceStateData(_ peripheral: CBPeripheral?,_ errorState: ConnectError,_ pl
         return ["uuid": p.identifier.uuidString,
                 "macAddress":"",
                 "platform": NSNumber(value: platform),
-                "state": NSNumber(value: p.state.rawValue),
+                "state": NSNumber(value: p.state == .connected ? (BluetoothManager.singleton.setNotifyValueSuccess ? 2 : 0) : p.state.rawValue),
                 "errorState": NSNumber(value: errorState.rawValue)
         ]
     }
@@ -35,7 +35,8 @@ struct Device: SSCoadble {
     var macAddress: String? = ""
     var serviceUUIDs: [String]? = []
     var dataManufacturerData: Data?
-
+    var isBind:Bool?
+    
 //  扫描调用
     init(peripheral: CBPeripheral , advertisementData: Dictionary<String, Any> , RSSI: NSNumber) {
         name = advertisementData["kCBAdvDataLocalName"] as? String

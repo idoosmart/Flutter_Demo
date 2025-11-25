@@ -28,7 +28,7 @@ class BaseFile extends AbstractFileOperate {
   IDOProtocolLibManager get libMgr => _libMgr;
 
   /// 使用缓存（相同文件hash不再走制作及压缩文件流程）
-  bool get useCache => kDebugMode ? true : true;
+  bool get useCache => kDebugMode ? false : true;
 
   /// 清理临时文件（制作及压缩文件产生的临时文件）
   bool get hasCleanTampFile => kDebugMode ? false : true; // TODO 测试阶段暂时保留
@@ -84,14 +84,6 @@ class BaseFile extends AbstractFileOperate {
     _isCanceled = false;
     _completer = Completer();
     try {
-      logger?.v("tranFile - begin makeFileIfNeed");
-      // 制作压缩制作
-      await makeFileIfNeed();
-      logger?.v("tranFile - end makeFileIfNeed");
-      if (newFileItem == null) {
-        throw 'newFileItem is null, has check makeFileIfNeed() function fileType:$type';
-      }
-
       logger?.v("tranFile - begin configParamIfNeed");
       // 配置参数
       if (!await configParamIfNeed()) {
@@ -99,6 +91,14 @@ class BaseFile extends AbstractFileOperate {
         return false;
       }
       logger?.v("tranFile - end configParamIfNeed");
+
+      logger?.v("tranFile - begin makeFileIfNeed");
+      // 制作压缩制作
+      await makeFileIfNeed();
+      logger?.v("tranFile - end makeFileIfNeed");
+      if (newFileItem == null) {
+        throw 'newFileItem is null, has check makeFileIfNeed() function fileType:$type';
+      }
 
       logger?.v("tranFile - begin coreMgr.trans");
       var startTime = DateTime.now();
@@ -248,7 +248,7 @@ class BaseFile extends AbstractFileOperate {
     final inputStream = InputFileStream(zipFilePath);
     final archive = ZipDecoder().decodeBuffer(inputStream);
     logger?.d('unzip $zipFilePath \n\t to $targetDir');
-    extractArchiveToDisk(archive, targetDir);
+    await extractArchiveToDisk(archive, targetDir);
     // 目标目录为空，记录日志
     if (dir.listSync().isEmpty) {
       logger?.e(
@@ -351,6 +351,7 @@ extension BaseFileExt on BaseFile {
         break;
       case FileTransType.iwf_lz:
       case FileTransType.wallpaper_z:
+      case FileTransType.wallpaper_device:
         rs = FileTranCompressionType.fastlz;
         break;
       case FileTransType.ml:
@@ -455,6 +456,7 @@ extension BaseFileExt on BaseFile {
         fileExt = '.pcm';
         break;
       case FileTransType.other:
+      case FileTransType.wallpaper_device:
         fileExt = ''; // 不指定后缀
         break;
       case FileTransType.app:

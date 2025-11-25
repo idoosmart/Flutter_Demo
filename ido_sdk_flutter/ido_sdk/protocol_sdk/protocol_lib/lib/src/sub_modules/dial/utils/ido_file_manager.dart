@@ -1,14 +1,6 @@
-import 'dart:io';
+part of dial_manager;
 
-import 'package:flutter/cupertino.dart';
-import 'package:path/path.dart' as path;
-import 'package:archive/archive_io.dart';
-import 'package:crypto/crypto.dart';
-import 'package:protocol_lib/src/sub_modules/dial/constants/dial_constants.dart';
-
-import '../../../private/logger/logger.dart';
-
-class IDOFileManager {
+class _FileManager {
   ///所有目录路径一次创建完成，循环创建目录
   static Future<void> createDirToDocument(String dirPath) async {
     try {

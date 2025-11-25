@@ -18,8 +18,8 @@ class PhotoDialConfig {
   /// 要展示的功能，不支持功能则不传 [PhotoDialConstants.WidgetFunction]
   int showFunction;
 
-  /// 基础表盘包路径，如果不传或传空串，则默认使用 [IPhotoDial.prepare] 解析出来的基础表盘包
-  String? baseDialPackagePath;
+  // /// 基础表盘包路径，如果不传或传空串，则默认使用 [IPhotoDial.prepare] 解析出来的基础表盘包
+  // String? baseDialPackagePath;
 
   /// 构造函数
   PhotoDialConfig({
@@ -29,6 +29,6 @@ class PhotoDialConfig {
     required this.functionColor,
     required this.position,
     this.showFunction = 1,
-    this.baseDialPackagePath = '',
+    //this.baseDialPackagePath = '',
   });
 }

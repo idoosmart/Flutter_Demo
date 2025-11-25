@@ -73,6 +73,7 @@ enum class OTAUpdateState(val raw: Int) {
     }
   }
 }
+
 /**
  * Flutter调用原生的Api，
  *
@@ -94,6 +95,27 @@ interface ApiSifliHost {
    * @return ezip or apng result, nil for fail
    */
   fun sifliEBinFromPng(pngDatas: ByteArray, eColor: String, type: Long, binType: Long, boardType: IDOSFBoardType): ByteArray?
+  /**
+   * 将png格式文件序列转为ezipBin类型。转换失败返回nil。V2.2
+   * pngDatas png文件数据序列数组 （如果数组是多张图片，则会几张图片组合拼接成一张图片）
+   * eColor 颜色字符串 color type as below: rgb565, rgb565A, rbg888, rgb888A
+   * eType eizp类型 0 keep original alpha channel;1 no alpha chanel
+   * binType bin类型 0 to support rotation; 1 for no rotation
+   * boardType 主板芯片类型 @See SFBoardType 0:55x 1:56x  2:52x
+   * @return ezip or apng result, nil for fail
+   */
+  fun sifliEBinFromPngs(pngDatas: List<ByteArray>, eColor: String, type: Long, binType: Long, boardType: IDOSFBoardType): ByteArray?
+  /**
+   * 将png格式文件序列转为ezipBin类型。转换失败返回nil。V2.2
+   * pngDatas png文件数据序列数组 （如果数组是多张图片，则会几张图片组合拼接成一张图片）
+   * eColor 颜色字符串 color type as below: rgb565, rgb565A, rbg888, rgb888A
+   * eType eizp类型 0 keep original alpha channel;1 no alpha chanel
+   * binType bin类型 0 to support rotation; 1 for no rotation
+   * boardType 主板芯片类型 @See SFBoardType 0:55x 1:56x  2:52x
+   * @return ezip or apng result, nil for fail
+   */
+  fun asyncSifliEBinFromPngs(pngDatas: List<ByteArray>, eColor: String, type: Long, binType: Long, boardType: IDOSFBoardType, isGif: Boolean, callback: (Result<ByteArray?>) -> Unit)
+  fun checkOtaDoing(callback: (Result<Boolean>) -> Unit)
 
   companion object {
     /** The codec used by ApiSifliHost. */
@@ -179,6 +201,71 @@ interface ApiSifliHost {
               wrapped = wrapError(exception)
             }
             reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.native_channel.ApiSifliHost.sifliEBinFromPngs", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val pngDatasArg = args[0] as List<ByteArray>
+            val eColorArg = args[1] as String
+            val typeArg = args[2].let { if (it is Int) it.toLong() else it as Long }
+            val binTypeArg = args[3].let { if (it is Int) it.toLong() else it as Long }
+            val boardTypeArg = IDOSFBoardType.ofRaw(args[4] as Int)!!
+            var wrapped: List<Any?>
+            try {
+              wrapped = listOf<Any?>(api.sifliEBinFromPngs(pngDatasArg, eColorArg, typeArg, binTypeArg, boardTypeArg))
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.native_channel.ApiSifliHost.asyncSifliEBinFromPngs", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val pngDatasArg = args[0] as List<ByteArray>
+            val eColorArg = args[1] as String
+            val typeArg = args[2].let { if (it is Int) it.toLong() else it as Long }
+            val binTypeArg = args[3].let { if (it is Int) it.toLong() else it as Long }
+            val boardTypeArg = IDOSFBoardType.ofRaw(args[4] as Int)!!
+            val isGifArg = args[5] as Boolean
+            api.asyncSifliEBinFromPngs(pngDatasArg, eColorArg, typeArg, binTypeArg, boardTypeArg, isGifArg) { result: Result<ByteArray?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.native_channel.ApiSifliHost.checkOtaDoing", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.checkOtaDoing() { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
           }
         } else {
           channel.setMessageHandler(null)

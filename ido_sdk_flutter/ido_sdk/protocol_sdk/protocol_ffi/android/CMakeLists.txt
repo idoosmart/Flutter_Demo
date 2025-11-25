@@ -21,3 +21,6 @@ target_link_libraries( # Specifies the target library.
         android
         # included in the NDK.
         ${log-lib} )
+
+target_link_options(protocol_ffi PRIVATE "-Wl,-z,max-page-size=16384")
+target_link_options(protocol_ffi PRIVATE "-Wl,-z,common-page-size=16384")

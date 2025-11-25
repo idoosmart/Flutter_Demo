@@ -13,6 +13,7 @@ import com.example.flutter_bluetooth.bt.IBTScanListener
 import com.example.flutter_bluetooth.utils.ByteDataConvertUtil
 import com.example.flutter_bluetooth.logger.Logger.e
 import com.example.flutter_bluetooth.logger.Logger.p
+import com.example.flutter_bluetooth.utils.OSUtil
 import java.io.DataInputStream
 import java.io.IOException
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -102,16 +103,21 @@ open class SPPConnector(val deviceAddress: String?) {
      * 判断设备是否为小米 11 系列
      * @return true 如果是小米 11 系列，false 否则
      */
-    fun isXiaomi11Series(): Boolean {
-        val model: String = Build.MODEL
-        // 小米 11 系列的型号
-        return model.equals("M2011K2C") ||  // 小米 11i / 小米 11X Pro
-                model.equals("M2011J20CI") ||  // 小米 11
-                model.contains("M201") ||  // 小米 11i
-                model.equals("M2101K9C") ||  // 小米 11X
-                model.equals("M2101K9G") || model.contains("Mi") ||   //"Mi Note 10 Lite"   Mi 10
-                model.contains("M2007") || model.contains("M210") || model.contains("2109119DG")  //客户出现的崩溃
+    private fun isXiaomi11Series(): Boolean {
+        return OSUtil.checkSppBlackList()//后台配置的忽略型号
     }
+
+//    fun isXiaomi11Series(): Boolean {
+//        val model: String = Build.MODEL
+//        // 小米 11 系列的型号
+//        return model.equals("M2011K2C") ||  // 小米 11i / 小米 11X Pro
+//                model.equals("M2011J20CI") ||  // 小米 11
+//                model.contains("M201") ||  // 小米 11i
+//                model.equals("M2101K9C") ||  // 小米 11X
+//                model.equals("M2101K9G") || model.contains("Mi") ||   //"Mi Note 10 Lite"   Mi 10
+//                model.contains("M2007") || model.contains("M210") || model.contains("2109119DG") ||  //客户出现的崩溃
+//                OSUtil.checkSppBlackList()//后台配置的忽略型号
+//    }
 
     private fun success(socket: BluetoothSocket) {
         p("[SPPConnector] success.")

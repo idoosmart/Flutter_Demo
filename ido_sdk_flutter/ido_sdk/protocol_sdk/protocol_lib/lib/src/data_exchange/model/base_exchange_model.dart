@@ -72,6 +72,7 @@ class IDOAppStartReplyExchangeModel extends IDOBaseExchangeModel {
   /// 0:成功; 1:设备已经进入运动模式失败;
   /// 2:设备电量低失败;3:手环正在充电
   /// 4:正在使用Alexa 5:通话中
+  /// 6:设备处于锁屏状态
   @JsonKey(name: 'ret_code')
   int? retCode;
 
@@ -767,6 +768,14 @@ class IDOAppActivityDataV3ExchangeModel extends IDOBaseExchangeModel {
   ///  goal_timegoal_time ：动作目标时间
   @JsonKey(name: 'items')
   List<Map<String, dynamic>>? actionData;
+
+  ///累积爬升
+  @JsonKey(name: 'cumulative_altitude_rise')
+  int? cumulativeClimb;
+
+  ///累计下降
+  @JsonKey(name: 'cumulative_altitude_loss')
+  int? cumulativeDecline;
 
   IDOAppActivityDataV3ExchangeModel(
       {this.year,

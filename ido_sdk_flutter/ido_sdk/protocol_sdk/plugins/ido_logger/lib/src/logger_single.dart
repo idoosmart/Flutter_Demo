@@ -28,27 +28,27 @@ class LoggerSingle {
   LoggerConfig? get config => _config;
 
   v(dynamic message, [dynamic error, StackTrace? stackTrace]) {
-    _log?.v(message, error, stackTrace);
+    _log?.v(message, error: error, stackTrace: stackTrace);
   }
 
   d(dynamic message, [dynamic error, StackTrace? stackTrace]) {
-    _log?.d(message, error, stackTrace);
+    _log?.d(message, error: error, stackTrace: stackTrace);
   }
 
   i(dynamic message, [dynamic error, StackTrace? stackTrace]) {
-    _log?.i(message, error, stackTrace);
+    _log?.i(message, error: error, stackTrace: stackTrace);
   }
 
   w(dynamic message, [dynamic error, StackTrace? stackTrace]) {
-    _log?.w(message, error, stackTrace);
+    _log?.w(message, error: error, stackTrace: stackTrace);
   }
 
   e(dynamic message, [dynamic error, StackTrace? stackTrace]) {
-    _log?.e(message, error, stackTrace);
+    _log?.e(message, error: error, stackTrace: stackTrace);
   }
 
   wtf(dynamic message, [dynamic error, StackTrace? stackTrace]) {
-    _log?.wtf(message, error, stackTrace);
+    _log?.wtf(message, error: error, stackTrace: stackTrace);
   }
 }
 

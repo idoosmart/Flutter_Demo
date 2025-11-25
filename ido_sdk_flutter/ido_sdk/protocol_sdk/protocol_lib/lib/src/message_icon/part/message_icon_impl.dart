@@ -427,6 +427,15 @@ class _IDOMessageIcon implements IDOMessageIcon {
       logger?.d('ios does not need to perform this method');
       return Future(() => []);
     }
+
+    logger?.d("_funTable.supportMissedCallMsgTypeUseFixed=${_funTable.supportMissedCallMsgTypeUseFixed}");
+    if (_funTable.supportMissedCallMsgTypeUseFixed) {
+      final differenceModel = DifferenceModel();
+      differenceModel.useMissedCall485 = true;
+      GetAndroidAppInfo().markDifferenceConfig(differenceModel);
+      logger?.d('call markDifferenceConfig 485');
+    }
+
     final items = await GetAndroidAppInfo().getInstallAppInfoList(force: force);
     if (!_isFirst || force) {
       /// 每次启动应用获取一次或者强制

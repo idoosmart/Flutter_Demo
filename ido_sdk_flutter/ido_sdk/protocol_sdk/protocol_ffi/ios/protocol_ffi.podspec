@@ -21,7 +21,7 @@ Pod::Spec.new do |s|
   # }
 
   s.vendored_frameworks = [
-    'protocol_c.framework',
+    'protocol_c.xcframework',
   ]
 
   # Flutter.framework does not contain a i386 slice.

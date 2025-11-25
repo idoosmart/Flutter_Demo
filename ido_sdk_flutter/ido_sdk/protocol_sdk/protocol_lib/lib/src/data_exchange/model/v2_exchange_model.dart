@@ -1,7 +1,7 @@
 
 import 'dart:convert';
 import 'package:json_annotation/json_annotation.dart';
-part 'v2_exchange_data_model.g.dart';
+part 'v2_exchange_model.g.dart';
 
 @JsonSerializable()
 class IDOV2ExchangeModel {
@@ -89,9 +89,9 @@ class IDOV2ExchangeModel {
 
 
    factory IDOV2ExchangeModel.fromJson(Map<String, dynamic> json) =>
-       _$V2ExchangeModelFromJson(json);
+       _$IDOV2ExchangeModelFromJson(json);
 
-   Map<String, dynamic> toJson() => _$V2ExchangeModelToJson(this);
+   Map<String, dynamic> toJson() => _$IDOV2ExchangeModelToJson(this);
 
    @override
   String toString() {

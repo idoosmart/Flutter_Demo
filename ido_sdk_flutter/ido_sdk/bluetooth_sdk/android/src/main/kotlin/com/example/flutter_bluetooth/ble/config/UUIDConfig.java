@@ -29,6 +29,7 @@ public class UUIDConfig {
     public static final UUID WRITE_UUID_NORMAL = UUID.fromString("00000aF6-0000-1000-8000-00805f9b34fb");//发送正常数据
     /** notify data except health data */
     public static final UUID NOTIFY_UUID_NORMAL = UUID.fromString("00000aF7-0000-1000-8000-00805f9b34fb");//接收正常数据
+    public static final UUID NOTIFY_UUID_ENCRYPT_BGC = UUID.fromString("00000aF8-0000-1000-8000-00805f9b34fb");//接收正常数据
 
     /** write health data */
     public static final UUID WRITE_UUID_HEALTH = UUID.fromString("00000aF1-0000-1000-8000-00805f9b34fb");//发送健康数据

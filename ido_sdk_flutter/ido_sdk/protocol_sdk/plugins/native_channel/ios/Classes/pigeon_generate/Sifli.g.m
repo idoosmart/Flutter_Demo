@@ -144,6 +144,84 @@ void ApiSifliHostSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<ApiS
       [channel setMessageHandler:nil];
     }
   }
+  /// 将png格式文件序列转为ezipBin类型。转换失败返回nil。V2.2
+  /// pngDatas png文件数据序列数组 （如果数组是多张图片，则会几张图片组合拼接成一张图片）
+  /// eColor 颜色字符串 color type as below: rgb565, rgb565A, rbg888, rgb888A
+  /// eType eizp类型 0 keep original alpha channel;1 no alpha chanel
+  /// binType bin类型 0 to support rotation; 1 for no rotation
+  /// boardType 主板芯片类型 @See SFBoardType 0:55x 1:56x  2:52x
+  /// @return ezip or apng result, nil for fail
+  {
+    FlutterBasicMessageChannel *channel =
+      [[FlutterBasicMessageChannel alloc]
+        initWithName:@"dev.flutter.pigeon.native_channel.ApiSifliHost.sifliEBinFromPngs"
+        binaryMessenger:binaryMessenger
+        codec:ApiSifliHostGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(sifliEBinFromPngsPngDatas:eColor:type:binType:boardType:error:)], @"ApiSifliHost api (%@) doesn't respond to @selector(sifliEBinFromPngsPngDatas:eColor:type:binType:boardType:error:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSArray<FlutterStandardTypedData *> *arg_pngDatas = GetNullableObjectAtIndex(args, 0);
+        NSString *arg_eColor = GetNullableObjectAtIndex(args, 1);
+        NSNumber *arg_type = GetNullableObjectAtIndex(args, 2);
+        NSNumber *arg_binType = GetNullableObjectAtIndex(args, 3);
+        IDOSFBoardType arg_boardType = [GetNullableObjectAtIndex(args, 4) integerValue];
+        FlutterError *error;
+        FlutterStandardTypedData *output = [api sifliEBinFromPngsPngDatas:arg_pngDatas eColor:arg_eColor type:arg_type binType:arg_binType boardType:arg_boardType error:&error];
+        callback(wrapResult(output, error));
+      }];
+    } else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  /// 将png格式文件序列转为ezipBin类型。转换失败返回nil。V2.2
+  /// pngDatas png文件数据序列数组 （如果数组是多张图片，则会几张图片组合拼接成一张图片）
+  /// eColor 颜色字符串 color type as below: rgb565, rgb565A, rbg888, rgb888A
+  /// eType eizp类型 0 keep original alpha channel;1 no alpha chanel
+  /// binType bin类型 0 to support rotation; 1 for no rotation
+  /// boardType 主板芯片类型 @See SFBoardType 0:55x 1:56x  2:52x
+  /// @return ezip or apng result, nil for fail
+  {
+    FlutterBasicMessageChannel *channel =
+      [[FlutterBasicMessageChannel alloc]
+        initWithName:@"dev.flutter.pigeon.native_channel.ApiSifliHost.asyncSifliEBinFromPngs"
+        binaryMessenger:binaryMessenger
+        codec:ApiSifliHostGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(asyncSifliEBinFromPngsPngDatas:eColor:type:binType:boardType:isGif:completion:)], @"ApiSifliHost api (%@) doesn't respond to @selector(asyncSifliEBinFromPngsPngDatas:eColor:type:binType:boardType:isGif:completion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSArray<FlutterStandardTypedData *> *arg_pngDatas = GetNullableObjectAtIndex(args, 0);
+        NSString *arg_eColor = GetNullableObjectAtIndex(args, 1);
+        NSNumber *arg_type = GetNullableObjectAtIndex(args, 2);
+        NSNumber *arg_binType = GetNullableObjectAtIndex(args, 3);
+        IDOSFBoardType arg_boardType = [GetNullableObjectAtIndex(args, 4) integerValue];
+        NSNumber *arg_isGif = GetNullableObjectAtIndex(args, 5);
+        [api asyncSifliEBinFromPngsPngDatas:arg_pngDatas eColor:arg_eColor type:arg_type binType:arg_binType boardType:arg_boardType isGif:arg_isGif completion:^(FlutterStandardTypedData *_Nullable output, FlutterError *_Nullable error) {
+          callback(wrapResult(output, error));
+        }];
+      }];
+    } else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [[FlutterBasicMessageChannel alloc]
+        initWithName:@"dev.flutter.pigeon.native_channel.ApiSifliHost.checkOtaDoing"
+        binaryMessenger:binaryMessenger
+        codec:ApiSifliHostGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(checkOtaDoingWithCompletion:)], @"ApiSifliHost api (%@) doesn't respond to @selector(checkOtaDoingWithCompletion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        [api checkOtaDoingWithCompletion:^(NSNumber *_Nullable output, FlutterError *_Nullable error) {
+          callback(wrapResult(output, error));
+        }];
+      }];
+    } else {
+      [channel setMessageHandler:nil];
+    }
+  }
 }
 NSObject<FlutterMessageCodec> *ApiSifliFlutterGetCodec(void) {
   static FlutterStandardMessageCodec *sSharedObject = nil;

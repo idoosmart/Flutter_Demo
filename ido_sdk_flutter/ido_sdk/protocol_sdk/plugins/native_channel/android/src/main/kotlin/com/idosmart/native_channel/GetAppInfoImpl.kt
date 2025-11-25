@@ -1,6 +1,7 @@
 package com.idosmart.native_channel
 import android.content.Context
 import com.idosmart.native_channel.pigeon_generate.api_get_app_info.ApiGetAppInfo
+import com.idosmart.native_channel.pigeon_generate.api_get_app_info.DifferenceModel
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import java.io.File
 
@@ -81,6 +82,11 @@ class GetAppInfoImpl: ApiGetAppInfo {
 
     override fun copyAppIcon(callback: (Result<Boolean>) -> Unit) {
         callback(Result.success(false))
+    }
+
+    override fun markDifferenceConfig(model: DifferenceModel, callback: (Result<Unit>) -> Unit) {
+        NoticeAppUtility.setDifferenceModel(model)
+        callback(Result.success(Unit))
     }
 
     /**

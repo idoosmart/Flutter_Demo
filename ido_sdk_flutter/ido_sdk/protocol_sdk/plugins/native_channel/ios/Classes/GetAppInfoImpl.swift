@@ -581,6 +581,10 @@ class GetAppInfoImpl: ApiGetAppInfo {
         
     }
     
+    func markDifferenceConfig(model: DifferenceModel, completion: @escaping (Result<Void, any Error>) -> Void) {
+        
+    }
+    
     var isFinish: Bool = false
     private var isBusy: Bool = false
     

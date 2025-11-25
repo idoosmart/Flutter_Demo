@@ -11,6 +11,7 @@ import 'Tool/ido_bluetooth_heart_ping.dart';
 import 'Tool/logger/ido_bluetooth_logger.dart';
 import 'Tool/ido_bluetooth_tool.dart';
 import 'channel/ido_bluetooth_channel.dart';
+import 'delegate/ido_bluetooth_bind_state_delegate.dart';
 import 'ido_bluetooth.dart';
 import 'ido_bluetooth_update_log.dart';
 import 'mixin/ido_bluetooth_commend_mixin.dart';
@@ -44,6 +45,18 @@ abstract class IDOBluetoothManager {
   /// heartPingSecond: Heartbeat interval (ios)
   /// outputToConsole：console output log
   register({int heartPingSecond, bool outputToConsole});
+
+  /// 绑定状态代理
+  /// 蓝牙库内部需要用到设备的绑定状态
+  setBindStateDelegate(IDOBluetoothBindStateDelegate delegate);
+
+  /// 绑定状态,异步代理回调
+  /// 蓝牙库内部需要用到设备的绑定状态
+  setBindStateAsyncDelegate(IDOBluetoothBindStateAsyncDelegate delegate);
+
+  /// OTA状态代理
+  /// 蓝牙库内部需要用到设备的 ota 状态，用来阻止内部的自动重连
+  setAutoConnectInterceptor(IDOBluetoothAutoConnectInterceptor delegate);
 
   heartPingSwitch(bool isOn);
 
@@ -205,6 +218,8 @@ abstract class IDOBluetoothManager {
 
   ///内部调用
   addDeviceState(IDOBluetoothDeviceStateModel model);
+
+  Future<bool> setSppBlackList(List<String> models);
 
   /// 写日志，内部使用
   addLog(

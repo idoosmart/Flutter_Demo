@@ -49,4 +49,11 @@ interface BluetoothCallback {
     fun callOnCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?)
 
     fun callOnServices(services:List<String>)
+
+    fun callOnDeviceAlreadyBindAndNotSupportRebind()
+
+    fun callOnDeviceHasBeenReset()
+
+    // 连接终止，目前是因为思澈平台在 ota，拦截了连接逻辑
+    fun callOnConnectTerminated()
 }

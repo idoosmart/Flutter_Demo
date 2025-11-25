@@ -16,6 +16,9 @@ class _IDOBluetoothManager
   final _heartPing = IDOBluetoothHeartPing();
   Completer<bool>? _completerGetBtAddress;
 
+  //切换设备断连后连接延时时长，单位：毫秒
+  final int _connectDelayTimeInMill = 1000;
+
   //最后一次连接设备
   @override
   IDOBluetoothDeviceModel? currentDevice;
@@ -100,7 +103,7 @@ class _IDOBluetoothManager
   }
 
   ///监听搜索
-  _listenScanResult(List<IDOBluetoothDeviceModel> event) {
+  _listenScanResult(List<IDOBluetoothDeviceModel> event) async{
     if (_isNeedConnect) {
       for (var element in event) {
         if ((element.uuid == currentDevice?.uuid && Platform.isIOS) ||
@@ -123,7 +126,8 @@ class _IDOBluetoothManager
           if (element.platform <= 0) {
             element.platform = platform ?? -1;
           }
-          _channel.connect(element);
+          bool isBind = await _getBindState(element.macAddress);
+          _channel.connect(element, isBind: isBind);
           _channel.stopScan();
           _isNeedConnect = false;
           cancelAllTimeout();
@@ -190,7 +194,11 @@ class _IDOBluetoothManager
       // currentDevice?.isConnect = true;
       //连接成功复位写入数据次数
       _sendErrorCount = 0;
-    } else if (event.state == IDOBluetoothDeviceStateType.disconnected) {
+    } else if (event.state == IDOBluetoothDeviceStateType.disconnected &&
+        event.errorState != IDOBluetoothDeviceConnectErrorType.deviceAlreadyBindAndNotSupportRebind &&
+        event.errorState != IDOBluetoothDeviceConnectErrorType.deviceHasBeenReset &&
+        event.errorState != IDOBluetoothDeviceConnectErrorType.connectTerminated) {
+      //如果是ble 配对终止了，则不进行重连
       // currentDevice?.isConnect = false;
       //重连
       needReconnect();
@@ -354,6 +362,7 @@ class _IDOBluetoothManager
               (event.macAddress == lastDevice.macAddress ||
                   (event.uuid == lastDevice.uuid && Platform.isIOS)))
           .first;
+      await Future.delayed(Duration(milliseconds: _connectDelayTimeInMill));
     }
     stopScan();
     currentDevice = device;
@@ -367,21 +376,30 @@ class _IDOBluetoothManager
       await Future.delayed(delayDuration, () { });
     }
 
+    bool isBind = await _getBindState(device.macAddress);
+
     if (Platform.isIOS) {
       if (findDevice != null) {
         currentDevice = findDevice;
-        _channel.connect(device);
+        _channel.connect(device, isBind: isBind);
       } else {
         _isNeedConnect = true;
         startScan(device.macAddress);
       }
     } else {
-      _channel.connect(device);
+      _channel.connect(device, isBind: isBind);
     }
     addLog(
         'start connect ${device.macAddress} name = ${device.name}, platform = ${device.platform}'
-        'findDevice = ${findDevice?.name},key = $key',
+        'findDevice = ${findDevice?.name},key = $key, isBind = $isBind',
         method: 'connect');
+  }
+
+  Future<bool> _getBindState(String? address) async {
+    bool isBind = await _channel.isBind(address).timeout(const Duration(seconds: 5), onTimeout: () {
+      return false;
+    });
+    return isBind;
   }
 
   //取消连接
@@ -898,14 +916,16 @@ class _IDOBluetoothManager
               (event.macAddress == lastDevice.macAddress ||
                   (event.uuid == lastDevice.uuid && Platform.isIOS)))
           .first;
+      await Future.delayed(Duration(milliseconds: _connectDelayTimeInMill));
     }
     if (device != null) {
       currentDevice = device;
     } else {
       device ??= currentDevice;
     }
+    bool isBind = await _getBindState(device?.macAddress);
     _channel.autoConnect(device!,
-        isDueToPhoneBluetoothSwitch: isDueToPhoneBluetoothSwitch);
+        isDueToPhoneBluetoothSwitch: isDueToPhoneBluetoothSwitch,isBind: isBind);
   }
 
   ///连接SPP
@@ -1034,6 +1054,25 @@ class _IDOBluetoothManager
     return _channel.mediaStateSubject;
   }
 
+  @override
+  Future<bool> setSppBlackList(List<String> models) {
+    return _channel.setSppBlackList(models);
+  }
+
+  @override
+  setBindStateDelegate(IDOBluetoothBindStateDelegate delegate) {
+    _channel.setBindStateDelegate(delegate);
+  }
+
+  @override
+  setBindStateAsyncDelegate(IDOBluetoothBindStateAsyncDelegate delegate) {
+    _channel.setBindStateAsyncDelegate(delegate);
+  }
+
+  @override
+  setAutoConnectInterceptor(IDOBluetoothAutoConnectInterceptor delegate) {
+    _channel.setAutoConnectInterceptor(delegate);
+  }
 }
 
 extension _IDOBluetoothManagerExt on _IDOBluetoothManager {

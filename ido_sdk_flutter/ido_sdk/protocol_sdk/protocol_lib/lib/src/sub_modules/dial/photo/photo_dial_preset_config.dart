@@ -1,5 +1,8 @@
+import 'dart:ui' as ui;
 import 'package:json_annotation/json_annotation.dart';
-import 'package:protocol_lib/src/sub_modules/extension/list_ext.dart';
+
+import '../../extension/list_ext.dart';
+import 'photo_dial_config.dart';
 
 /// 表盘包预置内容
 // class PhotoDialPresetConfig {
@@ -52,6 +55,9 @@ class PhotoDialPresetConfig extends Object {
   @JsonKey(name: 'select')
   DialJsonSelect? select;
 
+  @JsonKey(name: 'colors')
+  String? colors;
+
   @JsonKey(name: 'styles')
   List<DialJsonStyles>? styles;
 
@@ -73,8 +79,17 @@ class PhotoDialPresetConfig extends Object {
   @JsonKey(name: 'time_widget_list')
   List<TimeWidgetListItem>? timeWidgetList;
 
-  String? dialDirPath;
-  String? dialName;
+  /// 表盘尺寸
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  ui.Size sizeWatchScreen = ui.Size.zero;
+
+  /// 预览图尺寸
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  ui.Size sizePreviewPicture = ui.Size.zero;
+
+  /// 当前表盘配置
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  PhotoDialConfig? photoDialConfig;
 
   PhotoDialPresetConfig(
       this.app,
@@ -85,6 +100,7 @@ class PhotoDialPresetConfig extends Object {
       this.clock,
       this.funcInfo,
       this.select,
+      this.colors,
       this.styles,
       this.palettes,
       this.locations,

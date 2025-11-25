@@ -31,7 +31,7 @@ mixin IDOBluetoothTimeoutMixin {
   addConnectTimeout() {
     bluetoothManager.addLog('addConnectTimeout',className: 'IDOBlueto'
         'othTimeoutMixin',method: 'addConnectTimeout');
-    IDOBluetoothTimeout.setTimeout(_connectTimeout,
+    IDOBluetoothTimeout.setTimeout(_connectTimeout, duration: 60,
         key: IDOBluetoothTimeoutType.connect.toString());
   }
 

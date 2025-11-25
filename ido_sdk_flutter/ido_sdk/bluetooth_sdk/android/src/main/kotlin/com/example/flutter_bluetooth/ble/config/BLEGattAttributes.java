@@ -35,6 +35,12 @@ public class BLEGattAttributes {
     	
     	return getCharacteristic(gatt, UUIDConfig.SERVICE_UUID, UUIDConfig.UUID_PPG);
     }
+
+    /** enable/disable notify normal BluetoothGattDescriptor */
+    public static boolean enablePeerDeviceNotifyLEPair(BluetoothGatt gatt, boolean enable) {
+//    	DebugLog.p("enablePeerDeviceNotifyNormal: " + enable);
+        return enablePeerDeviceNotifyMe(gatt, UUIDConfig.NOTIFY_UUID_ENCRYPT_BGC, enable);
+    }
     
     /** enable/disable notify normal BluetoothGattDescriptor */
     public static boolean enablePeerDeviceNotifyNormal(BluetoothGatt gatt, boolean enable) {

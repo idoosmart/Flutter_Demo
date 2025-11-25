@@ -59,7 +59,7 @@ export 'src/sub_modules/epo/epo_manager.dart';
 export 'src/sub_modules/model/ota_gps_info.dart';
 
 // dial
-// export 'src/sub_modules/dial/dial_manager.dart';
+export 'src/sub_modules/dial/dial_manager.dart';
 // export 'src/sub_modules/dial/photo/photo_dial.dart';
 // export 'src/sub_modules/dial/photo/photo_dial_preset_config.dart';
 // export 'src/sub_modules/dial/photo/photo_dial_config.dart';

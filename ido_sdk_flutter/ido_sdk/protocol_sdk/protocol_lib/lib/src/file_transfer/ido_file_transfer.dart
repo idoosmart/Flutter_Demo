@@ -36,6 +36,10 @@ abstract class IDOFileTransfer {
   StreamSubscription listenTransFileTypeChanged(
       void Function(FileTransType? fileType) func);
 
+  /// 思澈ota文件传输结束时通知（仅限SDK内部使用)
+  StreamSubscription listenSilfiOtaFinished(
+      void Function(int platform) func);
+
   /// 执行文件传输 (单文件）
   ///
   /// cancelPrevTranTask 取消存在的上传任务 默认为false

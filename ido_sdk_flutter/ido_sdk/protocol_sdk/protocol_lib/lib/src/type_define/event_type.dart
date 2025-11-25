@@ -393,6 +393,13 @@ enum CmdEvtType {
       evtType: _VBusEvtType.vbus_evt_func_v3_sport_record_show_config
   ),
 
+  /// 获取用户信息
+  getUserInfo(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.vbus_evt_app_get_user_info
+  ),
+
+
 // ----------------------------------- 设置 -----------------------------------
 
   /// app下发跑步计划(运动计划)
@@ -1023,6 +1030,43 @@ enum CmdEvtType {
       evtType: _VBusEvtType.vbus_evt_func_send_mini_program_control
   ),
 
+  /// 获取/设置APP基本信息
+  setAppBaseInfo(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.vbus_evt_func_v3_app_base_information
+  ),
+
+  /// 运动中屏幕显示设置
+  setSportScreen(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.vbus_evt_func_v3_set_sport_screen
+  ),
+
+  /// 运动中提醒设置
+  setSportingRemindSetting(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.vbus_evt_app_set_sporting_remind),
+
+  /// 情绪健康提醒设置
+  setEmotionHealthReminder(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.func_emotion_health),
+
+  /// 情绪健康提醒设置
+  setV3MenuList(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.func_v3_menu_list),
+
+  /// 女性生理日常记录设置
+  setMenstruationRecord(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.vbus_evt_v3_physiological_record),
+
+  /// 设置应用列表样式
+  setApplicationListStyle(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.vbus_evt_func_v3_application_list_style),
+
   // ----------------------------------- 数据交换 -----------------------------------
 
   /// app 发起运动
@@ -1363,7 +1407,63 @@ enum CmdEvtType {
   /// 设置手机语音助手开关
   setVoiceAssistantOnOff(
       evtBase: _VBusEvtBase.base_app_set,
-      evtType: _VBusEvtType.app_set_voice_assistant_on_off);
+      evtType: _VBusEvtType.app_set_voice_assistant_on_off),
+
+  /// 运动中设置提示音开关
+  setDuringExercise(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.vbus_evt_app_set_during_exercise),
+
+  /// 获取左右手佩戴设置
+  getLeftRightWearSettings(
+  evtBase: _VBusEvtBase.base_app_set,
+  evtType: _VBusEvtType.vbus_evt_app_get_left_right_wear_settings),
+
+  /// 获取运动中设置提示音开关
+  getSettingsDuringExercise(
+  evtBase: _VBusEvtBase.base_app_set,
+  evtType: _VBusEvtType.vbus_evt_app_get_settings_during_exercise),
+
+  /// 简单心率区间设置
+  setSimpleHeartRateZone(
+  evtBase: _VBusEvtBase.base_app_set,
+  evtType: _VBusEvtType.vbus_evt_app_set_simple_heart_rate_zone),
+
+  /// 获取简单心率区间设置
+  getSimpleHeartRateZone(
+  evtBase: _VBusEvtBase.base_app_set,
+  evtType: _VBusEvtType.vbus_evt_app_get_simple_heart_rate_zone),
+
+  /// 回复相机预览开始结果
+  replyDeviceStartCameraPreviewRequest(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.app_ble_to_app_start_camera_preview),
+
+  /// 回复相机预览暂停结果
+  replyDevicePauseCameraPreviewRequest(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.app_ble_to_app_pause_camera_preview),
+
+  /// 回复相机预览停止结果
+  replyDeviceStopCameraPreviewRequest(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.app_ble_to_app_stop_camera_preview),
+
+  /// 血糖数据下发
+  uploadBloodGlucose(
+    evtBase: _VBusEvtBase.base_app_set,
+    evtType: _VBusEvtType.vbus_evt_app_blood_glucose),
+
+
+  /// 算法原始数据采集
+  algorithmRawData(
+  evtBase: _VBusEvtBase.base_app_set,
+  evtType: _VBusEvtType.vbus_evt_app_algorithm_raw_data),
+
+  /// 算法原始数据采集 (仅限SDK内部使用）
+  cleanHealthDataOffset(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.vbus_evt_clean_healthdata_offset);
 
   const CmdEvtType({required this.evtBase, required this.evtType});
 
@@ -2000,6 +2100,15 @@ abstract class _VBusEvtType {
   /// 控制音乐百分比
   static const int app_ble_to_app_volume_percentage = 565;
 
+  /// 设备控制打开APP相机，进入拍照预览功能
+  static const int app_ble_to_app_start_camera_preview = 567;
+
+  /// 设备控制暂停拍照预览，停止传输照片流
+  static const int app_ble_to_app_pause_camera_preview = 568;
+
+  /// 设备控制关闭APP相机，退出拍照预览功能
+  static const int app_ble_to_app_stop_camera_preview = 569;
+
   /// 寻找手机开始
   static const int app_ble_to_app_find_phone_start = 570;
 
@@ -2363,6 +2472,12 @@ abstract class _VBusEvtType {
   /// v3血压校准完成
   static const int func_v3_bp_cal_complete = 5073;
 
+  /// 情绪健康
+  static const int func_emotion_health = 5100;
+
+  /// v3菜单列表操作
+  static const int func_v3_menu_list = 5101;
+
   /// 制作照片
   static const int func_make_photo = 5500;
 
@@ -2663,5 +2778,48 @@ abstract class _VBusEvtType {
 
   /// 支持获取运动记录的显示项配置
   static const int vbus_evt_func_v3_sport_record_show_config = 5523;
+
+  /// 获取/设置APP基本信息
+  static const int vbus_evt_func_v3_app_base_information = 5095;
+
+  /// 运动中屏幕显示设置
+  static const int vbus_evt_func_v3_set_sport_screen = 5097;
+
+  /// 女性生理日常记录
+  static const int vbus_evt_v3_physiological_record = 5102;
+
+  /// 应用列表样式
+  static const int vbus_evt_func_v3_application_list_style = 5524;
+  // ------ 20250421 新增 ------
+
+  /// 支持运动中设置
+  static const int vbus_evt_app_set_during_exercise = 196;
+
+  /// 获取左右手佩戴设置
+  static const int vbus_evt_app_get_left_right_wear_settings = 346;
+
+  /// 支持获取获取运动中设置
+  static const int vbus_evt_app_get_settings_during_exercise = 347;
+
+  /// 简单心率区间设置
+  static const int vbus_evt_app_set_simple_heart_rate_zone = 199;
+
+  /// 简单心率区间获取
+  static const int vbus_evt_app_get_simple_heart_rate_zone = 348;
+
+  /// 运动中提醒设置
+  static const int vbus_evt_app_set_sporting_remind = 5099;
+
+  /// 获取用户信息
+  static const int vbus_evt_app_get_user_info = 349;
+
+  /// blood_glucose 血糖数据下发
+  static const int vbus_evt_app_blood_glucose = 5104;
+
+  /// 算法原始数据采集
+  static const int vbus_evt_app_algorithm_raw_data = 5105;
+
+  /// 清理clib健康数据offset值
+  static const int vbus_evt_clean_healthdata_offset = 7952;
 
 }

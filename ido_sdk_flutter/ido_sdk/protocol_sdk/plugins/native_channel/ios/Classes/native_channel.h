@@ -8,5 +8,7 @@
 #ifndef native_channel_h
 #define native_channel_h
 
+#import "Sifli.g.h"
+#import "IDOUpdateSFManager.h"
 
 #endif /* native_channel_h */

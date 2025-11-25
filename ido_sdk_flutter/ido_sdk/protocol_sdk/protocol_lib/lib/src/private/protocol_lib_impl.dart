@@ -5,9 +5,9 @@ class _IDOProtocolLibManager
   static const _pathStorageC = 'c_files';
   static const _pathStorageLib = 'protocol_lib';
   static const _pathStorageLog = 'logs';
-  // 最后修改时间: 2025-01-16 15:35:56
-  static const _sdkVersion = '4.0.29';
-  static const _sdkBuildNum = '67AAAA91';
+  // 最后修改时间: 2025-11-20 14:34:18
+  static const _sdkVersion = '4.1.10';
+  static const _sdkBuildNum = '691EB66A';
 
   static bool _outputToConsoleClib = false;
   static bool _isReleaseClib = true;
@@ -24,19 +24,41 @@ class _IDOProtocolLibManager
   bool _isInitClib = false;
   late final String _clibVersion = _coreMgr.getClibVersion() ?? 'unknown';
   StreamSubscription<int>? _subscriptFastSyncComplete;
-  late IDOOtaType _otaType = IDOOtaType.none;
-  late bool _isConnected = false;
-  late bool _isConnecting = false;
-  late bool _isFastSynchronizing = false;
+  late IDOOtaType __otaType = IDOOtaType.none;
+  set _otaType(IDOOtaType value) {
+    __otaType = value;
+    sdkStateChanged.add(null);
+  }
+  late bool __isConnected = false;
+  set _isConnected(bool value) {
+    __isConnected = value;
+    sdkStateChanged.add(null);
+  }
+  late bool __isConnecting = false;
+  set _isConnecting(bool value) {
+    __isConnecting = value;
+    sdkStateChanged.add(null);
+  }
+  late bool __isFastSynchronizing = false;
+  set _isFastSynchronizing(bool value) {
+    __isFastSynchronizing = value;
+    sdkStateChanged.add(null);
+  }
   // 由于目前快速配置存在下发 setMode后不上报问题，此处添加容错机制
   Timer? _timerFastSync;
   // x秒后重置 _isFastSynchronizing 为 false
-  final int _timerFastSyncDuration = 16; //快速配置等待最长时间 单位 秒
-  String? _macAddress; // SDK内统一为去除冒号后的转大写字符串
+  final int _timerFastSyncDuration = 35; //快速配置等待最长时间 单位 秒
+  String? __macAddress = 'UNKNOWN'; // SDK内统一为去除冒号后的转大写字符串
+  set _macAddress(String? value) {
+    __macAddress = value ?? 'UNKNOWN';
+    sdkStateChanged.add(null);
+  }
   String? _macAddressOriginal; // markConnected传入的原始macAddress
   String? _uuid; // ios专用
   bool _isPersimwearOtaUpgrading = false;
   bool _isSicheDfuMode = false;
+  int _lastDevicePlatform = -1;
+  bool _isPreviewingCamera = false; // 是否处于摄像头预览中
 
   _IDOProtocolLibManager._internal() {
     storage = LocalStorage.config(config: this);
@@ -55,14 +77,11 @@ class _IDOProtocolLibManager
   // 有效的通知事件
   late final _controlEventTypeSet = {551}
     ..addAll({552, 553, 554, 555, 556, 557, 558, 559})
-    ..addAll({560, 561, 562, 563, 565, 570, 571, 581})
+    ..addAll({560, 561, 562, 563, 565, 567, 568, 569, 570, 571, 581})
     ..addAll({572, 574, 575, 576, 578, 579, 580, 591});
 
   _initClib() async {
     logger?.d('begin _initClib hasCode:$hashCode');
-    statusSdkNotification = PublishSubject<IDOStatusNotification>();
-    statusDeviceNotification = PublishSubject<IDODeviceNotificationModel>();
-    connectStatusChanged = PublishSubject<bool>();
     await _initClibFilePath();
     await _coreMgr.initClib();
     _cRequestHandle();
@@ -71,6 +90,8 @@ class _IDOProtocolLibManager
     _registerDeviceStatusChanged();
     _registerAlexaReceive();
     _registerUpdateSetModeChanged();
+    _registerBindStateChanged();
+    _registerBleReceiveData();
     // _registerMessageIcon(); 暂时不注册,影响到安卓权限申请
     // 设置c库运行模式
     _setClibRunMode(isDebug: !_isReleaseClib);
@@ -80,7 +101,7 @@ class _IDOProtocolLibManager
   }
 
   @override
-  String get macAddress => _macAddress ?? 'UNKNOWN';
+  String get macAddress => __macAddress ?? 'UNKNOWN';
 
   @override
   String? get macAddressFull => _macAddressOriginal;
@@ -111,9 +132,26 @@ class _IDOProtocolLibManager
         otaMode: true, uuid: iosUUID, deviceId: deviceId);
     _isConnecting = false;
     _isFastSynchronizing = false;
+    _lastDevicePlatform = platform;
     // mode: 0 没有绑定, 1 已经绑定, 2 升级模式, 3 重连, 4 泰凌微
     //await _setBindMode(2); // 不需要设置
     return Future(() => true);
+  }
+
+  @override
+  Future<bool> checkSiceOtaDoing() async {
+    if (Platform.isAndroid) {
+      if (libManager.deviceInfo.platform != 98 && _lastDevicePlatform != 98) {
+        logger?.d("checkSiceOtaDoing, not sifli nor(98) platform, _lastDevicePlatform = $_lastDevicePlatform, device platform = ${libManager.deviceInfo.platform}");
+        return false;
+      }
+      final rs = await SifliChannelImpl().sifliHost.checkOtaDoing();
+      logger?.d("android checkSiceOtaDoing rs:$rs");
+      return rs;
+    }else {
+      logger?.d("ios checkSiceOtaDoing, Will always return false");
+      return Future.value(false);
+    }
   }
 
   @override
@@ -125,6 +163,7 @@ class _IDOProtocolLibManager
       String? iosUUID}) async {
     assert(uniqueId.isNotEmpty, 'macAddress cannot be empty');
     _registerMessageIcon();
+    _lastDevicePlatform = -1;
     // iOS平台且传入的uniqueId为uuid时，添加获取mac地址流程
     if (Platform.isIOS && uniqueId.length > 17) {
       logger?.d('call markConnectedDeviceSafe, uniqueId:$uniqueId');
@@ -155,16 +194,16 @@ class _IDOProtocolLibManager
   Future<bool> markDisconnectedDevice(
       {String? macAddress, String? uuid}) async {
     // 忽略非必要调用
-    if (!_isConnected && _macAddress == null) {
+    if (!__isConnected && __macAddress == null) {
       logger?.d(
-          'ignore mark disconnected $macAddress _isConnected:$_isConnected _macAddress:$_macAddress');
+          'ignore mark disconnected $macAddress _isConnected:$__isConnected _macAddress:$__macAddress');
       return Future(() => true);
     }
 
     // 非当前设备不执行断开操作
     if (macAddress != null) {
       final tmpMacAddress = macAddress.replaceAll(':', '').toUpperCase();
-      if (tmpMacAddress != _macAddress) {
+      if (tmpMacAddress != __macAddress) {
         logger?.e(
             'not the current device, do not perform disconnection macAddress:$tmpMacAddress');
         return Future(() => false);
@@ -186,7 +225,8 @@ class _IDOProtocolLibManager
     _macAddressOriginal = null;
     _uuid = null;
     _otaType = IDOOtaType.none;
-
+    _isPreviewingCamera = false;
+    _lastDevicePlatform = deviceInfo.platform;
     _stopTimerFastSync();
     // !!!: 98平台ota比较特殊，会先断开蓝牙，再重连（走思澈sdk)，此处需要保留文件传输任务
     final needKeepTransFileTask = libManager.deviceInfo.platform == 98
@@ -203,7 +243,7 @@ class _IDOProtocolLibManager
     deviceInfo.cleanDataOnMemory();
     funTable.cleanDataOnMemory();
 
-    connectStatusChanged?.add(_isConnected);
+    connectStatusChanged.add(__isConnected);
 
     // 断开连接
     await send(evt: CmdEvtType.disconnect).first;
@@ -218,8 +258,9 @@ class _IDOProtocolLibManager
     if (json == null || json.isEmpty || json.trim().isEmpty) {
       json = '{}';
     }
+    json = _cmdParamsInterceptor(evt.evtType, json);
 
-    if (!_isConnected &&
+    if (!__isConnected &&
         !{CmdEvtType.connected, CmdEvtType.disconnect}.contains(evt)) {
       logger?.v('no connected device，evtType:${evt.evtType} ignore');
       return Future(() => CmdResponse(
@@ -240,6 +281,21 @@ class _IDOProtocolLibManager
           msg: '设备处理ota中，忽略所有指令')).asStream();
     }
 
+    // 屏蔽相机预览过程中的指令发送
+    if (_isPreviewingCamera && [
+      CmdEvtType.connected.evtType,
+      CmdEvtType.disconnect.evtType,
+      CmdEvtType.replyDeviceStartCameraPreviewRequest.evtType,
+      CmdEvtType.replyDevicePauseCameraPreviewRequest.evtType,
+      CmdEvtType.replyDeviceStopCameraPreviewRequest.evtType
+    ].contains(evt.evtType) == false) {
+      logger?.v('camera preview mode, evtType:${evt.evtType} ignore');
+      return Future(() => CmdResponse(
+          code: ErrorCode.onCameraPreview,
+          evtType: evt.evtType,
+          msg: '相机预览中，忽略所有指令')).asStream();
+    }
+
     if (!_canSend(evt.evtType)) {
       final msg = 'on fast synchronizing, evtType:${evt.evtType} ignores';
       logger?.d(msg);
@@ -249,8 +305,6 @@ class _IDOProtocolLibManager
           msg: msg)).asStream();
     }
     final useQueue = !_excludeCmd.contains(evt);
-
-    json = _cmdParamsInterceptor(evt.evtType, json);
 
     return _coreMgr
         .writeJson(
@@ -267,7 +321,7 @@ class _IDOProtocolLibManager
   StreamSubscription listenStatusNotification(
       void Function(IDOStatusNotification status) func) {
     assert(_isInitClib, 'has call await IDOProtocolLibManager.register(...) in main.dart');
-    return statusSdkNotification!.listen(func);
+    return statusSdkNotification.listen(func);
   }
 
   @override
@@ -292,21 +346,21 @@ class _IDOProtocolLibManager
   IDOExchangeData get exchangeData => IDOExchangeData();
 
   @override
-  bool get isConnected => _isConnected;
+  bool get isConnected => __isConnected;
 
   @override
-  bool get isConnecting => _isConnecting;
+  bool get isConnecting => __isConnecting;
 
   @override
-  IDOOtaType get otaType => _otaType;
+  IDOOtaType get otaType => __otaType;
 
   @override
   bool get isBinding => deviceBind.isBinding;
 
   @override
   bool get isFastSynchronizing {
-    logger?.v("_isFastSynchronizing: $_isFastSynchronizing");
-    return _isFastSynchronizing;
+    logger?.v("_isFastSynchronizing: $__isFastSynchronizing");
+    return __isFastSynchronizing;
   }
 
   @override
@@ -363,18 +417,33 @@ class _IDOProtocolLibManager
   @override
   StreamSubscription listenDeviceNotification(
       void Function(IDODeviceNotificationModel model) func) {
-    return statusDeviceNotification!.listen(func);
+    return statusDeviceNotification.listen(func);
   }
 
   @override
   StreamSubscription listenConnectStatusChanged(void Function(bool isConnected) func) {
-    return connectStatusChanged!.listen(func);
+    return connectStatusChanged.listen(func);
+  }
+
+  @override
+  StreamSubscription listenAllStateChanged(void Function(void) func) {
+    return sdkStateChanged.listen(func);
+  }
+
+  @override
+  StreamSubscription listenDeviceRawDataReport(void Function(int dataType,String jsonStr) func) {
+    return deviceRawDataReportStream.listen((report) {
+      func(report.dataType, report.data);
+    });
   }
 
   @override
   void setPersimwearOtaUpgrading(bool upgrading) {
     _isPersimwearOtaUpgrading = upgrading;
   }
+
+  @override
+  bool get isPersimwearOtaUpgrading => _isPersimwearOtaUpgrading;
 
   @override
   IDOCallNotice get callNotice => _callNotice;
@@ -393,6 +462,9 @@ class _IDOProtocolLibManager
 
   @override
   String get getSdkBuildNum => _sdkBuildNum;
+
+  @override
+  int get lastDevicePlatform => _lastDevicePlatform;
 
   static Future<bool> doInitClib() async {
     return await _IDOProtocolLibManager()._doInitClib();
@@ -502,9 +574,9 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
       return Future(() => false);
     }
     final tmpMacAddress = macAddress.replaceAll(':', '').toUpperCase();
-    if (_isConnected && _macAddress == tmpMacAddress) {
+    if (__isConnected && __macAddress == tmpMacAddress) {
       logger?.d(
-          'ignore mark connected $_macAddress isBinded:$isBinded otaType:$otaType');
+          'ignore mark connected $__macAddress isBinded:$isBinded otaType:$otaType');
       return Future(() => true);
     }
 
@@ -518,7 +590,7 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
       _macAddressOriginal = macAddress;
       _uuid = uuid;
       logger?.d(
-          'mark connected $_macAddress isBinded:$isBinded otaType:$otaType deviceName:$deviceName');
+          'mark connected $__macAddress isBinded:$isBinded otaType:$otaType deviceName:$deviceName');
       storage?.resetCachePathOnDeviceChanged();
       _stopTimerFastSync();
 
@@ -527,31 +599,31 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
       logger?.d('set mode: 4');
       // 非ota模式时，发送连接指令
       await send(evt: CmdEvtType.connected).first;
-      connectStatusChanged?.add(_isConnected);
+      connectStatusChanged.add(__isConnected);
       // 协议库桥接蓝牙库初始化完成
-      statusSdkNotification?.add(IDOStatusNotification.protocolConnectCompleted);
+      statusSdkNotification.add(IDOStatusNotification.protocolConnectCompleted);
       return Future(() => true);
     }
 
     final otaMode = otaType == IDOOtaType.nordic;
-    if (_isConnected && _macAddress != tmpMacAddress) {
+    if (__isConnected && __macAddress != tmpMacAddress) {
       // 因目前同时只允许连接一台设备，此处主动标记上个设备断开连接
-      logger?.d('inner call mark disconnected $_macAddress isBinded:$isBinded');
+      logger?.d('inner call mark disconnected $__macAddress isBinded:$isBinded');
       await markDisconnectedDevice();
     }
 
     _otaType = otaType;
-    if (_isConnecting) {
+    if (__isConnecting) {
       // 设备连接中，限制切换设备
       logger?.e(
-          'device connecting, cannot switch device. old:$_macAddress this:$tmpMacAddress');
+          'device connecting, cannot switch device. old:$__macAddress this:$tmpMacAddress');
       return Future(() => false);
     }
 
     if (deviceBind.isBinding) {
       // 设备绑定中，限制切换设备
       logger?.e(
-          'device binding, cannot switch device. old:$_macAddress this:$tmpMacAddress');
+          'device binding, cannot switch device. old:$__macAddress this:$tmpMacAddress');
       return Future(() => false);
     }
 
@@ -562,13 +634,13 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
     _macAddressOriginal = macAddress;
     _uuid = uuid;
     logger
-        ?.d('mark connected $_macAddress isBinded:$isBinded otaType:$otaType deviceName:$deviceName');
+        ?.d('mark connected $__macAddress isBinded:$isBinded otaType:$otaType deviceName:$deviceName');
     storage?.resetCachePathOnDeviceChanged();
     _stopTimerFastSync();
 
     // 记录该设备
     final rs = await storage?.saveDeviceInfoExtToDisk(DeviceInfoExtModel(
-        macAddress: _macAddress!,
+        macAddress: __macAddress!,
         macAddressFull: macAddress,
         otaMode: otaMode,
         deviceName: deviceName ?? '',
@@ -590,14 +662,14 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
 
     //storage?.setBool(key: deviceBind.keyIsBindState, value: isBinded);
     await storage?.saveBindStatus(isBinded);
-    connectStatusChanged?.add(_isConnected);
+    connectStatusChanged.add(__isConnected);
     // mode: 0 没有绑定, 1 已经绑定, 2 升级模式, 3 重连, 4 泰凌微
     if (otaMode) {
       // 设置c库绑定模式
       await _setBindMode(2);
       logger?.d('set mode: 2');
       // 协议库桥接蓝牙库初始化完成
-      statusSdkNotification?.add(IDOStatusNotification.protocolConnectCompleted);
+      statusSdkNotification.add(IDOStatusNotification.protocolConnectCompleted);
       _isConnecting = false;
       return Future(() => true);
     } else {
@@ -611,14 +683,14 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
       // 非ota模式时，发送连接指令
       await send(evt: CmdEvtType.connected).first;
       // 协议库桥接蓝牙库初始化完成
-      statusSdkNotification?.add(IDOStatusNotification.protocolConnectCompleted);
+      statusSdkNotification.add(IDOStatusNotification.protocolConnectCompleted);
       return Future(() => true);
     }
   }
 
   /// 快速配置中不允许其他指令调用
   bool _canSend(int evt) {
-    if (_isFastSynchronizing) {
+    if (__isFastSynchronizing) {
       return {1, 2, 104, 110, 202, 204, 300, 301, 303, 341, 336, 352, 354, 506}
           .contains(evt);
     }
@@ -694,7 +766,7 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
       if (deviceInfo.platform == 40) {
         libManager.send(evt: CmdEvtType.getMtuInfo);
       }
-      statusSdkNotification?.add(rs
+      statusSdkNotification.add(rs
           ? IDOStatusNotification.fastSyncCompleted
           : IDOStatusNotification.fastSyncFailed);
     });
@@ -723,6 +795,38 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
         logger?.d("clear v3 health data rs: $rs");
       }
     });
+  }
+
+  /// 只监听设备响应数据
+  _registerBleReceiveData() {
+    _coreMgr.streamListenReceiveData.stream.listen((tuple) {
+      int code = tuple.item1;
+      int evt = tuple.item2;
+      // 5106 - 算法原始数据采集 操作0x02为数据采集中
+      if (evt == 5106 && code == 0) {
+        final jsonStr = tuple.item3;
+        try {
+          final Map<String, dynamic> json = jsonDecode(jsonStr);
+          // 0x01为开始采集,0x02为数据采集中,0x03为结束采集, 0x04为设置开关,0x05为查询开关
+          if (json.containsKey("operate") && (json["operate"] as int) == 2 && json.containsKey("info_items")) {
+            final errCode = json["error_code"] != null ? json["error_code"] as int : 0;
+            if (errCode != 0) {
+              logger?.e("算法原始数据采集 errCode: $errCode");
+              return;
+            }
+            deviceRawDataReportStream.add(DeviceRawDataReportModel(1,  jsonEncode(json["info_items"])));
+          }
+        } catch (e, stacktrace) {
+          logger?.e("算法原始数据采集 json 解析失败: $e\n$stacktrace");
+        }
+      }
+    });
+  }
+
+  _registerBindStateChanged() {
+      deviceBind.listenBindStateChangedNotification((p0) {
+        sdkStateChanged.add(null);
+      });
   }
 
   _registerAlexaReceive() {
@@ -765,11 +869,11 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
           logger?.d("当前处于DFU模式(思澈平台) type == $dataType");
           _isSicheDfuMode = true;
         }
-        statusDeviceNotification?.add(model);
+        statusDeviceNotification.add(model);
       } else if (_controlEventTypeSet.contains(tuple.item2)) {
         final model = IDODeviceNotificationModel(
             controlEvt: tuple.item2, controlJson: tuple.item3);
-        statusDeviceNotification?.add(model);
+        statusDeviceNotification.add(model);
       } else {
         //logger?.v('listenControlEvent controlEvent ${tuple.item2} invalid');
       }
@@ -805,7 +909,7 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
 
     if (mode == 1 || mode == 3) {
       _isFastSynchronizing = true;
-      statusSdkNotification?.add(IDOStatusNotification.fastSyncStarting);
+      statusSdkNotification.add(IDOStatusNotification.fastSyncStarting);
       _startTimerFastSync();
     }
     _coreMgr.setBindMode(mode: mode);
@@ -826,7 +930,7 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
         // 状态（0x00:成功 ，0x01：失败, 0x02:绑定码丢失失败）
         if (authCode == 2) {
           storage?.cleanBindAuthData(); // 清除缓存数据
-          statusSdkNotification?.add(IDOStatusNotification.unbindOnAuthCodeError);
+          statusSdkNotification.add(IDOStatusNotification.unbindOnAuthCodeError);
         }
         return authCode == 0;
       }
@@ -848,7 +952,7 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
         //授权结果 0 成功 , 非0失败； 1:是手表点击拒绝； 2:密码校验失败，3：已经绑定
         if (authCode == 2) {
           storage?.cleanBindEncryptedData(); // 清除缓存数据
-          statusSdkNotification?.add(IDOStatusNotification.unbindOnAuthCodeError);
+          statusSdkNotification.add(IDOStatusNotification.unbindOnAuthCodeError);
         }
         return authCode == 0 || authCode == 3;
       }
@@ -872,8 +976,7 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
               btAddr.map((e) => e.toRadixString(16).padLeft(2, '0')).join(':');
           logger?.d('get bt macAddress：${strAddr.toUpperCase()}');
           deviceInfo.setDeviceBtMacAddress(strAddr.toUpperCase());
-          statusSdkNotification
-              ?.add(IDOStatusNotification.deviceInfoBtAddressUpdateCompleted);
+          statusSdkNotification.add(IDOStatusNotification.deviceInfoBtAddressUpdateCompleted);
         }
 
         if (macAddr != null && macAddr is List) {
@@ -881,10 +984,10 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
               macAddr.map((e) => e.toRadixString(16).padLeft(2, '0')).join('');
           strAddr = strAddr.toUpperCase();
           logger?.d('get macAddress：$strAddr');
-          if (strAddr.isNotEmpty && strAddr != _macAddress) {
-            logger?.e('macAddress error $strAddr $_macAddress');
+          if (strAddr.isNotEmpty && strAddr != __macAddress) {
+            logger?.e('macAddress error $strAddr $__macAddress');
             // 和当前连接设备mac地址不相同，上报此通知
-            statusSdkNotification?.add(IDOStatusNotification.macAddressError);
+            statusSdkNotification.add(IDOStatusNotification.macAddressError);
           }
         }
       }
@@ -926,7 +1029,7 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
       stopSyncConfig(); // 停止同步
       dispose(); // 清除队列
       logger?.d('bind state - not match, notify to unbind~');
-      statusSdkNotification?.add(IDOStatusNotification.unbindOnBindStateError);
+      statusSdkNotification.add(IDOStatusNotification.unbindOnBindStateError);
     } else {
       logger?.d(
           'bind state - ${devInfo == null ? 'devInfo = null' : devInfo.bindState}');
@@ -955,13 +1058,13 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
             _isConnecting = false;
             _isFastSynchronizing = false;
             _stopTimerFastSync();
-            statusSdkNotification?.add(IDOStatusNotification.accountNotMatch);
+            statusSdkNotification.add(IDOStatusNotification.accountNotMatch);
           }else if(errCode == 0){
-            statusSdkNotification?.add(IDOStatusNotification.accountMatched);
+            statusSdkNotification.add(IDOStatusNotification.accountMatched);
           }else if(errCode == 1){
-            statusSdkNotification?.add(IDOStatusNotification.accountFailed);
+            statusSdkNotification.add(IDOStatusNotification.accountFailed);
           }else if(errCode == 3){
-            statusSdkNotification?.add(IDOStatusNotification.accountNil);
+            statusSdkNotification.add(IDOStatusNotification.accountNil);
           }
         }
         return;
@@ -977,10 +1080,10 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
     //logger?.v('call _startTimerFastSync');
     _timerFastSync?.cancel();
     _timerFastSync = Timer(Duration(seconds: _timerFastSyncDuration), () {
-      if (_isFastSynchronizing) {
+      if (__isFastSynchronizing) {
         _isFastSynchronizing = false;
         // statusNotification?.add(IDOStatusNotification.fastSyncTimeout); // 快速配置执行超时 （容易对业务层造成困惑，去掉）
-        statusSdkNotification?.add(IDOStatusNotification.fastSyncFailed); // 上报失败
+        statusSdkNotification.add(IDOStatusNotification.fastSyncFailed); // 上报失败
         logger?.v('fastSyncTimeout');
       }
       logger?.v('call _startTimerFastSync reset _isFastSynchronizing');
@@ -1004,6 +1107,10 @@ extension _IDOProtocolLibManagerInterceptor on _IDOProtocolLibManager {
     } else if (evtType == 5044) {
       // 常用联系人参数特殊符号处理
       return _emojiToUtf8(jsonString);
+    } else if (evtType == CmdEvtType.replyDeviceStartCameraPreviewRequest.evtType) {
+      _isPreviewingCamera = true;
+    } else if (evtType == CmdEvtType.replyDeviceStopCameraPreviewRequest.evtType) {
+      _isPreviewingCamera = false;
     }
     return jsonString;
   }

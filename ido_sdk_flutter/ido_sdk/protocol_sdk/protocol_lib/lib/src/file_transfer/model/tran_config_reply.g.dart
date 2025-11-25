@@ -8,19 +8,19 @@ part of 'tran_config_reply.dart';
 
 TranConfigReply _$TranConfigReplyFromJson(Map<String, dynamic> json) =>
     TranConfigReply(
-      errCode: json['err_code'] as int?,
-      type: json['type'] as int?,
-      evtType: json['evt_type'] as int?,
-      sportType: json['sport_type'] as int?,
-      iconWidth: json['icon_width'] as int?,
-      iconHeight: json['icon_height'] as int?,
-      format: json['format'] as int?,
-      blockSize: json['block_size'] as int?,
-      bigSportsNum: json['big_sports_num'] as int?,
-      msgNum: json['msg_num'] as int?,
+      errCode: (json['err_code'] as num?)?.toInt(),
+      type: (json['type'] as num?)?.toInt(),
+      evtType: (json['evt_type'] as num?)?.toInt(),
+      sportType: (json['sport_type'] as num?)?.toInt(),
+      iconWidth: (json['icon_width'] as num?)?.toInt(),
+      iconHeight: (json['icon_height'] as num?)?.toInt(),
+      format: (json['format'] as num?)?.toInt(),
+      blockSize: (json['block_size'] as num?)?.toInt(),
+      bigSportsNum: (json['big_sports_num'] as num?)?.toInt(),
+      msgNum: (json['msg_num'] as num?)?.toInt(),
       smallSportsAndAnimationNum:
-          json['small_sports_and_animation_num'] as int?,
-      mediumNum: json['medium_num'] as int?,
+          (json['small_sports_and_animation_num'] as num?)?.toInt(),
+      mediumNum: (json['medium_num'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$TranConfigReplyToJson(TranConfigReply instance) =>

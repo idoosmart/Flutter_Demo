@@ -68,8 +68,6 @@ class _FunctionContentState extends State<FunctionContent> {
       S.current.setdisplaymode,
       S.current.setsmartnotfity,
       S.current.setcurrenttime,
-      S.current.setsmartheartrate,
-      S.current.setspo2switch,
     ],
     S.current.getfunction: [
       S.current.getfunctionlist,
@@ -271,6 +269,18 @@ class _FunctionContentState extends State<FunctionContent> {
         case BindStatus.failedOnGetDeviceInfo:
           debugPrint('BindStatus.failedOnGetDeviceInfo');
           break;
+        case BindStatus.timeout:
+          // TODO: Handle this case.
+        case BindStatus.agreeDeleteDeviceData:
+          // TODO: Handle this case.
+        case BindStatus.denyDeleteDeviceData:
+          // TODO: Handle this case.
+        case BindStatus.timeoutOnNewAccount:
+          // TODO: Handle this case.
+        case BindStatus.needConfirmByApp:
+          // TODO: Handle this case.
+        case BindStatus.accountNotMatch:
+          // TODO: Handle this case.
       }
       _updateInformation();
     });

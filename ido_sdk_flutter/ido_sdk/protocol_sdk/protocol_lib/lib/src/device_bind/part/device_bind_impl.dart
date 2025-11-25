@@ -65,6 +65,7 @@ class _IDODeviceBind implements IDODeviceBind {
   Completer<BindStatus>? _completerBind;
   late final _updateSetModeNotification = PublishSubject<int>();
   late final _unbindNotification = PublishSubject<String>();
+  late final _bindStateChangedNotification = PublishSubject<void>();
 
   BindValueCallback<IDODeviceInfo>? funDeviceInfo;
   BindValueCallback<IDOFunctionTable>? funFunctionTable;
@@ -74,7 +75,11 @@ class _IDODeviceBind implements IDODeviceBind {
 
   /// 绑定状态
   bool? _isBinded;
-  bool _isBinding = false;
+  bool __isBinding = false;
+  set _isBinding(bool value) {
+    __isBinding = value;
+    _bindStateChangedNotification.add(null);
+  }
   /// 待app确认绑定结果
   bool _needAppConfirm = false;
   @override
@@ -83,7 +88,7 @@ class _IDODeviceBind implements IDODeviceBind {
   }
 
   @override
-  bool get isBinding => _isBinding;
+  bool get isBinding => __isBinding;
 
   @override
   Stream<bool> setAuthCode(String code, int osVersion) {
@@ -142,12 +147,12 @@ class _IDODeviceBind implements IDODeviceBind {
       return Stream.value(BindStatus.failed);
     }
 
-    if (_isBinding && _completerBind != null && _completerBind!.isCompleted) {
+    if (__isBinding && _completerBind != null && _completerBind!.isCompleted) {
       logger?.e('bind - The previous binding task is still running');
       //_completerBind?.complete(BindStatus.canceled);
     }
 
-    logger?.d('bind - startBind, before _isBinding:$_isBinding');
+    logger?.d('bind - startBind, before _isBinding:$__isBinding');
     _isBinding = true;
     funDeviceInfo = deviceInfo;
     funFunctionTable = functionTable;
@@ -167,7 +172,7 @@ class _IDODeviceBind implements IDODeviceBind {
 
   @override
   void stopBindIfNeed() {
-    if(_isBinding && _completerBind != null && !_completerBind!.isCompleted) {
+    if(__isBinding && _completerBind != null && !_completerBind!.isCompleted) {
       logger?.d('bind - stopBind');
       _completerBind?.complete(BindStatus.failed);
       _completerBind = null;
@@ -196,6 +201,13 @@ class _IDODeviceBind implements IDODeviceBind {
       // 解绑非当前设备
       await storage?.cleanAuthMode(macAddr);
       await storage?.cleanBindStatus(macAddress: macAddr);
+      await storage?.removeCLibFuncTableCache(macAddr);
+      // final cacheDir = await storage?.getCLibFuncTableCachePath(macAddr);
+      // if (cacheDir != null) {
+      //   await _libMgr.send(evt: CmdEvtType.cleanHealthDataOffset, json: jsonEncode({
+      //     "device_cache_dir":cacheDir,"online_status":0
+      //   })).first;
+      // }
       _unbindNotification.add(macAddress);
       return true;
     }
@@ -216,6 +228,13 @@ class _IDODeviceBind implements IDODeviceBind {
         await _cleanAuthData();
         await storage?.cleanAuthMode(macAddr);
         await storage?.cleanBindStatus(macAddress: macAddr);
+        await storage?.removeCLibFuncTableCache(macAddr);
+        // final cacheDir = await storage?.getCLibFuncTableCachePath(macAddr);
+        // if (cacheDir != null) {
+        //   await _libMgr.send(evt: CmdEvtType.cleanHealthDataOffset, json: jsonEncode({
+        //     "device_cache_dir":cacheDir,"online_status":0
+        //   })).first;
+        // }
         //_coreMgr.setBindMode(mode: 0);
         _unbindNotification.add(macAddress);
       } catch (e) {
@@ -236,6 +255,12 @@ class _IDODeviceBind implements IDODeviceBind {
   StreamSubscription listenUnbindNotification(
       void Function(String macAddress) func) {
     return _unbindNotification.listen(func);
+  }
+
+  @override
+  StreamSubscription listenBindStateChangedNotification(
+      void Function(void) func) {
+    return _bindStateChangedNotification.listen(func);
   }
 }
 

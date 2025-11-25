@@ -19,6 +19,7 @@ import com.example.flutter_bluetooth.ble.DeviceManager.locateBTDevice
 import com.example.flutter_bluetooth.ble.DeviceManager.locateBleDevice
 import com.example.flutter_bluetooth.ble.callback.BluetoothCallback
 import com.example.flutter_bluetooth.ble.config.BLEGattAttributes
+import com.example.flutter_bluetooth.ble.device.DeviceBusinessManager
 import com.example.flutter_bluetooth.ble.protocol.ProtoMaker
 import com.example.flutter_bluetooth.ble.scan.ScanLeCallBack
 import com.example.flutter_bluetooth.ble.scan.ScanManager
@@ -45,6 +46,7 @@ import com.example.flutter_bluetooth.utils.Constants.RequestMethod.GET_DOCUMENT_
 import com.example.flutter_bluetooth.utils.Constants.RequestMethod.GET_SPP_STATE
 import com.example.flutter_bluetooth.utils.Constants.RequestMethod.SEND_DATA
 import com.example.flutter_bluetooth.utils.Constants.RequestMethod.SEND_SPP_DATA
+import com.example.flutter_bluetooth.utils.Constants.RequestMethod.SET_IGNORE_PHONE_MODELS
 import com.example.flutter_bluetooth.utils.Constants.RequestMethod.START_DFU
 import com.example.flutter_bluetooth.utils.Constants.RequestMethod.START_PAIR
 import com.example.flutter_bluetooth.utils.Constants.RequestMethod.START_SCAN
@@ -54,7 +56,6 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.*
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import java.util.*
 
 
 /** FlutterBluetoothPlugin */
@@ -141,6 +142,14 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
             callServices(deviceAddress,services)
         }
 
+        override fun callOnDeviceAlreadyBindAndNotSupportRebind() {
+            onConnectResult(deviceAddress, error = Constants.BleConnectFailedError.DEVICE_ALREADY_BIND_AND_NOT_SUPPORT_REBIND)
+        }
+
+        override fun callOnDeviceHasBeenReset() {
+            onConnectResult(deviceAddress, error = Constants.BleConnectFailedError.DEVICE_HAS_BEEN_RESET)
+        }
+
         override fun callOnConnectStart() {
         }
 
@@ -196,6 +205,10 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
 
         override fun callOnGattErrorAndNeedRebootBluetooth() {
             onConnectResult(deviceAddress, error = Constants.BleConnectFailedError.GATT_ERROR)
+        }
+
+        override fun callOnConnectTerminated() {
+            onConnectResult(deviceAddress, error = Constants.BleConnectFailedError.CONNECT_TERMINATED)
         }
 
         override fun callOnConnectClosed() {
@@ -275,6 +288,7 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
             mBluetoothAdapter = mBluetoothManager?.adapter
             LogTransfer.instance.init(channel)
             registerA2dpListener()
+            DeviceBusinessManager.init(messenger)
             val isMagic = OSUtil.isMagicOS()
             Logger.p("onAttachedToEngine, engin = ${pluginBinding?.flutterEngine}, isMagic = $isMagic, pid = ${Process.myPid()}")
         }
@@ -474,6 +488,13 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
             GET_DOCUMENT_PATH -> {
                 val path = this.context?.filesDir?.parent
                 result.success(path)
+            }
+            SET_IGNORE_PHONE_MODELS->{
+                val params: Map<String, Any?>? = call.arguments()
+                val models = params?.get("models") as List<String>?
+                Logger.p("setConfigPhoneModels: $models")
+                OSUtil.setSppBlackList(models)
+                result.success(true)
             }
         }
     }
@@ -701,12 +722,21 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
         try {
             val params: Map<String, Any?>? = call.arguments()
             Logger.p("removeBond start, params = $params")
-            val btMacAddress = params?.get("btMacAddress") as String?
-            if (btMacAddress.isNullOrEmpty() || !BluetoothAdapter.checkBluetoothAddress(btMacAddress)) {
-//                result.error(BluetoothError.BLUETOOTH_INVALID_PARAMS)
-                result.success(false)
-                Logger.p("removeBond failed!")
-                return
+            var btMacAddress = params?.get("btMacAddress") as String?
+            val macAddress = params?.get("macAddress") as String?
+//            if (btMacAddress.isNullOrEmpty() || !BluetoothAdapter.checkBluetoothAddress(btMacAddress)) {
+////                result.error(BluetoothError.BLUETOOTH_INVALID_PARAMS)
+//                result.success(false)
+//                Logger.p("removeBond failed!")
+//                return
+//            }
+            if (btMacAddress.isNullOrEmpty() || !BluetoothAdapter.checkBluetoothAddress(btMacAddress) || "00:00:00:00:00:00" == btMacAddress) {
+                if (macAddress.isNullOrEmpty() || !BluetoothAdapter.checkBluetoothAddress(macAddress)) {
+                    Logger.p("removeBond , ble macAddress is also invalid")
+                } else {
+                    Logger.p("removeBond, invalid bt macAddress，use ble macAddress")
+                    btMacAddress = macAddress
+                }
             }
             val btDevice = locateBTDevice(btMacAddress)
             val removeResult = btDevice?.removePair() ?: PairedDeviceUtils.removeBondState(btMacAddress)
@@ -714,6 +744,7 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
             result.success(removeResult)
         } catch (e: Exception) {
 //            result.error(BluetoothError.BLUETOOTH_ERROR)
+            Logger.p("removeBond e: $e")
             result.success(false)
         }
     }

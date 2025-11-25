@@ -149,7 +149,7 @@ public class SicheDFUManager {
                 printLog("filepath:"+filePath);
                 int id = -999;
                 if(filePath.contains(".zip")){
-                    id = Protocol.IMAGE_ID_RES;
+                    id = Protocol.IMAGE_ID_NAND_RES;
                 }else if(filePath.contains("ctrl_packet.bin")){
                     id = Protocol.IMAGE_ID_CTRL;
                 }
@@ -166,6 +166,8 @@ public class SicheDFUManager {
                     id= Protocol.IMAGE_ID_RES;
                 }else if(filePath.contains("outdyn.bin")){
                     id = Protocol.IMAGE_ID_DYN;
+                }else  if(filePath.contains("outmusic.bin")) {
+                    id = Protocol.IMAGE_ID_MUSIC;
                 }
                 printLog("image type: "+id);
                 if(id != -999){ //防止里面有不需要的文件
@@ -181,9 +183,8 @@ public class SicheDFUManager {
             for (String filePath:files){
                 printLog("filepath:"+filePath);
                 int id = -999;
-                if(filePath.contains(".zip")){
-                    id = Protocol.IMAGE_ID_RES;
-                } else if (filePath.contains("ctrl_packet.bin")) {
+                //nor 没有查分包，所以不需要。zip
+                if (filePath.contains("ctrl_packet.bin")) {
                     id = Protocol.IMAGE_ID_CTRL;
                 }
                 else if (filePath.contains("outER_IROM1.bin") || filePath.contains("ER_IROM1.bin")) {
@@ -197,6 +198,8 @@ public class SicheDFUManager {
                     id = Protocol.IMAGE_ID_RES;
                 }else if(filePath.contains("outER_IROM3.bin")){
                     id = Protocol.IMAGE_ID_FONT;
+                }else  if(filePath.contains("outmusic.bin")) {
+                    id = Protocol.IMAGE_ID_MUSIC;
                 }
                 printLog("image type: "+id);
                 if(id != -999){ //防止里面有不需要的文件
@@ -238,6 +241,7 @@ public class SicheDFUManager {
         regitsterDfuLocalBroadcast();
         if(paths==null || paths.size()==0){
             printLog("update paths null");
+            upgradeFailed();
             return;
         }
         for(int i=0;i<paths.size();i++){
@@ -247,10 +251,10 @@ public class SicheDFUManager {
         if(platForm == PLATFORM_SICHE){
             if (isIndfu){
                 printLog("update is indfu");
-                sifliDFUService.startActionDFUNand(getContext(),update_mac,paths,Protocol.DFU_MODE_RESUME,0);
+                sifliDFUService.startActionDFUNand(getContext(),update_mac,paths,1,0);
             }else {
                 printLog("update is normal");
-                sifliDFUService.startActionDFUNand(getContext(),update_mac,paths,Protocol.DFU_MODE_NORMAL,0);
+                sifliDFUService.startActionDFUNand(getContext(),update_mac,paths,1,0);
             }
         }else if(platForm == PLATFORM_SICHE_NOR){
             if (isIndfu){
@@ -258,7 +262,7 @@ public class SicheDFUManager {
                 sifliDFUService.startActionDFUNorExt(getContext(),update_mac,paths,1,0);
             }else {
                 printLog("update nor is normal");
-                sifliDFUService.startActionDFUNorExt(getContext(),update_mac,paths,0,0);
+                sifliDFUService.startActionDFUNorExt(getContext(),update_mac,paths,1,0);
             }
 
         }
@@ -272,7 +276,7 @@ public class SicheDFUManager {
     private void reTryUpdate(){
         printLog("update is reTryUpdate");
         if(platForm == PLATFORM_SICHE){
-            sifliDFUService.startActionDFUNand(getContext(),update_mac,paths,Protocol.DFU_MODE_RESUME,0);
+            sifliDFUService.startActionDFUNand(getContext(),update_mac,paths,1,0);
         }else if(platForm == PLATFORM_SICHE_NOR){
             sifliDFUService.startActionDFUNorExt(getContext(),update_mac,paths,1,0);
         }
