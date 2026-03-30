@@ -123,45 +123,6 @@ bridgeConnect() async {
     }
   });
 
-  //监听连接状态
-  bluetoothManager.deviceState().listen((value) async {
-    if (value.errorState == IDOBluetoothDeviceConnectErrorType.pairFail) {
-      //  配对异常提示去忽略设备
-    }
-    if ((value.state == IDOBluetoothDeviceStateType.connected &&
-        (value.macAddress != null && value.macAddress!.isNotEmpty))) {
-      // 设备连接成功
-      // 获取ota枚举类型
-      final isTlwOta = bluetoothManager.currentDevice?.isTlwOta ?? false;
-      final isOta = bluetoothManager.currentDevice?.isOta ?? false;
-      final otaType = isTlwOta
-          ? IDOOtaType.telink
-          : isOta
-              ? IDOOtaType.nordic
-              : IDOOtaType.none;
-
-      // 获取设备名字
-      final devicenName = bluetoothManager.currentDevice?.name;
-      var uniqueId = value.macAddress!;
-
-      // 获取设备uuid(只有ios)
-      if (Platform.isIOS && bluetoothManager.currentDevice?.uuid != null) {
-        uniqueId = bluetoothManager.currentDevice!.uuid!;
-      }
-
-      // 执行协议库连接设备
-      await libManager.markConnectedDeviceSafe(
-          uniqueId: uniqueId,
-          otaType: otaType,
-          isBinded: false, // 该状态由使用者记录
-          deviceName: devicenName);
-    } else if (value.state == IDOBluetoothDeviceStateType.disconnected) {
-      // 设备断线
-      await libManager.markDisconnectedDevice(
-          macAddress: value.macAddress, uuid: value.uuid);
-    }
-  });
-
   /// 监听蓝牙状态
   bluetoothManager.bluetoothState().listen((event) async {
     // 获取设备mac地址

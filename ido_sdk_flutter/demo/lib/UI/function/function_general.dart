@@ -44,6 +44,8 @@ import 'setting/mainUISort_set.dart';
 import 'setting/blueToothContact_set.dart';
 import 'setting/appnotifyStatus_set.dart';
 import 'setting/medicationRecord_set.dart';
+import 'setting/factoryReset_set.dart';
+import 'setting/rebootDevice_set.dart';
 import 'getting/function_get.dart';
 import 'control/function_control.dart';
 
@@ -179,6 +181,10 @@ class _GeneralState extends State<GeneralContent> {
         SmartNotfitySet(navTitle: S.current.setsmartnotfity), // 设置v2智能提醒
     S.current.setcurrenttime:
         CurrentTimeSet(navTitle: S.current.setcurrenttime), // 设置当前时间
+    S.current.factoryreset:
+        FactoryResetSet(navTitle: S.current.factoryreset), // 恢复出厂
+    S.current.rebootdevice:
+        RebootDeviceSet(navTitle: S.current.rebootdevice), // 重启设备
     S.current.setalarmremind:
         AlarmRemindSet(navTitle: S.current.setalarmremind), // 设置闹钟提醒
     S.current.setlongsitremind:

@@ -4,8 +4,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:demo/UI/function/control/function_sync.dart';
+import 'package:demo/utility/bind_state_storage.dart';
 import 'package:flutter/material.dart';
 import '../alexa/home_page.dart';
+import '../common/Toast.dart';
 import 'function_general.dart';
 import '../../generated/l10n.dart';
 import 'package:flutter_bluetooth/ido_bluetooth.dart';
@@ -68,6 +70,8 @@ class _FunctionContentState extends State<FunctionContent> {
       S.current.setdisplaymode,
       S.current.setsmartnotfity,
       S.current.setcurrenttime,
+      S.current.factoryreset,
+      S.current.rebootdevice
     ],
     S.current.getfunction: [
       S.current.getfunctionlist,
@@ -143,6 +147,15 @@ class _FunctionContentState extends State<FunctionContent> {
 
     _streamSubscriptionBleState = bluetoothManager.deviceState().listen((event) async {
       print('ble deviceState:${event.state.toString()}');
+
+      if (event.errorState == IDOBluetoothDeviceConnectErrorType.pairFail) {
+        //  配对异常提示去忽略设备
+        if(Platform.isIOS) {
+          libManager.cache.writeLog("配对异常，需要手动忽略设备（设置-蓝牙-找到设备-\"!\")-忽略此设备");
+          Toast.toast(context, msg: "配对异常，需要手动忽略设备（设置-蓝牙-找到设备-\"!\")-忽略此设备", showTime: 3*1000);
+        }
+      }
+
       if ((event.state == IDOBluetoothDeviceStateType.connected &&
           event.macAddress != null &&
           event.macAddress!.isNotEmpty)) {
@@ -158,8 +171,8 @@ class _FunctionContentState extends State<FunctionContent> {
             : device.isOta
                 ? IDOOtaType.nordic
                 : IDOOtaType.none;
-        final isBinded = await libManager.cache
-            .loadBindStatus(macAddress: event.macAddress!);
+        final isBinded = await BindStateStorage.load(event.macAddress!);
+        this.isBinded = isBinded;
         await libManager.markConnectedDeviceSafe(
             uniqueId: uniqueId,
             otaType: otaType,
@@ -177,11 +190,38 @@ class _FunctionContentState extends State<FunctionContent> {
 
       print(event.toJson());
       deviceConnectState = event.state.toString();
+      if(event.errorState == IDOBluetoothDeviceConnectErrorType.deviceAlreadyBindAndNotSupportRebind ||
+          event.errorState == IDOBluetoothDeviceConnectErrorType.deviceHasBeenReset) {
+        final msg = event.errorState==IDOBluetoothDeviceConnectErrorType.deviceHasBeenReset? "设备已重置，可以删除设备" : "设备已绑定，不支持重复绑定";
+        debugPrint(msg);
+        deviceConnectState="${event.state}，$msg";
+      }
+
       _updateInformation();
     });
 
     _streamSubscriptionLibStatus = libManager.listenStatusNotification((status) async {
-      if (status == IDOStatusNotification.fastSyncCompleted) {}
+      print("sdk状态变更：$status ");
+      if (status == IDOStatusNotification.fastSyncStarting) {
+        // 快速配置开始，sdk内部会屏蔽指令调用
+        EasyLoading.show(status: "执行快速配置中...", maskType: EasyLoadingMaskType.black);
+      }else if (status == IDOStatusNotification.fastSyncCompleted) {
+        // 快速配置完成， 可执行其它指令调用
+        EasyLoading.showSuccess("快速配置完成");
+      }else if (status == IDOStatusNotification.unbindOnBindStateError) {
+        // 绑定状态错误，出现该情况，一般是设备重置了
+        // 绑定状态异常，需要APP解绑 (APP记录的绑定状态和设备信息里的绑定状态不一致时触发)
+        // app在调用libManager.markConnectedDeviceSafe(...),其中isBinded传入true时触发，需要app重置这个状态
+        EasyLoading.showError("绑定状态错误", dismissOnTap: true, maskType: EasyLoadingMaskType.black);
+        if (bluetoothManager.currentDevice?.macAddress != null) {
+          debugPrint('绑定状态不匹配 需解绑');
+          await BindStateStorage.clear(bluetoothManager.currentDevice!.macAddress!);
+          isBinded = false;
+          _updateInformation();
+          libManager.deviceBind.unbind(macAddress: bluetoothManager.currentDevice!.macAddress!, isForceRemove: true);
+        }
+
+      }
     });
   }
 
@@ -237,16 +277,22 @@ class _FunctionContentState extends State<FunctionContent> {
         case BindStatus.failed:
           debugPrint('绑定失败');
           EasyLoading.showError(S.current.bindfailed);
-          isBinded = true;
+          isBinded = false;
           break;
         case BindStatus.successful:
           debugPrint('绑定成功');
           isBinded = true;
+          if (libManager.macAddress.isNotEmpty) {
+            BindStateStorage.save(libManager.macAddressFull!, true);
+          }
           EasyLoading.showSuccess(S.current.bindsuccess);
           break;
         case BindStatus.binded:
           debugPrint('该设备已绑定');
           isBinded = true;
+          if (libManager.macAddress.isNotEmpty) {
+            BindStateStorage.save(libManager.macAddressFull!, true);
+          }
           break;
         case BindStatus.needAuth:
           debugPrint('需要配对码绑定');
@@ -294,13 +340,16 @@ class _FunctionContentState extends State<FunctionContent> {
           res ? S.current.unbindsuccess : S.current.unbindfailed);
       if (res) {
         isBinded = false;
+        if (libManager.macAddress.isNotEmpty) {
+          BindStateStorage.clear(libManager.macAddress);
+        }
         _updateInformation();
       }
     });
   }
 
   _Fn? jumpFuntionViewCon(BuildContext context, String title) {
-    print('jumpFuntionViewCon==$title');
+    //print('jumpFuntionViewCon==$title');
 
     final device =
         context.findAncestorWidgetOfExactType<FunctionIndex>()?.device;
