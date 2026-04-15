@@ -21,8 +21,15 @@ class CommandTask extends BaseTask {
 
   @override
   Future<CmdResponse> call() async {
-    // 绑定接口特殊处理，超时设置为35秒
-    final timeoutSecond = evtType == 200 ? 35 : 20;
+    // 基础指令默认是20秒
+    var timeoutSecond = 20;
+    if (evtType == 200) {
+      // 200 绑定 04 01
+      timeoutSecond = 35;
+    }else if(evtType == 204){
+      // 204 绑定授权 04 05
+      timeoutSecond = 31;
+    }
     return _exec().timeout(Duration(seconds: timeoutSecond), onTimeout: () {
       return _onTimeout();
     });

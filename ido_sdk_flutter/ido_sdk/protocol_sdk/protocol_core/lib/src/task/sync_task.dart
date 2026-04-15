@@ -254,6 +254,8 @@ extension _SyncTask on SyncTask {
         dataType = SyncJsonType.bodyPower;
       }else if (type == 7014) {
         dataType = SyncJsonType.HRV;
+      }else if (type == 7015) {
+        dataType = SyncJsonType.petSleep;
       }else if (type == 7004) {
         dataType = SyncJsonType.activity;
       }else if (type == 7005) {
@@ -262,6 +264,8 @@ extension _SyncTask on SyncTask {
         dataType = SyncJsonType.swim;
       }else if (type == 7018) {
         dataType = SyncJsonType.emotionType;
+      }else if (type == 7019) {
+        dataType = SyncJsonType.activityMerge;
       }
       logger?.d('sync data type: $dataType data: $json error code: $errorCode');
       if (dataCallback != null) {

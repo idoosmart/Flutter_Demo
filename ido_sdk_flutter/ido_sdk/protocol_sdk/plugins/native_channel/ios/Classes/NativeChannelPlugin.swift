@@ -16,6 +16,7 @@ public class NativeChannelPlugin: NSObject, FlutterPlugin {
       AlexaChannelImpl.sharedInstance().alexaFlutter = ApiAlexaFlutter(binaryMessenger: registrar.messenger())
       ApiAlexaHostSetup(registrar.messenger(), AlexaChannelImpl.sharedInstance());
       IdoSifliPlugin.register(with: registrar)
+      IdoNordicPlugin.register(with: registrar)
   }
     
 }

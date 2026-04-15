@@ -5,9 +5,9 @@ class _IDOProtocolLibManager
   static const _pathStorageC = 'c_files';
   static const _pathStorageLib = 'protocol_lib';
   static const _pathStorageLog = 'logs';
-  // 最后修改时间: 2025-11-20 14:34:18
-  static const _sdkVersion = '4.1.10';
-  static const _sdkBuildNum = '691EB66A';
+  // 最后修改时间: 2026-03-26 11:37:45
+  static const _sdkVersion = '4.2.1';
+  static const _sdkBuildNum = '69C4AA17';
 
   static bool _outputToConsoleClib = false;
   static bool _isReleaseClib = true;
@@ -20,7 +20,10 @@ class _IDOProtocolLibManager
 
   late final _alexaOpt = AlexaOperator();
   AlexaDelegate? _alexaDelegate;
+  // 广义不可见字符
+  late final _controlChars = RegExp(r'[\p{C}]', unicode: true);
 
+  int _mtu = 181;
   bool _isInitClib = false;
   late final String _clibVersion = _coreMgr.getClibVersion() ?? 'unknown';
   StreamSubscription<int>? _subscriptFastSyncComplete;
@@ -112,7 +115,7 @@ class _IDOProtocolLibManager
     required String iosUUID,
     required int platform,
     required int deviceId}) async {
-    if (![98, 99].contains(platform)) {
+    if (![98, 99 ,1].contains(platform)) {
       logger?.e("markSiceOtaMode platform:$platform, 98, 99 only");
       return false;
     }
@@ -378,6 +381,12 @@ class _IDOProtocolLibManager
       data = Uint8List.fromList(dataList);
     }
     _coreMgr.receiveDataFromBle(data, macAddress, type);
+    // 获取mtu 02 F0
+    if (type == 0 && data.length > 6 && data[0] == 0x02 && data[1] == 0xF0) {
+      _mtu = data[3] | (data[4] << 8);
+      _coreMgr.mtu = _mtu;
+      debugPrint("get mtu: $_mtu");
+    }
   }
 
   @override
@@ -453,6 +462,9 @@ class _IDOProtocolLibManager
 
   @override
   IDOCache get cache => _cache;
+
+  @override
+  IDOMeasureManager get measure => IDOMeasureManager();
 
   @override
   String get getClibVersion => _clibVersion;
@@ -1111,6 +1123,10 @@ extension _IDOProtocolLibManagerInterceptor on _IDOProtocolLibManager {
       _isPreviewingCamera = true;
     } else if (evtType == CmdEvtType.replyDeviceStopCameraPreviewRequest.evtType) {
       _isPreviewingCamera = false;
+    } else if (evtType == 5051 || evtType == 5012) {
+      // 通知消息提醒 v3 增加8国语言
+      // http://10.0.0.4:8090/pages/viewpage.action?pageId=153663747
+      return _cleanAndSafe(jsonString);
     }
     return jsonString;
   }
@@ -1176,6 +1192,13 @@ extension _IDOProtocolLibManagerInterceptor on _IDOProtocolLibManager {
       }
     }
     return buffer.toString();
+  }
+
+  // 清理控制字符
+  String _cleanAndSafe(String? input) {
+    if (input == null || input.isEmpty) return "";
+    final clean = input.replaceAll(_controlChars, "");
+    return clean.trim();
   }
 
 }

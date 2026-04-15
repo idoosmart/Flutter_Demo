@@ -566,14 +566,35 @@ extension _IDOExchangeExt on _IDOExchangeData {
             reply.paceEasyRun ?? 0,
             reply.segmentItems ?? [],
             reply.cumulativeClimb ?? 0,
-            reply.cumulativeDecline ?? 0);
+            reply.cumulativeDecline ?? 0,
+            reply.minStepStride ?? 0,
+            reply.minStepFrequency ?? 0,
+            reply.slowestKmPace ?? 0,
+            reply.heartRateZonesMode ?? 0,
+            reply.minSpeed ?? 0,
+            reply.easyZoneTime ?? 0,
+            reply.marathonZoneTime ?? 0,
+            reply.thresholdZoneTime ?? 0,
+            reply.anaerobicZoneTime ?? 0,
+            reply.intervalZoneTime ?? 0);
 
         // 补充字段 altitude_item
         if (map["altitude_item"] != null) {
-            _v3Model?.altitudeItems = List<int>.from(map["altitude_item"] as List<dynamic>);
+          _v3Model?.altitudeItems ??= [];
+          try {
+            _v3Model?.altitudeItems = [
+              ...?_v3Model?.altitudeItems,
+              ...List<int>.from(map["altitude_item"] as List<dynamic>),
+            ];
             _v3Model?.altitudeCount = _v3Model?.altitudeItems?.length ?? 0;
-            //logger?.d("补充字段 altitude_item 到v3Model中");
+          }catch(e) {
+            logger?.e("补充字段 altitude_item 异常");
+          }
+          //logger?.d("补充字段 altitude_item 到v3Model中");
         }
+        _v3Model?.minAltitude = (map["min_altitude"] as int?) ?? 0;
+        _v3Model?.maxAltitude = (map["max_altitude"] as int?) ?? 0;
+        _v3Model?.avgAltitude = (map["avg_altitude"] as int?) ?? 0;
 
         _streamV3Exchange.sink.add(_v3Model ?? IDOV3ExchangeModel());
 

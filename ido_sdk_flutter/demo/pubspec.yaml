@@ -48,6 +48,7 @@ dependencies:
   flutter_easyloading: ^3.0.5
   permission_handler: ^11.0.1
   device_info_plus: ^9.1.2
+  shared_preferences: ^2.3.2
 
   # SDK
   protocol_lib:
@@ -88,5 +89,4 @@ flutter:
 
 flutter_intl:
   enabled: true
-
 

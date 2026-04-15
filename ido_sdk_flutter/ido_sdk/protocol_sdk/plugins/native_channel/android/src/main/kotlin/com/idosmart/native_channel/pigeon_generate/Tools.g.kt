@@ -42,6 +42,7 @@ class FlutterError (
   override val message: String? = null,
   val details: Any? = null
 ) : Throwable()
+
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface ApiTools {
   /** 获取appName， 返回形如："VeryFit" */
@@ -61,6 +62,16 @@ interface ApiTools {
    * ```
    */
   fun getPlatformDeviceInfo(): Map<Any, Any?>?
+  /**
+   * 生成自定义表盘文件，数据采用大端模式 （杰里平台）
+   *
+   * [dialFilePath] 表盘文件保存路径
+   * [bgPath] 背景图片路径
+   * [previewPath] 预览图图片路径，覆盖在背景图上方，透明只带时间组件
+   * [color] 字体颜色
+   * [baseBinPath] 基础bin包文件路径
+   */
+  fun makeJieLiDialFile(dialFilePath: String, bgPath: String, previewPath: String, color: Long, baseBinPath: String, callback: (Result<Boolean>) -> Unit)
 
   companion object {
     /** The codec used by ApiTools. */
@@ -129,6 +140,30 @@ interface ApiTools {
               wrapped = wrapError(exception)
             }
             reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.native_channel.ApiTools.makeJieLiDialFile", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val dialFilePathArg = args[0] as String
+            val bgPathArg = args[1] as String
+            val previewPathArg = args[2] as String
+            val colorArg = args[3].let { if (it is Int) it.toLong() else it as Long }
+            val baseBinPathArg = args[4] as String
+            api.makeJieLiDialFile(dialFilePathArg, bgPathArg, previewPathArg, colorArg, baseBinPathArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
           }
         } else {
           channel.setMessageHandler(null)

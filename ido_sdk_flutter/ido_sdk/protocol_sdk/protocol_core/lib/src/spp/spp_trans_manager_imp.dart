@@ -58,7 +58,7 @@ class SppTransManagerImp extends BaseSppProcessor
   ///                     大小    头
   @override
   bool receivedData(Uint8List data) {
-    logger?.i("SPPRX : ${toHexString(data)}");
+    logger?.i("SPPRX : ${toHexString(data, limit: 30)}");
     //解包，可能存在粘包的情况，要循环解包
     int adhesivePacket = 0;
     int offsetAdd = 0;

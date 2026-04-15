@@ -25,6 +25,22 @@ abstract class ToolsImpl {
   /// }
   /// ```
   Future<Map?> getPlatformDeviceInfo();
+
+  /// 生成自定义表盘文件，数据采用大端模式 （杰里平台）
+  ///
+  /// [dialFilePath] 表盘文件保存路径
+  /// [bgPath] 背景图片路径
+  /// [previewPath] 预览图图片路径，覆盖在背景图上方，透明只带时间组件
+  /// [color] 字体颜色
+  /// [baseBinPath] 基础bin包文件路径
+  Future<bool> makeJieLiDialFile(
+      String dialFilePath,
+      String bgPath,
+      String previewPath,
+      int color,
+      String baseBinPath,
+      );
+
 }
 
 class _ToolsImpl extends ToolsDelegate implements ToolsImpl {
@@ -65,5 +81,10 @@ class _ToolsImpl extends ToolsDelegate implements ToolsImpl {
   @override
   Future<Map?> getPlatformDeviceInfo() {
     return tools.getPlatformDeviceInfo();
+  }
+
+  @override
+  Future<bool> makeJieLiDialFile(String dialFilePath, String bgPath, String previewPath, int color, String baseBinPath) {
+    return tools.makeJieLiDialFile(dialFilePath, bgPath, previewPath, color, baseBinPath);
   }
 }

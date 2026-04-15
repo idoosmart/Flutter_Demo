@@ -98,6 +98,6 @@
 -keep class com.realsil.**{*;}
 
 #升级
--keep class com.example.flutter_bluetooth.**{*;}
+-keep class com.idosmart.bluetooth.**{*;}
 
 -keep class no.nordicsemi.android.dfu.**{ *; }

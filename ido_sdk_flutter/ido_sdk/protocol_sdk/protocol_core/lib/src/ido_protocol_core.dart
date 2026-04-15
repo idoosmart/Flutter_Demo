@@ -29,6 +29,10 @@ abstract class IDOProtocolCoreManager {
 
   SifliChannelImpl? get sifliChannel;
 
+  NordicChannelImpl? get nordicChannel;
+
+  late int mtu;
+
   /// 初始化c库
   Future<bool> initClib();
 
@@ -221,4 +225,7 @@ abstract class IDOProtocolCoreManager {
 
   /// 初始化思澈文件传输通道
   void initSifliChannel();
+
+  /// 初始化 Nordic DFU 文件传输通道
+  void initNordicChannel();
 }

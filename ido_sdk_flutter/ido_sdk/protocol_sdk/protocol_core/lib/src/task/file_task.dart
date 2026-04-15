@@ -43,6 +43,8 @@ class FileTask extends BaseTask {
       _cancelVoice();
     } else if (_isSilfiOta()) {
       _cancelSilfi();
+    } else if (_isNordicOta()) {
+      _cancelNordic();
     } else {
       _cancelNormal();
     }
@@ -70,6 +72,8 @@ extension _FileTask on FileTask {
       return _execVoice();
     } else if (_isSilfiOta()) {
       return _execSilfi();
+    } else if (_isNordicOta()) {
+      return _execNordic();
     } else {
       return _execNormal();
     }
@@ -83,7 +87,11 @@ extension _FileTask on FileTask {
     分区表 0x01
     agps 文件 0x02
     gps固件 0x03
-    支持文件 0xff */
+    支持文件 0xff
+    离线地图 .db \ .idx \ .mlp ⼀个离线地图是⼀个⽬录，⽬录下还有⼦⽬录，然后有系列⽂件 0x1A
+    轨迹⽂件 .GPX 0x1B
+    吃药提醒图⽚ .medic 0x1C
+    */
     switch (fileTranItem.dataType) {
       case FileTranDataType.unknown:
         return 0x00;
@@ -98,6 +106,12 @@ extension _FileTask on FileTask {
         return 0xff;
       case FileTranDataType.voice_alexa:
         return 0xff;
+      case FileTranDataType.map:
+        return 0x1A;
+      case FileTranDataType.gpx:
+        return 0x1B;
+      case FileTranDataType.medic:
+        return 0x1C;
     }
   }
 
@@ -115,6 +129,14 @@ extension _FileTask on FileTask {
   bool _isSilfiOta() {
     // 98: 思澈1, 99: 思澈2
     if ((fileTranItem.platform == 98 || fileTranItem.platform == 99) && fileTranItem.dataType == FileTranDataType.fw) {
+      return true;
+    }
+    return false;
+  }
+
+  bool _isNordicOta() {
+    // 1: Nordic Zephyr DFU
+    if (fileTranItem.platform == 1 && fileTranItem.dataType == FileTranDataType.fw) {
       return true;
     }
     return false;
@@ -428,8 +450,7 @@ extension _FileTaskSilfi on FileTask {
       // 解压文件
       await _unzipFile(fileTranItem.filePath, tmpDir);
       // 兼容多级目录情况，找到bin文件所在的目录并返回
-      final newUnzipDir = (await findBinFileDirectory(tmpDir)) ?? tmpDir;
-      final fileList = await _getDirFiles(newUnzipDir);
+      final fileList = await _getDirFiles(tmpDir);
       if (fileList == null || fileList.isEmpty) {
         logger?.e('silfi - unzip files is empty');
         _status = TaskStatus.stopped;
@@ -522,24 +543,128 @@ extension _FileTaskSilfi on FileTask {
   Future<List<String>?> _getDirFiles(String dirPath) async {
     final dir = Directory(dirPath);
     if (await dir.exists()) {
-      return Future(() => dir.listSync().map((e) => e.path).toList());
+      final entities = await dir.list(recursive: true).toList();
+      return entities.whereType<File>().map((e) => e.path).toList();
     }
-    return Future(() => null);
+    return null;
   }
 
-  /// 获取.bin文件目录
-  Future<String?> findBinFileDirectory(String startPath) async {
-    final dir = Directory(startPath);
+  // /// 获取.bin文件目录
+  // Future<String?> findBinFileDirectory(String startPath) async {
+  //   final dir = Directory(startPath);
+  //   try {
+  //     await for (final entity in dir.list(recursive: true)) {
+  //       if (entity is File && path.extension(entity.path) == '.bin') {
+  //         return "${path.dirname(entity.path)}/";
+  //       }
+  //     }
+  //   } catch (e) {
+  //     logger?.e('findBinFileDirectory: $e');
+  //   }
+
+  //   return null;
+  // }
+}
+
+/// Nordic Zephyr DFU（OTA文件传输）
+extension _FileTaskNordic on FileTask {
+  _cancelNordic() {
+    logger?.d('nordic - stop DFU');
+    _coreMgr.nordicChannel?.nordicHost.stopDFU();
+    if (_completer != null && !_completer!.isCompleted) {
+      statusCallback(ErrorCode.failed, 0);
+      _status = TaskStatus.finished;
+      final res = CmdResponse(code: ErrorCode.failed, msg: "call stop DFU");
+      _completer?.complete(res);
+      _completer = null;
+    }
+  }
+
+  Future<CmdResponse> _execNordic() async {
+    final future = _completer!.future;
     try {
-      await for (final entity in dir.list(recursive: true)) {
-        if (entity is File && path.extension(entity.path) == '.bin') {
-          return "${path.dirname(entity.path)}/";
-        }
+      final file = File(fileTranItem.filePath);
+
+      // 检查文件是否存在
+      if (!await file.exists()) {
+        logger?.e(
+            'nordic - file not exists filePath:${fileTranItem.filePath}  fileName:${fileTranItem.fileName}');
+        _status = TaskStatus.stopped;
+        final res = CmdResponse(code: ErrorCode.failed, msg: 'nordic - file not exists');
+        _completer!.complete(res);
+        return future;
       }
+
+      // 检查 macAddress
+      if (fileTranItem.macAddress == null || fileTranItem.macAddress!.isEmpty) {
+        logger?.e('nordic - macAddress/uuid is null or empty');
+        _status = TaskStatus.stopped;
+        final res = CmdResponse(code: ErrorCode.failed, msg: 'nordic - macAddress/uuid is null');
+        _completer!.complete(res);
+        return future;
+      }
+
+      logger?.d("nordic - 1");
+
+      // 设置日志回调
+      _coreMgr.nordicChannel?.logBlock = (String logMsg) {
+        logger?.d("nordic - native - $logMsg");
+      };
+
+      // 设置状态回调
+      _coreMgr.nordicChannel?.stateBlock = (NordicDFUState state, String errorMessage) {
+        logger?.d("nordic - state:${state.toString()}  errorMessage:$errorMessage");
+        if (state == NordicDFUState.completed) {
+          if (_completer != null && !_completer!.isCompleted) {
+            statusCallback(ErrorCode.success, 0);
+            _status = TaskStatus.finished;
+            final res = CmdResponse(code: ErrorCode.success, msg: 'DFU completed');
+            _completer?.complete(res);
+            _completer = null;
+          }
+        } else if (state == NordicDFUState.failed) {
+          if (_completer != null && !_completer!.isCompleted) {
+            statusCallback(ErrorCode.failed, 0);
+            _status = TaskStatus.finished;
+            final res = CmdResponse(code: ErrorCode.failed, msg: errorMessage);
+            _completer?.complete(res);
+            _completer = null;
+          }
+        } else if (state == NordicDFUState.cancelled) {
+          if (_completer != null && !_completer!.isCompleted) {
+            statusCallback(ErrorCode.canceled, 0);
+            _status = TaskStatus.finished;
+            final res = CmdResponse(code: ErrorCode.canceled, msg: 'DFU cancelled');
+            _completer?.complete(res);
+            _completer = null;
+          }
+        }
+      };
+
+      logger?.d("nordic - 2");
+
+      // 设置进度回调
+      _coreMgr.nordicChannel?.progressBlock = (double progress, String speed) {
+        progressCallback(progress / 100.0);
+      };
+
+      logger?.d("nordic - 3, ${Platform.isAndroid ? "macAddress: " : "uuid: "}${fileTranItem.macAddress}");
+
+      // 启动 Nordic DFU
+      await _coreMgr.nordicChannel?.nordicHost.startDFU(
+        fileTranItem.macAddress!,
+        fileTranItem.filePath,
+        _coreMgr.mtu
+      );
     } catch (e) {
-      logger?.e('findBinFileDirectory: $e');
+      logger?.e("nordic - $e");
+      _status = TaskStatus.stopped;
+      if (_completer != null && !_completer!.isCompleted) {
+        final res = CmdResponse(code: ErrorCode.failed, msg: e.toString());
+        _completer!.complete(res);
+      }
     }
 
-    return null;
+    return future;
   }
 }

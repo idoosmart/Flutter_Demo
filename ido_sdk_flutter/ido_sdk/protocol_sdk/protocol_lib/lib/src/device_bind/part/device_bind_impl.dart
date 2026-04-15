@@ -69,6 +69,7 @@ class _IDODeviceBind implements IDODeviceBind {
 
   BindValueCallback<IDODeviceInfo>? funDeviceInfo;
   BindValueCallback<IDOFunctionTable>? funFunctionTable;
+  BindValueCallback<IDOEncryptedAuthData>? funEncryptedAuthData;
 
   /// 授权模式（0 未知，1 授权码，2 配对码)
   var _authMode = 0;
@@ -139,7 +140,8 @@ class _IDODeviceBind implements IDODeviceBind {
       {required int osVersion,
       required BindValueCallback<IDODeviceInfo> deviceInfo,
       required BindValueCallback<IDOFunctionTable> functionTable,
-      String? userId}) {
+      String? userId,
+      BindValueCallback<IDOEncryptedAuthData>? encryptedAuthData}) {
     if (!IDOProtocolLibManager().isConnected) {
       _isBinding = false;
       //throw UnsupportedError('Unconnected calls are not supported');
@@ -156,6 +158,7 @@ class _IDODeviceBind implements IDODeviceBind {
     _isBinding = true;
     funDeviceInfo = deviceInfo;
     funFunctionTable = functionTable;
+    funEncryptedAuthData = encryptedAuthData;
     _completerBind = Completer();
     return CancelableOperation.fromFuture(_bindExec(osVersion, userId), onCancel: () {
       _isBinding = false;
@@ -262,6 +265,26 @@ class _IDODeviceBind implements IDODeviceBind {
       void Function(void) func) {
     return _bindStateChangedNotification.listen(func);
   }
+
+  @override
+  Future<bool> setEncryptedAuthData(String macAddress, IDOEncryptedAuthData data) async {
+    if (macAddress.isEmpty || data.authData.length < 12) {
+      logger?.e('setEncryptedAuthData - address:$macAddress authData len:${data.authData.length}');
+      return false;
+    }
+    try {
+      // 使用 toCLibJson() 确保与 C 库 JSON 格式兼容
+      // Use toCLibJson() to ensure compatibility with C-lib JSON format
+      final jsonStr = jsonEncode(data.toCLibJson());
+      await storage?.saveBindEncryptedDataToDisk(jsonStr, macAddress);
+      _authMode = 1;
+      await _saveAuthMode();
+      return true;
+    } catch (e) {
+      logger?.e('setEncryptedAuthData error: $e');
+      return false;
+    }
+  }
 }
 
 extension _IDODeviceBindExt on _IDODeviceBind {
@@ -350,7 +373,7 @@ extension _IDODeviceBindExt on _IDODeviceBind {
       }
     }
 
-    if (_isBinded!) {
+    if (_isBinded! || _authMode != 0) {
       if (await _tryBindWithCache()) {
         _markBindStateToClib(true);
         _isBinding = false;
@@ -488,6 +511,15 @@ extension _IDODeviceBindExt on _IDODeviceBind {
       _setEncryptedAuth(jsonEncode(mapEncryptedData));
       _authMode = 1;
       _saveAuthMode();
+      // 触发加密授权数据回调
+      // Trigger encrypted auth data callback
+      try {
+        final authData = IDOEncryptedAuthData.fromJson(
+            Map<String, dynamic>.from(mapEncryptedData));
+        funEncryptedAuthData?.call(authData);
+      } catch (e) {
+        logger?.e('bind - encryptedAuthData callback error: $e');
+      }
     } else if (authLength == 8) {
       logger?.d('绑定 - 需配对码绑定');
       // 绑定码授权
@@ -660,6 +692,16 @@ extension _IDODeviceBindExt on _IDODeviceBind {
         if (!rs) {
           // 清除缓存数据
           await _cleanAuthData();
+        } else if (_authMode == 1) {
+          // 缓存绑定成功，触发加密授权数据回调
+          // Cache bind succeeded, trigger encrypted auth data callback
+          try {
+            final cachedMap = jsonDecode(jsonStr);
+            final authData = IDOEncryptedAuthData.fromJson(cachedMap);
+            funEncryptedAuthData?.call(authData);
+          } catch (e) {
+            logger?.e('bind - encryptedAuthData callback error (cache): $e');
+          }
         }
         return rs;
       }

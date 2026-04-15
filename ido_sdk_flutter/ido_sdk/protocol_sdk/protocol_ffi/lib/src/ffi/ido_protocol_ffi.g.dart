@@ -1567,6 +1567,30 @@ class ProtocolFfiBindings {
   late final _getSifliDialSize = _getSifliDialSizePtr
       .asFunction<int Function(ffi.Pointer<ffi.Char>, int)>();
 
+  /// @brief 压缩文件
+  /// @param fileName 输入文件名
+  /// @param endName 输出文件名
+  /// @param block_size 压缩块大小{1024,4096}
+  /// @return int 0 压缩成功, 1 压缩失败
+  int compressFileToLZ(
+    ffi.Pointer<ffi.Char> fileName,
+    ffi.Pointer<ffi.Char> endName,
+    int block_size,
+  ) {
+    return _compressFileToLZ(
+      fileName,
+      endName,
+      block_size,
+    );
+  }
+
+  late final _compressFileToLZPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>,
+              ffi.Int)>>('compressFileToLZ');
+  late final _compressFileToLZ = _compressFileToLZPtr.asFunction<
+      int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, int)>();
+
   /// @brief 压缩png图片质量
   /// @param inputFilePath   输入文件路径
   /// @param outputFilePath 输出文件路径

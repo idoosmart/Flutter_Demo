@@ -14,6 +14,7 @@ import 'package:image/image.dart';
 import '../device_info/model/device_info_ext_model.dart';
 import '../private/local_storage/local_storage.dart';
 import '../private/isolate/isolate_manager.dart';
+import '../sub_modules/utils/utils_manager.dart';
 import 'package:image/image.dart' as img;
 
 enum SifliSFBoardType {
@@ -37,8 +38,10 @@ class IDOTool {
       {required String inPath,
         required String outPath,
         required ImageFormatType format}) {
-    return _coreMgr.png2Bmp(
+    final rs = _coreMgr.png2Bmp(
         inPath: inPath, outPath: outPath, format: format.realValue);
+    logger?.d("png2Bmp rs: $rs inPath:$inPath, outPath:$outPath} format:$format");
+    return rs;
   }
 
   /// 压缩png图片质量
@@ -88,6 +91,22 @@ class IDOTool {
           'epoFilePath不该在dirPath目录内, 请修改');
     }
 
+    // 检查目录是否存在
+    final dir = Directory(dirPath);
+    if (await dir.exists()) {
+      // recursive: true 表示递归遍历子目录
+      // list() 返回一个 Stream<FileSystemEntity>
+      await for (FileSystemEntity entity in dir.list(recursive: true)) {
+        if (entity is File) {
+          logger?.i('makeEpoFile 文件: ${entity.path}');
+        } else if (entity is Directory) {
+          logger?.i('makeEpoFile 目录: ${entity.path}');
+        }
+      }
+    } else {
+      logger?.i('makeEpoFile 目录不存在');
+    }
+
     const fileName = '0.epo';
     if (!dirPath.endsWith('/')) {
       dirPath += '/'; // c库需要目录最后以 / 结尾
@@ -131,7 +150,14 @@ class IDOTool {
     // if (tmpFile.existsSync()) {
     //   await tmpFile.delete(); // 清理临时文件
     // }
+
+    if (tmpFile.existsSync()) {
+      // await tmpFile.delete(); // 清理临时文件
+      logger?.e("makeSifliDialFile tmpFile $tmpFile 已存在, 需要先清理");
+    }
+
     final rs = _coreMgr.mkSifliDialFile(filePath: inputFilePath);
+    logger?.d("makeSifliDialFile rs: $rs");
     if (rs == 0 && tmpFile.existsSync()) {
       await tmpFile.copy(outputFilePath); // rename
       if (await File(outputFilePath).exists()) {
@@ -213,6 +239,28 @@ class IDOTool {
     }
 
     return tmpFile.path;
+  }
+
+  /// 生成自定义表盘文件，数据采用大端模式 （杰里平台）
+  ///
+  /// [dialFilePath] 表盘文件保存路径
+  /// [bgPath] 背景图片路径
+  /// [previewPath] 预览图图片路径，覆盖在背景图上方，透明只带时间组件
+  /// [color] 字体颜色
+  /// [baseBinPath] 基础bin包文件路径
+  Future<bool> makeJieLiDialFile({
+    required String dialFilePath,
+    required String bgPath,
+    required String previewPath,
+    required int color,
+    required String baseBinPath,
+  }) {
+    return IDOUtilsManager().toJieLiDialFile(
+        dialFilePath: dialFilePath,
+        bgPath: bgPath,
+        previewPath: previewPath,
+        color: color,
+        baseBinPath: baseBinPath);
   }
 
   /// 设置流数据是否输出开关

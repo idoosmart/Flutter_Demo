@@ -76,6 +76,8 @@ android {
         implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
         implementation 'com.squareup.okhttp3:okhttp:3.14.9'
         implementation 'com.squareup.okio:okio:1.17.2'
+        implementation 'no.nordicsemi.android:mcumgr-ble:1.5.2'
+        implementation 'com.google.code.gson:gson:2.8.0'
     }
 
     testOptions {

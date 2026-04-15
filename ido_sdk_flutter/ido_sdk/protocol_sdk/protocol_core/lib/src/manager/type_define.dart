@@ -55,7 +55,7 @@ enum CmdPriority { veryHigh, high, normal, low}
 
 /// 同步数据类型
 /// 数据类型 1:步数 2:心率 3:睡眠 4:血压 5:血氧 6:压力 7:噪音 8:皮温 9:呼吸率 10:身体电量 11:HRV 12:多运动 13:GPS 14:游泳
-/// 15: V2步数 16: V2睡眠 17: V2心率 18: V2血压 19: V2 GPS 20: V2多运动 21: 情绪健康
+/// 15: V2步数 16: V2睡眠 17: V2心率 18: V2血压 19: V2 GPS 20: V2多运动 21: 情绪健康 22: 多运动/游泳/跑步课程/跑步计划/跑后拉伸数据回调
 enum SyncJsonType {
   nullType,
   stepCount,
@@ -78,7 +78,10 @@ enum SyncJsonType {
   v2BloodPressure,
   v2GPS,
   v2Activity,
-  emotionType
+  emotionType,
+  activityMerge,
+  /// 宠物睡眠数据 (v3)
+  petSleep,
 }
 
 /// 同步类型 1:v2健康 2:v2多运动 3:v2 gps 4: v3数据

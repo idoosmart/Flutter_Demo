@@ -2,10 +2,14 @@
 
 class IDOBluetoothUpdateLog{
   String getSdkVersion() {
-    return "4.3.7";
+    return "4.3.9";
   }
 }
 
+///4.3.9
+/// 1. 修复第一次绑定连接设备后，断连时没有触发回连，导致回连慢
+///4.3.8
+/// 1. android更换包名
 ///4.3.7
 /// 1.【优化】iOS补全连接日志记录
 ///4.3.6

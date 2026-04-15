@@ -453,15 +453,25 @@ IDOAppActivityDataV3ExchangeModel _$IDOAppActivityDataV3ExchangeModelFromJson(
       segmentItems: (json['seg_items'] as List<dynamic>?)
           ?.map((e) => e as Map<String, dynamic>)
           .toList(),
+      cumulativeClimb: (json['cumulative_altitude_rise'] as num?)?.toInt(),
+      cumulativeDecline: (json['cumulative_altitude_loss'] as num?)?.toInt(),
+      minStepStride: (json['min_step_stride'] as num?)?.toInt(),
+      minStepFrequency: (json['min_step_frequency'] as num?)?.toInt(),
+      slowestKmPace: (json['slowest_km_pace'] as num?)?.toInt(),
+      heartRateZonesMode: (json['heart_rate_zones_mode'] as num?)?.toInt(),
+      minSpeed: (json['min_speed'] as num?)?.toInt(),
+      easyZoneTime: (json['easy_zone_time'] as num?)?.toInt(),
+      marathonZoneTime: (json['marathon_zone_time'] as num?)?.toInt(),
+      thresholdZoneTime: (json['threshold_zone_time'] as num?)?.toInt(),
+      anaerobicZoneTime: (json['anaerobic_zone_time'] as num?)?.toInt(),
+      intervalZoneTime: (json['interval_zone_time'] as num?)?.toInt(),
     )
       ..day = (json['day'] as num?)?.toInt()
       ..hour = (json['hour'] as num?)?.toInt()
       ..minute = (json['minute'] as num?)?.toInt()
       ..second = (json['second'] as num?)?.toInt()
       ..sportType = (json['sport_type'] as num?)?.toInt()
-      ..maxSpeed = (json['max_speed'] as num?)?.toInt()
-      ..cumulativeClimb = (json['cumulative_altitude_rise'] as num?)?.toInt()
-      ..cumulativeDecline = (json['cumulative_altitude_loss'] as num?)?.toInt();
+      ..maxSpeed = (json['max_speed'] as num?)?.toInt();
 
 Map<String, dynamic> _$IDOAppActivityDataV3ExchangeModelToJson(
         IDOAppActivityDataV3ExchangeModel instance) =>
@@ -535,6 +545,16 @@ Map<String, dynamic> _$IDOAppActivityDataV3ExchangeModelToJson(
       'items': instance.actionData,
       'cumulative_altitude_rise': instance.cumulativeClimb,
       'cumulative_altitude_loss': instance.cumulativeDecline,
+      'min_step_stride': instance.minStepStride,
+      'min_step_frequency': instance.minStepFrequency,
+      'slowest_km_pace': instance.slowestKmPace,
+      'heart_rate_zones_mode': instance.heartRateZonesMode,
+      'min_speed': instance.minSpeed,
+      'easy_zone_time': instance.easyZoneTime,
+      'marathon_zone_time': instance.marathonZoneTime,
+      'threshold_zone_time': instance.thresholdZoneTime,
+      'anaerobic_zone_time': instance.anaerobicZoneTime,
+      'interval_zone_time': instance.intervalZoneTime,
     };
 
 IDOAppHrDataExchangeModel _$IDOAppHrDataExchangeModelFromJson(

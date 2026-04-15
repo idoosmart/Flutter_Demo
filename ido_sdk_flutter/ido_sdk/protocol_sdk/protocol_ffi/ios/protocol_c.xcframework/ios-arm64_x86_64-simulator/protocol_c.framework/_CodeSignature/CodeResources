@@ -6,7 +6,7 @@
 	<dict>
 		<key>Headers/ido_protocol_public_interface.h</key>
 		<data>
-		ljmkx2rWoRbVX2zCdmz3G9rIm/0=
+		/rOJyHeelPFHBuPwoS5AmzF7CfU=
 		</data>
 		<key>Headers/include_help.h</key>
 		<data>
@@ -18,11 +18,11 @@
 		</data>
 		<key>Headers/vbus_evt_app.h</key>
 		<data>
-		ZIY7ZGsNBDKjTu/G5yfnGeHqvXM=
+		YTd6lrwGw4OUdFo6VrRzKz93a7A=
 		</data>
 		<key>Info.plist</key>
 		<data>
-		fxlpVCwzVRsolm9z3lJwFHdKGvI=
+		PBKsgqaIPID/Sru0uanjSdY2n90=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -30,31 +30,11 @@
 		</data>
 		<key>protocol_c.bundle/Info.plist</key>
 		<data>
-		mwRLb289y7C6xTsD2bbjUWYbMkw=
+		MnLC6kIQivELM1BUceCgI0zQq3o=
 		</data>
 		<key>protocol_c.bundle/PrivacyInfo.xcprivacy</key>
 		<data>
 		dbfnQxZShl0R/qqw3Fx5ixCX/VU=
-		</data>
-		<key>protocol_c.bundle/_CodeSignature/CodeDirectory</key>
-		<data>
-		irXjDDNgY+a+UuS2T558aq/Hep4=
-		</data>
-		<key>protocol_c.bundle/_CodeSignature/CodeRequirements</key>
-		<data>
-		OnX22wWFKRSOFN1+obRynMCeyXM=
-		</data>
-		<key>protocol_c.bundle/_CodeSignature/CodeRequirements-1</key>
-		<data>
-		9M5V8dt1CXK5ux/+FRMIZiPI18U=
-		</data>
-		<key>protocol_c.bundle/_CodeSignature/CodeResources</key>
-		<data>
-		h5qUKlQlnUVlSWxyil33pWHUHZ4=
-		</data>
-		<key>protocol_c.bundle/_CodeSignature/CodeSignature</key>
-		<data>
-		2jmj7l5rSw0yVb/vlWAYkK/YBwk=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -63,11 +43,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			ljmkx2rWoRbVX2zCdmz3G9rIm/0=
+			/rOJyHeelPFHBuPwoS5AmzF7CfU=
 			</data>
 			<key>hash2</key>
 			<data>
-			XFgRN+INf68dB319ixP47uLh1MACtGrpRQkRU+KMxfw=
+			m7jID0RDtzSajlb0xQYBZINzXetZtiLf7HNaj68Khek=
 			</data>
 		</dict>
 		<key>Headers/include_help.h</key>
@@ -96,11 +76,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			ZIY7ZGsNBDKjTu/G5yfnGeHqvXM=
+			YTd6lrwGw4OUdFo6VrRzKz93a7A=
 			</data>
 			<key>hash2</key>
 			<data>
-			uzjm1rT9DIudtEPpLfBZ4Z04woisuWDdUlyp9LsdChk=
+			k1JymoIPKSiEadT9x9JtuvjPty69T0kmubiyTi3+X0w=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>
@@ -118,11 +98,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			mwRLb289y7C6xTsD2bbjUWYbMkw=
+			MnLC6kIQivELM1BUceCgI0zQq3o=
 			</data>
 			<key>hash2</key>
 			<data>
-			evk+jPr2cYhORRLInVKAllZVEoQhWTFHJbd507KP/N8=
+			Sh0w4TD6sVzb66WuW9LZeIaQoysT5SI2UBXV4opENq0=
 			</data>
 		</dict>
 		<key>protocol_c.bundle/PrivacyInfo.xcprivacy</key>
@@ -134,61 +114,6 @@
 			<key>hash2</key>
 			<data>
 			QgWVkY3Skk8ohkV7zYlHOyjQry8E76F4rgyddR29I14=
-			</data>
-		</dict>
-		<key>protocol_c.bundle/_CodeSignature/CodeDirectory</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			irXjDDNgY+a+UuS2T558aq/Hep4=
-			</data>
-			<key>hash2</key>
-			<data>
-			rMBK8t6RQsivHFoKlf0x3SsYhgUJ+EX7kGtQMnzjoQY=
-			</data>
-		</dict>
-		<key>protocol_c.bundle/_CodeSignature/CodeRequirements</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			OnX22wWFKRSOFN1+obRynMCeyXM=
-			</data>
-			<key>hash2</key>
-			<data>
-			mHkgkE6rZQ51eIwFSqCwUk5qgL/HGqMt+NI3phdD+YY=
-			</data>
-		</dict>
-		<key>protocol_c.bundle/_CodeSignature/CodeRequirements-1</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			9M5V8dt1CXK5ux/+FRMIZiPI18U=
-			</data>
-			<key>hash2</key>
-			<data>
-			+tM97a1balVPtwPjRBlBVP25mZRJDUH/TxZ3k06MPRY=
-			</data>
-		</dict>
-		<key>protocol_c.bundle/_CodeSignature/CodeResources</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			h5qUKlQlnUVlSWxyil33pWHUHZ4=
-			</data>
-			<key>hash2</key>
-			<data>
-			SHyu2XK2viEP8e9vO+HdyUEz+yPx7WjDpjTIFezkdqo=
-			</data>
-		</dict>
-		<key>protocol_c.bundle/_CodeSignature/CodeSignature</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			2jmj7l5rSw0yVb/vlWAYkK/YBwk=
-			</data>
-			<key>hash2</key>
-			<data>
-			47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=
 			</data>
 		</dict>
 	</dict>

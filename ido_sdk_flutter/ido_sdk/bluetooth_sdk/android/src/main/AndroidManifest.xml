@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.flutter_bluetooth">
+    package="com.idosmart.bluetooth">
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -21,7 +21,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
     <application>
         <service
-            android:name=".dfu.DFUService"
+            android:name="com.idosmart.bluetooth.dfu.DFUService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="specialUse"

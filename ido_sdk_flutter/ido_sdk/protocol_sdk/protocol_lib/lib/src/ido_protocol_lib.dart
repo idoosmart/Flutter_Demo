@@ -165,6 +165,9 @@ abstract class IDOProtocolLibManager {
   /// 缓存
   IDOCache get cache;
 
+  /// 测量管理
+  IDOMeasureManager get measure;
+
   /// 获取C库版本信息
   ///
   /// release_string clib版本号 三位表示release版本 四位表是develop版本

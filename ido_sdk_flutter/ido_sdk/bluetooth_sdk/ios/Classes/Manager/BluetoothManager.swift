@@ -37,14 +37,42 @@ class BluetoothManager: NSObject {
     private var commandQueue: [(Data,CBPeripheral?,CBCharacteristic,CBCharacteristicWriteType)] = [] // 保存要发送的指令队列
     private var sendTimer: Timer? // 定时器用于控制发送间隔
     private let sendInterval: TimeInterval = 0.01 // 10ms
-    private var isNeedPair = false // 是否需要配对
-    private var isHas0AF8 = false // 特征值是否有0AF8
+    private var isNeedPair = false // 是否需要BLE配对加密
+    private var isHas0AF8 = false // 0AF0服务,特征值是否有0AF8
+    private var isHas0AF9 = false // 0AF0服务,特征值是否有0AF9
     private var isBind = false // 设备是否绑定
     private(set) var setNotifyValueSuccess = false //设置通知使能成功
     private var set0AF7NotifyValueSuccess = false //设置0AF7通知使能成功
     private var set0AF2NotifyValueSuccess = false //设置0AF2通知使能成功
 
     private var isIntercept = false // 是否拦截取消断连回调
+    
+    private let hidPairingTimeoutSeconds: TimeInterval = 30.0
+    private var hidPairingTimeoutWorkItem: DispatchWorkItem?
+    
+    private func startHidPairingTimeout(peripheral: CBPeripheral) {
+        cancelHidPairingTimeout()
+
+        var workItem: DispatchWorkItem?
+        workItem = DispatchWorkItem { [weak self, weak peripheral] in
+            guard let self else { return }
+            guard let peripheral else { return }
+            guard let workItem, !workItem.isCancelled else { return }
+
+            self.writeLog("HID 配对超时 \(Int(self.hidPairingTimeoutSeconds))s，主动断开连接", method: "startHidPairingTimeout", className: "BluetoothManager")
+            self.disConnect(peripheral)
+        }
+
+        hidPairingTimeoutWorkItem = workItem
+        if let workItem {
+            DispatchQueue.main.asyncAfter(deadline: .now() + hidPairingTimeoutSeconds, execute: workItem)
+        }
+    }
+    
+    private func cancelHidPairingTimeout() {
+        hidPairingTimeoutWorkItem?.cancel()
+        hidPairingTimeoutWorkItem = nil
+    }
     
     // 定义响应结构体
     struct IDOReadChar0AF8Response {
@@ -54,6 +82,11 @@ class BluetoothManager: NSObject {
         var is_support_repeat_pair: UInt8 = 0
     }
     
+    struct IDONotify0AF9Response {
+        var pair_magic: UInt32 = 0 //确定是否使用ble配对功能 0x14725836  其他：无效数据
+        var device_type: UInt8 = 0 //设备类型 戒指： 3
+        var pair_flag: UInt8 = 0 //HID 配对状态 配对成功：1 配对失败：0
+    }
     
     func addCommandToQueue(_ command: Data,peripheral:CBPeripheral?,characteristic:CBCharacteristic,writeType:CBCharacteristicWriteType) {
         // 将指令加入发送队列
@@ -156,6 +189,7 @@ class BluetoothManager: NSObject {
             return
         }
         self.devicePlatform = 0
+        cancelHidPairingTimeout()
         manager.cancelPeripheralConnection(p)
         writeLog("cancel connection device name = " + String(describing: device.name) + " macAddress = " + String(describing: device.macAddress) , method: "cancelConnect", className:"BluetoothManager")
 
@@ -163,6 +197,7 @@ class BluetoothManager: NSObject {
 
     private func disConnect (_ peripheral: CBPeripheral ){
         self.devicePlatform = 0
+        cancelHidPairingTimeout()
         manager.cancelPeripheralConnection(peripheral)
         writeLog("disConnect peripheral uuidString = \(peripheral.identifier.uuidString)" , method: "disConnect", className:"BluetoothManager")
     }
@@ -228,6 +263,13 @@ class BluetoothManager: NSObject {
                 writeLog("设置为通知的服务 \($0)", method: "setCharacteristics", className:"BluetoothManager")
                 p.setNotifyValue(true, for: $0)
                 notifyCharacteristics.append($0)
+            }else if  c.uuid.isEqual(CBUUID.init(string:"0AF0")) && $0.uuid.isEqual(CBUUID.init(string:"0AF9")) {
+                writeLog("设置为智能戒指HID配对通知的服务 \($0)", method: "setCharacteristics", className:"BluetoothManager")
+                p.setNotifyValue(true, for: $0)
+                // 仅未绑定需等待 0AF9 完成 HID 配对；已绑定已走 connectSucceed，开定时器会因无新通知而误断开
+                if !isBind {
+                    startHidPairingTimeout(peripheral: p)
+                }
             }
         }
     }
@@ -351,6 +393,7 @@ extension BluetoothManager : CBCentralManagerDelegate{
             self.set0AF7NotifyValueSuccess = false
             self.isIntercept = false
             commandQueue.removeAll()
+            cancelHidPairingTimeout()
         }
     }
     
@@ -399,6 +442,7 @@ extension BluetoothManager : CBCentralManagerDelegate{
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         writeLog("didDisconnectPeripheral - " + peripheral.identifier.uuidString + " - " + (error?.localizedDescription ?? ""), method: "didDisconnectPeripheral", className:"BluetoothManager")
         commandQueue.removeAll()
+        cancelHidPairingTimeout()
         self.devicePlatform = 0
         self.setNotifyValueSuccess = false
         self.set0AF2NotifyValueSuccess = false
@@ -429,6 +473,7 @@ extension BluetoothManager : CBPeripheralDelegate{
         
         self.isNeedPair = false
         self.isHas0AF8 = false
+        self.isHas0AF9 = false
         if let e = error {
             writeLog("didDiscoverServices - " + peripheral.identifier.uuidString + " - " + e.localizedDescription, method: "didDiscoverServices", className: nil)
             channel?.invokeMethod(MethodChannel.deviceState.rawValue, arguments: deviceStateData(peripheral,.ServiceFial,platform))
@@ -458,27 +503,56 @@ extension BluetoothManager : CBPeripheralDelegate{
         isOtaWithServices(peripheral: peripheral)
        
         // 查找0AF8 读取特征值
-        if let characteristics = service.characteristics {
+        if service.uuid.isEqual(CBUUID.init(string:"0AF0")),let characteristics = service.characteristics {
             for chars in characteristics {
                 if chars.uuid.isEqual(CBUUID(string: "0AF8")){
                     isHas0AF8 = true
                     peripheral.readValue(for: chars)
                     break
                 }
+                
+                if chars.uuid.isEqual(CBUUID(string: "0AF9")){
+                    isHas0AF9 = true
+                    break
+                }
             }
         }
-        if isHas0AF8 {
-           
+        
+        if isHas0AF8
+        {
+            // 不做处理，等待固件通过0AF8回复配对状态
         }else
         {
-            self.setNotifyValueSuccess = false
-            // 此处才算正在连接设备成功，要不然前面连接成功设备，特征服务未发现无法操作数据
-            setCharacteristics(peripheral, service)
-            if peripheral.services?.count == serviceIndex {
-                self.setNotifyValueSuccess = true
-                channel?.invokeMethod(MethodChannel.deviceState.rawValue, arguments: deviceStateData(peripheral,.none,platform))
-                writeLog("didDiscoverCharacteristicsFor - connectSucceed", method: "didDiscoverCharacteristicsFor", className: nil)
+            if isHas0AF9
+            {
+                self.setNotifyValueSuccess = false
+                // 此处才算正在连接设备成功，要不然前面连接成功设备，特征服务未发现无法操作数据
+                setCharacteristics(peripheral, service)
+                if isBind
+                {
+                    if peripheral.services?.count == serviceIndex
+                    {
+                        self.setNotifyValueSuccess = true
+                        channel?.invokeMethod(MethodChannel.deviceState.rawValue, arguments: deviceStateData(peripheral,.none,platform))
+                        writeLog("didDiscoverCharacteristicsFor - connectSucceed", method: "didDiscoverCharacteristicsFor", className: nil)
+                    }
+                }else
+                {
+                    // 不做处理，等待固件通过0AF9回复HID配对状态
+                }
+            }else
+            {
+                self.setNotifyValueSuccess = false
+                // 此处才算正在连接设备成功，要不然前面连接成功设备，特征服务未发现无法操作数据
+                setCharacteristics(peripheral, service)
+                if peripheral.services?.count == serviceIndex
+                {
+                    self.setNotifyValueSuccess = true
+                    channel?.invokeMethod(MethodChannel.deviceState.rawValue, arguments: deviceStateData(peripheral,.none,platform))
+                    writeLog("didDiscoverCharacteristicsFor - connectSucceed", method: "didDiscoverCharacteristicsFor", className: nil)
+                }
             }
+           
         }
         
     }
@@ -665,11 +739,51 @@ extension BluetoothManager : CBPeripheralDelegate{
                     // 使用旧模式，不配对
                     self.callDevicePair(false, peripheral: peripheral)
                     self.writeLog("使用旧模式，不配对", method: "receiveData 0AF8:", className:"BluetoothManager")
-                    
                 }
             }
             
             
+        }else if characteristic.uuid.isEqual(CBUUID(string: "0AF9")){
+            // 获取特征值数据
+            guard let data = characteristic.value else { return }
+            let dataLength = data.count
+            
+            // 构建日志字符串
+            var logStr = ""
+            data.forEach { byte in
+                logStr += String(format: "%02X ", byte)
+            }
+            logStr = "{length = \(dataLength), bytes = \(logStr)}"
+            self.writeLog("\(logStr)", method: "receiveData 0AF9:", className:"BluetoothManager")
+            // 解析字节数据
+            let bytes = [UInt8](data)
+            
+            
+            var resp = IDONotify0AF9Response()
+            
+            // 解析数据 (注意小端模式)
+            resp.pair_magic = UInt32(bytes[0])        // LSB (最低有效字节)
+            | (UInt32(bytes[1]) << 8)
+            | (UInt32(bytes[2]) << 16)
+            | (UInt32(bytes[3]) << 24)            // MSB (最高有效字节)
+            resp.device_type = bytes[4]
+            resp.pair_flag = bytes[5]
+            
+            // 打印解析结果
+            let respLogStr = String(format: "pair_magic: 0x%08X device_type: %d pair_flag: %d", resp.pair_magic, resp.device_type,resp.pair_flag)
+            self.writeLog("\(respLogStr)", method: "receiveData 0AF9:", className:"BluetoothManager")
+            // 取消 HID 配对超时
+            cancelHidPairingTimeout()
+            if resp.pair_magic == 0x14725836 && resp.pair_flag == 0x01{
+                self.setNotifyValueSuccess = true
+                self.channel?.invokeMethod(MethodChannel.deviceState.rawValue, arguments: deviceStateData(peripheral,.none,self.platform))
+                self.writeLog("didDiscoverCharacteristicsFor - connectSucceed", method: "didDiscoverCharacteristicsFor", className: nil)
+            }else{
+                self.setNotifyValueSuccess = false
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
+                    self.disConnect(peripheral)
+                }
+            }
         }else
         {
             //#endif

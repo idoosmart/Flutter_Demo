@@ -172,7 +172,7 @@ class _IDOBluetoothManager
   }
 
   //监听设备状态
-  _listenDeviceState(IDOBluetoothDeviceStateModel event) {
+  _listenDeviceState(IDOBluetoothDeviceStateModel event) async {
     addLog(
         '_listenDeviceState，macAddress = ${event.macAddress},currentDevice?.macAddress = ${currentDevice?.macAddress}'
         'errorState = '
@@ -197,11 +197,31 @@ class _IDOBluetoothManager
     } else if (event.state == IDOBluetoothDeviceStateType.disconnected &&
         event.errorState != IDOBluetoothDeviceConnectErrorType.deviceAlreadyBindAndNotSupportRebind &&
         event.errorState != IDOBluetoothDeviceConnectErrorType.deviceHasBeenReset &&
-        event.errorState != IDOBluetoothDeviceConnectErrorType.connectTerminated) {
+        event.errorState != IDOBluetoothDeviceConnectErrorType
+            .connectTerminated && event.errorState !=
+        IDOBluetoothDeviceConnectErrorType.pairFail) {
       //如果是ble 配对终止了，则不进行重连
       // currentDevice?.isConnect = false;
       //重连
-      needReconnect();
+      // ios 暂时保持不变
+      if (Platform.isIOS) {
+        //debugPrint('_listenDeviceState ios call needReconnect');
+        needReconnect();
+        return;
+      }
+
+      bool isBind = await _getBindState(currentDevice?.macAddress);
+      if (isBind) {
+        final powerState = await poweredOn;
+        if (!powerState) {
+          addLog('_listenDeviceState，isBind ，powerState off',
+              method: '_listenDeviceState');
+          return;
+        }
+        autoConnect(device: currentDevice);
+      } else {
+        needReconnect();
+      }
     }
 
     ///ios获取Mac地址

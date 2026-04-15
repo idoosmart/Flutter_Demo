@@ -857,7 +857,7 @@ mixin SppTransProcessor on BaseSppProcessor implements SppTransManager {
       logger?.i("忽略空数据包：${toHexString(sendData)}");
       return SUCCESS;
     }
-    logger?.i("SPPTX : ${toHexString(sendData)}");
+    logger?.i("SPPTX : ${toHexString(sendData, limit: 30)}");
     writeDataToBle(sendData);
     return SUCCESS;
   }

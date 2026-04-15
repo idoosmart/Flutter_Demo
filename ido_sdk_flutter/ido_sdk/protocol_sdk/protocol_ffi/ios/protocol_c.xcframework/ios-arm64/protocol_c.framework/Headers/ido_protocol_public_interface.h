@@ -885,6 +885,15 @@ extern int mkSifliDialFile(const char *file_path);
 extern int getSifliDialSize(const char *file_path,int platform);
 
 /**
+ * @brief 压缩文件
+ * @param fileName 输入文件名
+ * @param endName 输出文件名
+ * @param block_size 压缩块大小{1024,4096}
+ * @return int 0 压缩成功, 1 压缩失败
+ * */
+extern int compressFileToLZ(const char *fileName, const char *endName, uint16_t block_size);
+
+/**
  * @brief 压缩png图片质量
  * @param inputFilePath   输入文件路径
  * @param outputFilePath 输出文件路径

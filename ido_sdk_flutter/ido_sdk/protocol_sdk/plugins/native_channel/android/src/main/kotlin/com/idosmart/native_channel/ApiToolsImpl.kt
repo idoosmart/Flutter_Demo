@@ -1,5 +1,7 @@
 package com.idosmart.native_channel
 
+import android.os.Handler
+import android.os.Looper
 import android.content.Context
 import android.os.Environment
 import android.util.Log
@@ -8,6 +10,7 @@ import io.flutter.BuildConfig
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import java.util.TimeZone
 import android.os.Build
+import com.idosmart.native_channel.jieli_dial.CustomDialUtils
 import java.io.File
 
 class ApiToolsImpl : ApiTools {
@@ -52,6 +55,26 @@ class ApiToolsImpl : ApiTools {
     override fun getPlatformDeviceInfo(): Map<Any, Any?>? {
         val devInfo = DeviceInfoManager.getDeviceInfo()
         return mapOf("model" to devInfo.model, "systemVersion" to devInfo.systemVersion, "isRooted" to devInfo.isRooted)
+    }
+
+    override fun makeJieLiDialFile(
+        dialFilePath: String,
+        bgPath: String,
+        previewPath: String,
+        color: Long,
+        baseBinPath: String,
+        callback: (Result<Boolean>) -> Unit
+    ) {
+        val rs = CustomDialUtils.toDialFile(
+            dialFilePath,
+            bgPath,
+            previewPath,
+            color.toInt(),
+            baseBinPath
+        )
+        Handler(Looper.getMainLooper()).post {
+            callback(Result.success(rs))
+        }
     }
 }
 

@@ -69,9 +69,9 @@ class _LocalStorage implements LocalStorage {
   }
 
   @override
-  Future<bool> setString({required String key, required String value}) async {
+  Future<bool> setString({required String key, required String value, String? macAddress}) async {
     final storage = await getStorage();
-    await storage.write(k(key), value);
+    await storage.write(k(key, macAddress), value);
     return Future(() => true);
   }
 
@@ -186,8 +186,8 @@ class _LocalStorage implements LocalStorage {
   }
 
   @override
-  Future<bool> saveBindEncryptedDataToDisk(String data) {
-    // logger?.d('缓存授权码');
+  Future<bool> saveBindEncryptedDataToDisk(String data, [String? macAddress]) {
+    logger?.d('缓存授权码 ${macAddress ?? ''}');
     return setString(key: _keyBindEncryptedData, value: data);
   }
 

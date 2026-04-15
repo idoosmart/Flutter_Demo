@@ -17,6 +17,9 @@ import com.idosmart.native_channel.pigeon_generate.api_get_file_info.ApiGetFileI
 import com.idosmart.native_channel.pigeon_generate.api_sifli.*
 import com.idosmart.native_channel.pigeon_generate.api_tools.ApiTools
 import com.idosmart.native_channel.pigeon_generate.api_tools.ToolsDelegate
+import com.idosmart.native_channel.pigeon_generate.api_nordic.ApiNordicFlutter
+import com.idosmart.native_channel.pigeon_generate.api_nordic.ApiNordicHost
+import com.idosmart.native_channel.nordic.NordicApiHostImpl
 import com.idosmart.native_channel.siche.Config
 import com.idosmart.native_channel.siche.SicheApiHostImpl
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -42,6 +45,7 @@ class NativeChannelPlugin : FlutterPlugin, ApiAlexaHost {
 
     private var application: Application? = null
     var apiSifliFlutter: ApiSifliFlutter? = null
+    var apiNordicFlutter: ApiNordicFlutter? = null
 
 
     internal fun androidLog(msgArg: String) {
@@ -80,6 +84,8 @@ class NativeChannelPlugin : FlutterPlugin, ApiAlexaHost {
         NativeChannelPlugin.instance().apiSifliFlutter = ApiSifliFlutter(messenger)
         Config.init(this.application)
         ApiSifliHost.setUp(messenger, SicheApiHostImpl())
+        NativeChannelPlugin.instance().apiNordicFlutter = ApiNordicFlutter(messenger)
+        ApiNordicHost.setUp(messenger, NordicApiHostImpl())
     }
 
     private fun tearDown() {

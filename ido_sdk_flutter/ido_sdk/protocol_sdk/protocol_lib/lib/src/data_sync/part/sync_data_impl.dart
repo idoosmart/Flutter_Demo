@@ -58,7 +58,7 @@ class _IDOSyncData implements IDOSyncData {
   @override
   List<SyncDataType> getSupportSyncDataTypeList() {
     // 目前支持单项同步的类型
-    final syncTypes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15, 16, 20];
+    final syncTypes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15, 16, 20, 21, 22];
     final supportSyncDataTypes = <int>[];
     for (var type in syncTypes) {
       final rs = IDOProtocolCoreManager().isSupportSyncHealthDataType(type);

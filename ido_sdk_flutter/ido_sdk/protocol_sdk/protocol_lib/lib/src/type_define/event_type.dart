@@ -204,6 +204,16 @@ enum CmdEvtType {
       evtBase: _VBusEvtBase.base_app_get,
       evtType: _VBusEvtType.app_get_activity_switch),
 
+  /// 设备电量提醒开关获取
+  getBatteryReminderSwitch(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.app_get_battery_reminder_switch),
+
+  /// 获取宠物信息
+  getPetInfo(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.app_get_pet_info),
+
   /// 获得固件三级版本和bt的3级版本
   getFirmwareBtVersion(
       evtBase: _VBusEvtBase.base_app_get,
@@ -912,6 +922,16 @@ enum CmdEvtType {
       evtBase: _VBusEvtBase.base_app_set,
       evtType: _VBusEvtType.app_set_activity_switch),
 
+  /// 设备电量提醒开关设置
+  setBatteryReminderSwitch(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.app_set_battery_reminder_switch),
+
+  /// 设置宠物信息
+  setPetInfo(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.app_set_pet_info),
+
   /// 设置喝水提醒
   setDrinkWaterRemind(
       evtBase: _VBusEvtBase.base_app_set,
@@ -1052,7 +1072,7 @@ enum CmdEvtType {
       evtBase: _VBusEvtBase.base_app_set,
       evtType: _VBusEvtType.func_emotion_health),
 
-  /// 情绪健康提醒设置
+  /// v3菜单列表操作
   setV3MenuList(
       evtBase: _VBusEvtBase.base_app_set,
       evtType: _VBusEvtType.func_v3_menu_list),
@@ -1457,10 +1477,25 @@ enum CmdEvtType {
 
   /// 算法原始数据采集
   algorithmRawData(
-  evtBase: _VBusEvtBase.base_app_set,
-  evtType: _VBusEvtType.vbus_evt_app_algorithm_raw_data),
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.vbus_evt_app_algorithm_raw_data),
 
-  /// 算法原始数据采集 (仅限SDK内部使用）
+  /// 车锁管理
+  bikeLock(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.vbus_evt_func_v3_bike_lock),
+
+  /// 离线地图
+  offlineMap(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.vbus_evt_func_v3_offline_map),
+
+  /// 手势控制
+  setGestureControl(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.app_set_gesture_control),
+
+  /// 清理clib健康数据offset值 (仅限SDK内部使用）
   cleanHealthDataOffset(
       evtBase: _VBusEvtBase.base_app_set,
       evtType: _VBusEvtType.vbus_evt_clean_healthdata_offset);
@@ -1714,6 +1749,12 @@ abstract class _VBusEvtType {
   /// 运动开关设置 struct protocol_activity_switch
   static const int app_set_activity_switch = 167;
 
+  /// 设备电量提醒开关设置（03 4A）
+  static const int app_set_battery_reminder_switch = 198;
+
+  /// 宠物信息设置（03 0A）
+  static const int app_set_pet_info = 197;
+
   /// 设置喝水提醒 struct protocol_drink_water_reminder
   static const int app_set_drink_water_reminder = 168;
 
@@ -1929,6 +1970,12 @@ abstract class _VBusEvtType {
 
   /// 运动模式自动识别开关获取 struct protocol_head head;  struct protocol_get_activity_switch_reply
   static const int app_get_activity_switch = 335;
+
+  /// 设备电量提醒开关获取（02 4A）
+  static const int app_get_battery_reminder_switch = 356;
+
+  /// 获取宠物信息（02 0A）
+  static const int app_get_pet_info = 357;
 
   /// 获得固件三级版本和bt的3级版本  struct protocol_firmware_bt_version_info_reply
   static const int app_get_get_firmware_bt_version = 336;
@@ -2819,7 +2866,16 @@ abstract class _VBusEvtType {
   /// 算法原始数据采集
   static const int vbus_evt_app_algorithm_raw_data = 5105;
 
+  /// 手势控制
+  static const int app_set_gesture_control = 5098;
+
   /// 清理clib健康数据offset值
   static const int vbus_evt_clean_healthdata_offset = 7952;
+
+  /// 车锁管理
+  static const int vbus_evt_func_v3_bike_lock = 5107;
+
+  /// 离线地图
+  static const int vbus_evt_func_v3_offline_map = 5109;
 
 }

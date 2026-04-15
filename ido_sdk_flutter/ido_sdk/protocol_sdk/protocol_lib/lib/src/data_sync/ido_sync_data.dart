@@ -69,7 +69,12 @@ enum SyncDataType {
   /// V2 多运动
   v2Activity,
   /// 情绪健康
-  emotionHealth
+  emotionHealth,
+  /// 合集：多运动/游泳/跑步课程/跑步计划/跑后拉伸数据回调
+  /// 替代了：activity / swim
+  activityMerge,
+  /// 宠物睡眠数据 (v3)
+  petSleep,
 }
 
 /// 同步整体进度 0-100
@@ -250,6 +255,12 @@ extension SyncDataTypeExt on List<SyncDataType> {
         case SyncDataType.emotionHealth:
           list.add(20);// 20 情绪健康
           break;
+        case SyncDataType.activityMerge:
+          list.add(21);// 21 多运动/游泳/跑步课程/跑步计划/跑后拉伸数据回调
+          break;
+        case SyncDataType.petSleep:
+          list.add(22); // 22 宠物睡眠数据
+          break;
         case SyncDataType.v2StepCount:
           break;
         case SyncDataType.v2Sleep:
@@ -285,6 +296,7 @@ extension IntToSyncDataTypeExt on List<int> {
   /// 15 同步身体电量数据
   /// 16 同步HRV(心率变异性水平)数据
   /// 20 同步情绪健康
+  /// 21 多运动数据合并之后的同步
   List<SyncDataType> get mappingValues {
     final list = <SyncDataType>[];
     for (var e in this) {
@@ -333,6 +345,12 @@ extension IntToSyncDataTypeExt on List<int> {
           break;
         case 20:
           list.add(SyncDataType.emotionHealth); // 20 情绪健康
+          break;
+        case 21:
+          list.add(SyncDataType.activityMerge); // 21 多运动/游泳/跑步课程/跑步计划/跑后拉伸数据回调
+          break;
+        case 22:
+          list.add(SyncDataType.petSleep); // 22 宠物睡眠数据
           break;
       }
     }

@@ -799,6 +799,10 @@ class BaseFunctionTable {
   /// 支持获取flash log size
   bool get getSupportFlashLogSize => ft?.supportGetFlashLogSize ?? false;
 
+  /// 设备是否支持返回正在测量的值
+  bool get supportDevReturnMeasuringValue =>
+      ft?.supportDevReturnMeasuringValue ?? false;
+
   /// 支持获取单位
   bool get getSupportGetUnit => ft?.supportGetUnit ?? false;
 
@@ -1130,6 +1134,13 @@ class BaseFunctionTable {
   /// 支持设置喝水提醒
   bool get setDrinkWaterReminder => ft?.exMain4DrinkWaterReminder ?? false;
 
+  /// 支持设备电量提醒开关
+  bool get supportBatteryReminderSwitch =>
+      ft?.supportBatteryReminderSwitch ?? false;
+
+  /// 支持宠物信息设置获取（SET:03 0A / GET:02 0A）
+  bool get supportPetInfo => ft?.supportPetInfo ?? false;
+
   /// 呼吸率开关设置
   bool get setRespirationRate => ft?.v2V3SupportRespirationRate ?? false;
 
@@ -1270,11 +1281,11 @@ class BaseFunctionTable {
 
   /// 环境音量支持设置通知类型
   bool get setSupportNoiseSetNotifyFlag =>
-      ft?.noiseSupportSetNotifyFlag ?? false;
+      ft?.noiceSupportSetNotifyFlag ?? false;
 
   /// 环境音量支持设置过高提醒
   bool get setSupportNoiseSetOverWarning =>
-      ft?.noiseSupportSetOverwarning ?? false;
+      ft?.noiceSupportSetOverwarning ?? false;
 
   /// 支持设置版本信息
   bool get setSupportSetVersionInformation =>
@@ -1424,6 +1435,10 @@ class BaseFunctionTable {
 
   /// 塞尔维亚语
   bool get languageSerbian => ft?.langSerbian ?? false;
+
+  /// 保加利亚
+  bool get languageBulgaria => ft?.langBulgaria ?? false;
+
 // ------------------ 同步 ------------------
 
   /// v3 心率
@@ -1443,6 +1458,9 @@ class BaseFunctionTable {
 
   /// v3 睡眠
   bool get syncV3Sleep => ft?.exTableMain8V3Sleep ?? false;
+
+  /// v3 宠物睡眠
+  bool get syncV3PetSleep => ft?.supportSyncPetSleep ?? false;
 
   /// v3 步数
   bool get syncV3Sports => ft?.exTableMain9V3Sports ?? false;
@@ -1652,10 +1670,10 @@ class BaseFunctionTable {
       ft?.notSupportPhotoPreviewControl ?? false;
 
   /// 支持获取用户信息
-  bool get supportGetUserInfo => ft?.supportGetUserInfo020 ?? false;
+  bool get supportGetUserInfo => ft?.supportGetUserInfo ?? false;
 
   /// 支持未接来电消息类型为485
-  bool get supportMissedCallMsgTypeUseFixed => ft?.supportMissedCallMsgTypeUseFixed ?? false;
+  bool get supportMissedCallMsgTypeUseFixed => ft?.supportMissedCallMsgTypeUseFixedValue ?? false;
 
   /// 支持闹钟不显示闹钟名称
   bool get supportAppNotDisplayAlarmName => ft?.supportAppNotDisplayAlarmName ?? false;
@@ -1664,10 +1682,55 @@ class BaseFunctionTable {
   bool get supportSetSleepRemind => ft?.supportSetSleepRemind ?? false;
 
   /// 支持血糖
-  bool get supportBloodGlucose => ft?.v3SupportBloodGlucose ?? false;
+  bool get supportBloodGlucose => ft?.v3BloodGlucoseSupport ?? false;
+
+  /// 支持血糖(v01)
+  bool get supportBloodGlucoseV01 => ft?.v3BloodGlucoseSupportV01 ?? false;
+
+  /// 车锁管理
+  bool get supportBikeLockManager => ft?.supportBikeLockManager ?? false;
 
   /// 支持算法数据的采集
   bool get supportAlgorithmRawDataCollect => ft?.v3AlgorithmRawDataCollectSupport ?? false;
+
+  /// 支持离线地图
+  bool get supportOfflineMapInformation => ft?.supportOfflineMapInformation ?? false;
+
+  /// 开启则⽀持储备⼼率区间,关闭默认⽀持的最⼤⼼率区间
+  bool get supportHeartRateReserveZones => ft?.supportHeartRateReserveZones ?? false;
+
+  /// 开启则⽀持⼼率区间⼼率最⼤值设置
+  bool get supportHeartRateZonesHrMaxSet => ft?.supportHeartRateZonesHrMaxSet ?? false;
+
+  /// 支持新的同步多运动数据（同步多运动/游泳/跑步课程/跑步计划/跑后拉伸数据）
+  bool get supportSyncMultiActivityNew => ft?.supportSyncMultiActivityNew ?? false;
+
+  /// 联系人存储支持使用固件返回大小
+  bool get supportContactFileUseFirmwareReturnSize => ft?.supportContactFileUseFirmwareReturnSize ?? false;
+
+  /// 控制APP是否显示相机入口
+  bool get supportDisplayCameraEntry => ft?.supportDisplayCameraEntry ?? false;
+
+  /// 支持家庭关心提醒设置
+  bool get supportOperateFamilyCareReminder3376 => ft?.supportOperateFamilyCareReminder3376 ?? false;
+
+  /// 支持设置获取经期配置，使用v3长包指令
+  bool get supportProtocolV3MenstruationConfig3377 => ft?.supportProtocolV3MenstruationConfig3377 ?? false;
+
+  /// 支持习惯养成设置
+  bool get supportOperateHabitFormation => ft?.supportOperateHabitFormation ?? false;
+
+  /// 支持版本v01习惯养成设置
+  bool get supportOperateHabitFormationV01 => ft?.supportOperateHabitFormationV01 ?? false;
+
+  /// 支持家庭步数下发
+  bool get supportOperateFamilySteps => ft?.supportOperateFamilySteps ?? false;
+
+  /// 支持游戏设置
+  bool get supportOperateSetGame => ft?.supportOperateSetGame ?? false;
+
+  /// 支持手势控制功能
+  bool get supportOperateGestureControl => ft?.supportOperateGestureControl ?? false;
 
   FunctionTableModel? _ftModel;
 

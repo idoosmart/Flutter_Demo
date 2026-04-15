@@ -142,6 +142,19 @@ IDOV3ExchangeModel _$IDOV3ExchangeModelFromJson(Map<String, dynamic> json) =>
               ?.map((e) => (e as num).toInt())
               .toList() ??
           const [],
+      maxAltitude: (json['max_altitude'] as num?)?.toInt() ?? 0,
+      minAltitude: (json['min_altitude'] as num?)?.toInt() ?? 0,
+      avgAltitude: (json['avg_altitude'] as num?)?.toInt() ?? 0,
+      minStepStride: (json['min_step_stride'] as num?)?.toInt() ?? 0,
+      minStepFrequency: (json['min_step_frequency'] as num?)?.toInt() ?? 0,
+      slowestKmPace: (json['slowest_km_pace'] as num?)?.toInt() ?? 0,
+      heartRateZonesMode: (json['heart_rate_zones_mode'] as num?)?.toInt() ?? 0,
+      minSpeed: (json['min_speed'] as num?)?.toInt() ?? 0,
+      easyZoneTime: (json['easy_zone_time'] as num?)?.toInt() ?? 0,
+      marathonZoneTime: (json['marathon_zone_time'] as num?)?.toInt() ?? 0,
+      thresholdZoneTime: (json['threshold_zone_time'] as num?)?.toInt() ?? 0,
+      anaerobicZoneTime: (json['anaerobic_zone_time'] as num?)?.toInt() ?? 0,
+      intervalZoneTime: (json['interval_zone_time'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$IDOV3ExchangeModelToJson(IDOV3ExchangeModel instance) =>
@@ -245,4 +258,17 @@ Map<String, dynamic> _$IDOV3ExchangeModelToJson(IDOV3ExchangeModel instance) =>
       'cumulative_altitude_loss': instance.cumulativeDecline,
       'altitude_count': instance.altitudeCount,
       'altitude_item': instance.altitudeItems,
+      'min_altitude': instance.minAltitude,
+      'max_altitude': instance.maxAltitude,
+      'avg_altitude': instance.avgAltitude,
+      'min_step_stride': instance.minStepStride,
+      'min_step_frequency': instance.minStepFrequency,
+      'slowest_km_pace': instance.slowestKmPace,
+      'heart_rate_zones_mode': instance.heartRateZonesMode,
+      'min_speed': instance.minSpeed,
+      'easy_zone_time': instance.easyZoneTime,
+      'marathon_zone_time': instance.marathonZoneTime,
+      'threshold_zone_time': instance.thresholdZoneTime,
+      'anaerobic_zone_time': instance.anaerobicZoneTime,
+      'interval_zone_time': instance.intervalZoneTime,
     };

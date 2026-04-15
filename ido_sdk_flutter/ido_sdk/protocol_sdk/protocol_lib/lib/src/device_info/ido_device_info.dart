@@ -54,7 +54,7 @@ class IDODeviceInfo {
   /// 设备形状类型 0：无效；1：圆形；2：方形的； 3：椭圆
   int get deviceShapeType => _device?.shape ?? 0;
 
-  /// 设备类型 0：无效；1：手环；2：手表
+  /// 设备类型 0：无效；1：手环；2：手表 3:戒指
   int get deviceType => _device?.devType ?? 0;
 
   /// 自定义表盘主版本 从1开始 0:不支持对应的自定义表盘功能
@@ -467,6 +467,8 @@ extension IDODeviceInfoExt on IDODeviceInfo {
       if (platform == 98 || platform == 99) {
         logger?.d("deviceInfo platform: $platform");
         IDOProtocolCoreManager().initSifliChannel();
+      } else if (platform == 1) {
+        IDOProtocolCoreManager().initNordicChannel();
       }
     }
   }

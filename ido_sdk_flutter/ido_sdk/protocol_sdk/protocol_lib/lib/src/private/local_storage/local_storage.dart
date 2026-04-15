@@ -147,7 +147,7 @@ abstract class LocalStorage {
 
   // 绑定 授权码
   Future<String?> loadBindEncryptedDataByDisk();
-  Future<bool> saveBindEncryptedDataToDisk(String data);
+  Future<bool> saveBindEncryptedDataToDisk(String data, [String? macAddress]);
   Future<bool> cleanBindEncryptedData();
 
   // 绑定 配对码

@@ -136,6 +136,8 @@ typedef enum
     VBUS_EVT_APP_SET_NOTICE_CALL_QUICK_REPLY_ON_OFF  = 194,    //手机app通过这个命令开关，设置来电快捷回复开关  struct protocol_set_call_quick_reply_on_off
     VBUS_EVT_APP_SET_VERSION_INFORMATION             = 195,    //手机app通过这个命令开关，设置固件版本信息     struct protocol_set_version_information
     VBUS_EVT_APP_SET_DURING_EXERCISE                 = 196,     //支持运动中设置`
+    VBUS_EVT_APP_SET_PET_INFO                        = 197,     //设置宠物信息 struct protocol_set_pet_info, struct protocol_set_pet_info_reply
+    VBUS_EVT_APP_SET_BATTERY_REMINDER_SWITCH         = 198,    //设置设备电量提醒开关 struct protocol_set_battery_reminder_switch, struct protocol_set_battery_reminder_switch_reply
     VBUS_EVT_APP_SET_HEART_RATE_ZONE                 = 199,    //支持简单心率区间设置
     
 	VBUS_EVT_APP_BIND_START                          = 200,    //绑定 struct protocol_start_bind,struct protocol_start_bind_reply
@@ -208,6 +210,9 @@ typedef enum
 	VBUS_EVT_APP_GET_CONTACT_REVICE_TIME             = 353,    //获取固件本地保存联系人文件修改时间  struct protocol_head ,
 	VBUS_EVT_APP_GET_BT_NAME                         = 354,    //获取bt蓝牙名称   struct protocol_head , struct protocol_get_bt_name
 	VBUS_EVT_APP_GET_CONTACT_REVICE_TIME_STOP_TIMER  = 355,    //处理关闭353定时器事件
+    VBUS_EVT_APP_GET_BATTERY_REMINDER_SWITCH         = 356,    //获取设备电量提醒开关 struct protocol_head head; struct protocol_get_battery_reminder_switch_reply
+    VBUS_EVT_APP_GET_PET_INFO                        = 357,    //获取宠物信息 struct protocol_head head; struct protocol_get_pet_info_reply
+    VBUS_EVT_APP_GET_FIND_PHONE_SWITCH               = 359,    //获取寻找手机开关状态 struct protocol_head head; struct protocol_get_find_phone_switch_reply
 	
     VBUS_EVT_APP_OTA_START                           = 400,	   //进入升级模式	struct protocol_ota_reply 里面包含电量标志
 	VBUS_EVT_APP_OTA_DIRECT_START                    = 401,	   //直接进入升级模式(忽略电量)
@@ -424,13 +429,15 @@ typedef enum
     VBUS_EVT_FUNC_V3_SET_ICE                               = 5090,  //设置紧急联系人（ECI）方式
     VBUS_EVT_FUNC_V3_APP_BASE_INFORMATION                  = 5095,  //protocol_v3_app_base_information
     VBUS_EVT_FUNC_V3_SET_SPORT_SCREEN                      = 5097,  //运动中屏幕显示设置 protocol_v3_set_sport_screen
+    VBUS_EVT_FUNC_V3_SET_GESTURE_CONTROL                   = 5098,  //手势控制（0x33/0x7E）
     VBUS_EVT_FUNC_V3_SET_SPORT_REMIND                      = 5099,  //运动中提醒设置
     VBUS_EVT_FUNC_V3_EMOTION_INFORMATION                   = 5100,  //情绪健康
     VBUS_EVT_FUNC_V3_MENU_LIST                             = 5101,  //v3菜单列表操作
     VBUS_EVT_FUNC_V3_PHYSIOLOGICAL_RECORD                  = 5102,  //女性生理日常记录
     VBUS_EVT_FUNC_V3_GLUCOSE_INFORMATION                   = 5104,  //v3血糖数据下发
     VBUS_EVT_FUNC_V3_ALGORITHM_RAW_DATA                    = 5105,  //算法原始数据采集
-    VBUS_EVT_FUNC_V3_ALGORITHM_RAW_DATA_OPERATE_02         = 5106,  //算法原始数据采集 操作0x02为数据采集中 这个操作的事件号
+    VBUS_EVT_FUNC_V3_BIKE_LOCK                             = 5107,  //车锁管理
+    VBUS_EVT_FUNC_V3_OFFLINE_MAP                           = 5109,  //离线地图
 
 
 
@@ -490,7 +497,9 @@ typedef enum
 	VBUS_EVT_TRAN_JSON_V3_RESPIR_RATE 		               = 7012,  //呼吸率数据回调
 	VBUS_EVT_TRAN_JSON_V3_BODY_POWER 		               = 7013,  //身体电量数据回调
 	VBUS_EVT_TRAN_JSON_V3_HRV 				               = 7014,  //HRV数据回调
-    VBUS_EVT_TRAN_JSON_V3_EMOTION_HEALTH = 7018,    //情绪健康数据回调
+    VBUS_EVT_TRAN_JSON_V3_PET_SLEEP                      = 7015,  //宠物睡眠数据回调
+    VBUS_EVT_TRAN_JSON_V3_EMOTION_HEALTH                   = 7018,    //情绪健康数据回调
+    VBUS_EVT_TRAN_JSON_V3_MULTI_ACTIVITY_NEW               = 7019,//同步多运动/游泳/跑步课程/跑步计划/跑后拉伸数据回调
 	VBUS_EVT_TRAN_JSON_V3_TEST_SYNC_PLAN_SPORT             = 7113,	//计划多运动模拟测试接口
     VBUS_EVT_TRAN_JSON_V3_RESPIR_RATE_INFO                 = 7114,	//呼吸率数据同步发送
     

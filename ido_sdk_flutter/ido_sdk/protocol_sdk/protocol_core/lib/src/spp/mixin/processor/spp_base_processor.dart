@@ -16,10 +16,16 @@ abstract class BaseSppProcessor with SppMtuGet {
   BoolCallback? _inOTAMode;
   BoolCallback? _supportContinueTrans;
 
-  String toHexString(Uint8List bytes) {
-    String hexString =
-        bytes.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join(' ');
-    return hexString.toUpperCase();
+  String toHexString(Uint8List bytes, {int limit = -1}) {
+    bool isTruncated = limit > 0 && bytes.length > limit;
+    Iterable<int> subBytes = isTruncated ? bytes.take(limit) : bytes;
+
+    String hexString = subBytes
+        .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
+        .join(' ');
+
+    String result = hexString.toUpperCase();
+    return isTruncated ? '$result ...' : result;
   }
 
   @protected

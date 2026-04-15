@@ -34,7 +34,37 @@ class ApiToolsImpl: ApiTools {
             "isJailbroken": devInfo.isJailbroken
         ]
     }
+    
+    func makeJieLiDialFile(dialFilePath: String,
+                           bgPath: String,
+                           previewPath: String,
+                           color: Int64,
+                           baseBinPath: String,
+                           completion: @escaping (Result<Bool, any Error>) -> Void) {
+        let result = CustomDialUtils.getN022BCustomDialData(
+            withBGImagePath: bgPath,
+            textImagePath: previewPath,
+            setColorHex: UInt32(color),
+            srcBinPath: baseBinPath,
+            savePath: dialFilePath)
+        _safeOnMainThread {
+            completion(.success(result != nil))
+        }
+        
+    }
+    
+    private func _safeOnMainThread(_ closure: @escaping () -> Void) {
+        if Thread.isMainThread {
+            closure()
+        } else {
+            DispatchQueue.main.async {
+                closure()
+            }
+        }
+    }
+    
 }
+
 
 fileprivate struct DeviceInfo {
     let model: String

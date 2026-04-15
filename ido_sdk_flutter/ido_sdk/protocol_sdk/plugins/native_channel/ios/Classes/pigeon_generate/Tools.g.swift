@@ -37,6 +37,7 @@ private func nilOrValue<T>(_ value: Any?) -> T? {
   if value is NSNull { return nil }
   return value as! T?
 }
+
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol ApiTools {
   /// 获取appName， 返回形如："VeryFit"
@@ -54,6 +55,14 @@ protocol ApiTools {
   /// }
   /// ```
   func getPlatformDeviceInfo() throws -> [AnyHashable: Any?]?
+  /// 生成自定义表盘文件，数据采用大端模式 （杰里平台）
+  ///
+  /// [dialFilePath] 表盘文件保存路径
+  /// [bgPath] 背景图片路径
+  /// [previewPath] 预览图图片路径，覆盖在背景图上方，透明只带时间组件
+  /// [color] 字体颜色
+  /// [baseBinPath] 基础bin包文件路径
+  func makeJieLiDialFile(dialFilePath: String, bgPath: String, previewPath: String, color: Int64, baseBinPath: String, completion: @escaping (Result<Bool, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -123,6 +132,34 @@ class ApiToolsSetup {
       }
     } else {
       getPlatformDeviceInfoChannel.setMessageHandler(nil)
+    }
+    /// 生成自定义表盘文件，数据采用大端模式 （杰里平台）
+    ///
+    /// [dialFilePath] 表盘文件保存路径
+    /// [bgPath] 背景图片路径
+    /// [previewPath] 预览图图片路径，覆盖在背景图上方，透明只带时间组件
+    /// [color] 字体颜色
+    /// [baseBinPath] 基础bin包文件路径
+    let makeJieLiDialFileChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.native_channel.ApiTools.makeJieLiDialFile", binaryMessenger: binaryMessenger)
+    if let api = api {
+      makeJieLiDialFileChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let dialFilePathArg = args[0] as! String
+        let bgPathArg = args[1] as! String
+        let previewPathArg = args[2] as! String
+        let colorArg = args[3] is Int64 ? args[3] as! Int64 : Int64(args[3] as! Int32)
+        let baseBinPathArg = args[4] as! String
+        api.makeJieLiDialFile(dialFilePath: dialFilePathArg, bgPath: bgPathArg, previewPath: previewPathArg, color: colorArg, baseBinPath: baseBinPathArg) { result in
+          switch result {
+            case .success(let res):
+              reply(wrapResult(res))
+            case .failure(let error):
+              reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      makeJieLiDialFileChannel.setMessageHandler(nil)
     }
   }
 }

@@ -35,7 +35,16 @@ enum FileTranDataType {
   voice_alexa,
 
   /// 固件
-  fw
+  fw,
+
+  /// 离线地图
+  map,
+
+  /// 轨迹
+  gpx,
+
+  /// 吃药提醒图⽚
+  medic
 }
 
 /// 文件传输优先级（默认 normal)

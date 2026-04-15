@@ -23,6 +23,9 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
   @override
   SifliChannelImpl? sifliChannel;
 
+  @override
+  NordicChannelImpl? nordicChannel;
+
   /// 不使用队列且不需要响应的指令
   ///
   /// 数据交换相关：620, 624, 626, 628, 622, 5055, 610, 612, 614
@@ -402,11 +405,23 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
   @override
   void initSifliChannel() {
     if (sifliChannel == null) {
-      logger?.d("init sifli channel");
+      logger?.d("init sifli ota channel");
       sifliChannel = SifliChannelImpl();
       ApiSifliFlutter.setup(sifliChannel!);
     }
   }
+
+  @override
+  void initNordicChannel() {
+    if (nordicChannel == null) {
+      logger?.d("init nordic ota channel");
+      nordicChannel = NordicChannelImpl();
+      ApiNordicFlutter.setup(nordicChannel!);
+    }
+  }
+
+  @override
+  int mtu = 181;
 
 }
 

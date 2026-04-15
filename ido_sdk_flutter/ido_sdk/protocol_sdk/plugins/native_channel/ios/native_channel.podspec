@@ -25,7 +25,8 @@ A new Flutter project.
 
   s.dependency 'Flutter'
   s.dependency 'ZIPFoundation', '~> 0.9.19'
-  s.frameworks = "CoreBluetooth"
+
+  s.frameworks = 'CoreBluetooth'
   s.platform = :ios, '12.0'
 
   # Flutter.framework does not contain a i386 slice.

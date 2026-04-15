@@ -384,7 +384,17 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
       int paceEasyRun,
       List<Map<String, dynamic>> segmentItems,
       int cumulativeClimb,
-      int cumulativeDecline) {
+      int cumulativeDecline,
+      int minStepStride,
+      int minStepFrequency,
+      int slowestKmPace,
+      int heartRateZonesMode,
+      int minSpeed,
+      int easyZoneTime,
+      int marathonZoneTime,
+      int thresholdZoneTime,
+      int anaerobicZoneTime,
+      int intervalZoneTime) {
     this.day = day;
     this.hour = hour;
     this.minute = minute;
@@ -455,6 +465,16 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
     this.segmentItems?.addAll(segmentItems);
     this.cumulativeClimb = cumulativeClimb;
     this.cumulativeDecline = cumulativeDecline;
+    this.minStepStride = minStepStride;
+    this.minStepFrequency = minStepFrequency;
+    this.slowestKmPace = slowestKmPace;
+    this.heartRateZonesMode = heartRateZonesMode;
+    this.minSpeed = minSpeed;
+    this.easyZoneTime = easyZoneTime;
+    this.marathonZoneTime = marathonZoneTime;
+    this.thresholdZoneTime = thresholdZoneTime;
+    this.anaerobicZoneTime = anaerobicZoneTime;
+    this.intervalZoneTime = intervalZoneTime;
   }
 
   /// 获取云端GPS数据

@@ -293,6 +293,23 @@ extension IDOProtocolAPIExtFileOperation on IDOProtocolAPI {
         filePathUtf8.cast(), saveFilePathUtf8.cast(), format ?? 0);
   }
 
+  /// 压缩文件
+  /// ```dart
+  /// fileName 输入文件名
+  /// endName 输出文件名
+  /// block_size 压缩块大小{1024,4096}, 默认4096
+  /// int 0 压缩成功, 1 压缩失败
+  int compressFileToLZ({
+    required String fileName,
+    required String endName,
+    required int blockSize
+  }) {
+    final fileNameUtf8 = fileName.toNativeUtf8();
+    final endNameUtf8 = endName.toNativeUtf8();
+    return bindings.compressFileToLZ(
+        fileNameUtf8.cast(), endNameUtf8.cast(), blockSize);
+  }
+
   /// 将功能表输出到json文件
   /// path 输出文件路径(包含文件名及后缀)
   int funcTableOutputOnJsonFile(String filePath) {

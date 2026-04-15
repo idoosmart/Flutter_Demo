@@ -46,6 +46,8 @@ final _cmdMap = {
   CmdEvtType.getAllHealthSwitchState: {"desc": "获取所有的健康监测开关", "cmd": "02 00"},
   CmdEvtType.getDataTranConfig: {"desc": "文件传输配置传输获取", "cmd": "02 00"},
   CmdEvtType.getActivitySwitch: {"desc": "运动模式自动识别开关获取", "cmd": "02 00"},
+  CmdEvtType.getBatteryReminderSwitch: {"desc": "设备电量提醒开关获取", "cmd": "02 4A"},
+  CmdEvtType.getPetInfo: {"desc": "获取宠物信息", "cmd": "02 0A"},
   CmdEvtType.getFirmwareBtVersion: {"desc": "获得固件三级版本和bt的3级版本", "cmd": "02 00"},
   CmdEvtType.getStressVal: {"desc": "获取压力值", "cmd": "02 00"},
   CmdEvtType.getHeartRateMode: {"desc": "获取心率监测模式", "cmd": "02 00"},
@@ -191,6 +193,8 @@ final _cmdMap = {
   CmdEvtType.setWalkRemind: {"desc": "设置走动提醒", "cmd": "03 00"},
   CmdEvtType.setBreatheTrain: {"desc": "呼吸训练", "cmd": "03 00"},
   CmdEvtType.setActivitySwitch: {"desc": "运动开关设置", "cmd": "03 00"},
+  CmdEvtType.setBatteryReminderSwitch: {"desc": "设备电量提醒开关设置", "cmd": "03 4A"},
+  CmdEvtType.setPetInfo: {"desc": "设置宠物信息", "cmd": "03 0A"},
   CmdEvtType.setDrinkWaterRemind: {"desc": "设置喝水提醒", "cmd": "03 00"},
   CmdEvtType.setRequestCheckUpdate: {"desc": "手环请求版本检查", "cmd": "03 00"},
   CmdEvtType.setRequestStartOTA: {"desc": "手环请求ota", "cmd": "03 00"},
@@ -343,5 +347,6 @@ final _cmdMap = {
     "desc": "app被禁用功能权限导致某些功能无法启用，同时需要告知固件改功能已被禁用",
     "cmd": "00 00"
   },
+  CmdEvtType.setGestureControl: {"desc": "手势控制", "cmd": "33 7E"},
   CmdEvtType.closeAncs: {"desc": "关闭 ancs", "cmd": "00 00"},
 };

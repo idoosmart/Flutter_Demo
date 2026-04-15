@@ -1,6 +1,10 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as path;
+import 'package:protocol_lib/src/alexa_bridge/alexa_bridge.dart';
+
+import 'package:protocol_core/protocol_core.dart';
+
 import '../../../protocol_lib.dart';
 import 'base_file.dart';
 
@@ -23,8 +27,12 @@ extension _NormalFileExt on NormalFile {
     // 副本文件
     var aFilePath = '$rootPath/0.${type.name}';
 
+    var originalFilePath = item.filePath;
     if (item.fileType == FileTransType.fw) {
       aFilePath = '$rootPath/0${path.extension(item.filePath)}';
+    } else if(item.fileType == FileTransType.map || item.fileType == FileTransType.gpx) {
+      originalFilePath = _compressFileToLZ(filePath: originalFilePath, endName: 'lz', blockSize: 4096) ?? '';
+      aFilePath = '$rootPath/0.${type.name}.lz';
     }
 
     final newItem = NormalFileModel(
@@ -40,7 +48,26 @@ extension _NormalFileExt on NormalFile {
     }
 
     // 复制要处理的文件
-    await copyFileIfNeed(item.filePath, aFilePath);
+    await copyFileIfNeed(originalFilePath, aFilePath);
     return Future(() => newItem);
+  }
+
+  String? _compressFileToLZ({
+    required String filePath,
+    required String endName,
+    required int blockSize
+  }) {
+    final rs = coreMgr.compressFileToLZ(fileName: filePath, endName: endName, blockSize: blockSize);
+    if(rs == 0) {
+      final aFilePath = '$filePath.lz';
+      final aFile = File(aFilePath);
+      if(!aFile.existsSync()) {
+        throw Exception('failed to compress ,file not exists: $aFilePath');
+      }
+      fileItem.fileSize = aFile.lengthSync();
+      return aFilePath;
+    }else {
+      throw Exception('failed to compress file code: $rs');
+    }
   }
 }

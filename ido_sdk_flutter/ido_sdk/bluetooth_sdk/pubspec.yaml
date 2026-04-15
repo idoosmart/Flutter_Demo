@@ -1,6 +1,6 @@
 name: flutter_bluetooth
 description: flutter_bluetooth
-version: 4.0.1
+version: 4.0.2
 
 environment:
   sdk: '>=3.5.0'
@@ -37,7 +37,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.example.flutter_bluetooth
+        package: com.idosmart.bluetooth
         pluginClass: FlutterBluetoothPlugin
       ios:
         pluginClass: FlutterBluetoothPlugin

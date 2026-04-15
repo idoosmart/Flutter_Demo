@@ -28,7 +28,7 @@ class BaseFile extends AbstractFileOperate {
   IDOProtocolLibManager get libMgr => _libMgr;
 
   /// 使用缓存（相同文件hash不再走制作及压缩文件流程）
-  bool get useCache => kDebugMode ? false : true;
+  bool get useCache => false;//kDebugMode ? false : true;
 
   /// 清理临时文件（制作及压缩文件产生的临时文件）
   bool get hasCleanTampFile => kDebugMode ? false : true; // TODO 测试阶段暂时保留
@@ -388,6 +388,12 @@ extension BaseFileExt on BaseFile {
       case FileTransType.app:
         rs = FileTranCompressionType.none;
         break;
+      case FileTransType.map:
+        rs = FileTranCompressionType.fastlz;
+        break;
+      case FileTransType.gpx:
+        rs = FileTranCompressionType.fastlz;
+        break;
     }
     return rs;
   }
@@ -457,6 +463,8 @@ extension BaseFileExt on BaseFile {
         break;
       case FileTransType.other:
       case FileTransType.wallpaper_device:
+      case FileTransType.map:
+      case FileTransType.gpx:
         fileExt = ''; // 不指定后缀
         break;
       case FileTransType.app:
@@ -491,6 +499,12 @@ extension BaseFileExt on BaseFile {
         break;
       case FileTransType.voice:
         dataType = FileTranDataType.voice_alexa;
+        break;
+      case FileTransType.map:
+        dataType = FileTranDataType.map;
+        break;
+      case FileTransType.gpx:
+        dataType = FileTranDataType.gpx;
         break;
       default:
         break;

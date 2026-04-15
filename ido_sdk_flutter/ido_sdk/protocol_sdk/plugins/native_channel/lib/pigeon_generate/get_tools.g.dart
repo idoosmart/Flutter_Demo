@@ -126,6 +126,40 @@ class ApiTools {
       return (replyList[0] as Map<Object?, Object?>?);
     }
   }
+
+  /// 生成自定义表盘文件，数据采用大端模式 （杰里平台）
+  ///
+  /// [dialFilePath] 表盘文件保存路径
+  /// [bgPath] 背景图片路径
+  /// [previewPath] 预览图图片路径，覆盖在背景图上方，透明只带时间组件
+  /// [color] 字体颜色
+  /// [baseBinPath] 基础bin包文件路径
+  Future<bool> makeJieLiDialFile(String arg_dialFilePath, String arg_bgPath, String arg_previewPath, int arg_color, String arg_baseBinPath) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.native_channel.ApiTools.makeJieLiDialFile', codec,
+        binaryMessenger: _binaryMessenger);
+    final List<Object?>? replyList =
+        await channel.send(<Object?>[arg_dialFilePath, arg_bgPath, arg_previewPath, arg_color, arg_baseBinPath]) as List<Object?>?;
+    if (replyList == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyList.length > 1) {
+      throw PlatformException(
+        code: replyList[0]! as String,
+        message: replyList[1] as String?,
+        details: replyList[2],
+      );
+    } else if (replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (replyList[0] as bool?)!;
+    }
+  }
 }
 
 abstract class ToolsDelegate {

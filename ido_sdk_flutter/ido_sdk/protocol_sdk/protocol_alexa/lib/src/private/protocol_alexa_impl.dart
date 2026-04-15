@@ -167,9 +167,9 @@ class _IDOProtocolAlexa implements IDOProtocolAlexa, LocalStorageConfig {
     return false;
   }
 
-  // 最后修改时间: 2025-07-24 10:24:06
+  // 最后修改时间: 2025-12-26 16:19:49
   @override
-  String get getSdkVersion => '2.1.0';
+  String get getSdkVersion => '2.1.1';
 }
 
 extension _IDOProtocolAlexaExt on _IDOProtocolAlexa {

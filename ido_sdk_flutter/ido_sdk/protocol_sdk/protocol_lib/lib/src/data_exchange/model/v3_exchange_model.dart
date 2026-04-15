@@ -331,6 +331,60 @@ class IDOV3ExchangeModel {
   @JsonKey(name: "altitude_item")
   List<int>? altitudeItems = [];
 
+  /// 最低海拔
+  @JsonKey(name: "min_altitude")
+  int? minAltitude;
+
+  /// 最高海拔
+  @JsonKey(name: "max_altitude")
+  int? maxAltitude;
+
+  /// 平均海拔
+  @JsonKey(name: "avg_altitude")
+  int? avgAltitude;
+
+  /// 最小步幅 单位厘米
+  @JsonKey(name: 'min_step_stride')
+  int? minStepStride;
+
+  /// 最小步频 步/分
+  @JsonKey(name: 'min_step_frequency')
+  int? minStepFrequency;
+
+  /// 最慢配速 s/km
+  @JsonKey(name: 'slowest_km_pace')
+  int? slowestKmPace;
+
+  /// 心率区间模式
+  @JsonKey(name: 'heart_rate_zones_mode')
+  int? heartRateZonesMode;
+
+  /// 最慢 速度 km/h（扩大100倍的速度）
+  @JsonKey(name: 'min_speed')
+  int? minSpeed;
+
+  /// 轻松跑的累计时长 单位秒
+  @JsonKey(name: 'easy_zone_time')
+  int? easyZoneTime;
+
+  /// 马拉松配速的累计时长 单位秒
+  @JsonKey(name: 'marathon_zone_time')
+  int? marathonZoneTime;
+
+  /// 乳酸阈值强度的累计时长 单位秒
+  @JsonKey(name: 'threshold_zone_time')
+  int? thresholdZoneTime;
+
+  /// 无氧耐力区间的累计时长 单位秒
+  @JsonKey(name: 'anaerobic_zone_time')
+  int? anaerobicZoneTime;
+
+  /// 最大摄氧量强度的累计时长 单位秒
+  @JsonKey(name: 'interval_zone_time')
+  int? intervalZoneTime;
+
+
+
   IDOV3ExchangeModel({
     this.year = 0,
     this.month = 0,
@@ -431,6 +485,19 @@ class IDOV3ExchangeModel {
     this.cumulativeDecline = 0,
     this.altitudeCount = 0,
     this.altitudeItems = const [],
+    this.maxAltitude = 0,
+    this.minAltitude = 0,
+    this.avgAltitude = 0,
+    this.minStepStride = 0,
+    this.minStepFrequency = 0,
+    this.slowestKmPace = 0,
+    this.heartRateZonesMode = 0,
+    this.minSpeed = 0,
+    this.easyZoneTime = 0,
+    this.marathonZoneTime = 0,
+    this.thresholdZoneTime = 0,
+    this.anaerobicZoneTime = 0,
+    this.intervalZoneTime = 0,
   });
 
   factory IDOV3ExchangeModel.fromJson(Map<String, dynamic> json) =>

@@ -8,3 +8,5 @@ export 'pigeon_generate/alexa.g.dart';
 export 'pigeon_impl/sifli_impl.dart';
 export 'pigeon_generate/sifli.g.dart';
 export 'pigeon_generate/get_app_info.g.dart';
+export 'pigeon_impl/nordic_impl.dart';
+export 'pigeon_generate/nordic.g.dart';

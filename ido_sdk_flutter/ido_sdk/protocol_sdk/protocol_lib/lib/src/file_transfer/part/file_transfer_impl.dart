@@ -384,6 +384,8 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
       case FileTransType.watch:
       case FileTransType.other:
       case FileTransType.app:
+      case FileTransType.map:
+      case FileTransType.gpx:
         bf = NormalFile(type, item);
         break;
       case FileTransType.iwf_lz:

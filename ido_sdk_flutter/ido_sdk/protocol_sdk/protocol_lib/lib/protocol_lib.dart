@@ -7,6 +7,7 @@ export 'src/type_define/event_type.dart';
 
 // bind
 export 'src/device_bind/ido_device_bind.dart';
+export 'src/device_bind/ido_encrypted_auth_data.dart';
 
 // device info
 export 'src/device_info/ido_device_info.dart';
@@ -63,4 +64,11 @@ export 'src/sub_modules/dial/dial_manager.dart';
 // export 'src/sub_modules/dial/photo/photo_dial.dart';
 // export 'src/sub_modules/dial/photo/photo_dial_preset_config.dart';
 // export 'src/sub_modules/dial/photo/photo_dial_config.dart';
+
+// offline map
+export 'src/sub_modules/offline_map/offline_map_manager.dart';
+export 'src/sub_modules/offline_map/private/om_model.dart';
+
+// measure
+export 'src/sub_modules/measure/measure_manager.dart';
 

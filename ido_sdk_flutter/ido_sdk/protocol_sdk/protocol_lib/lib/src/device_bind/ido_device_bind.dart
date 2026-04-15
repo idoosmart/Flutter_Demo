@@ -23,13 +23,19 @@ abstract class IDODeviceBind {
   bool get isBinding;
 
   /// 发起绑定
-  /// osVersion: 系统版本 (取主版本号)
-  /// userId: 用户ID，最大14字节（超过14字节会提取后14字节）
+  /// ```
+  /// - osVersion: 系统版本 (取主版本号)
+  /// - userId: 用户ID，最大14字节（超过14字节会提取后14字节）
+  /// - encryptedAuthData: 加密授权数据回调（仅支持的设备才会触发该回调，不需要换手机绑定，可忽略）
+  ///   Encrypted authorization data callback (This callback will only be triggered on supported devices;
+  ///   you do not need to change your phone number for binding, so you can ignore it).
+  /// ```
   Stream<BindStatus> startBind(
       {required int osVersion,
       required BindValueCallback<IDODeviceInfo> deviceInfo,
       required BindValueCallback<IDOFunctionTable> functionTable,
-      String? userId});
+      String? userId,
+      BindValueCallback<IDOEncryptedAuthData>? encryptedAuthData});
 
   /// 终止绑定操作（仅限sdk内部使用）
   void stopBindIfNeed();
@@ -65,4 +71,10 @@ abstract class IDODeviceBind {
   /// 监听绑定状态变更 (SDK内部使用）
   StreamSubscription listenBindStateChangedNotification(
       void Function(void) func);
+
+  /// 设置加密授权数据（仅限支持设备有效）
+  /// Set encrypted authorization data (valid only for supported devices)
+  ///
+  /// 注意：需要在libManager.markConnectedDeviceSafe(...)调用前执行， 且isBinded=true有效
+  Future<bool> setEncryptedAuthData(String macAddress, IDOEncryptedAuthData data);
 }

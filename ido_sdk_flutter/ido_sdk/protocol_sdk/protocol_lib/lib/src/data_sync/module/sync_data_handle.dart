@@ -61,6 +61,7 @@ extension _IDOSyncDataExt on SyncDataHandle {
   _isNeedSyncV3Data() {
     return _funTable.syncV3Hr ||
         _funTable.syncV3Sleep ||
+        _funTable.syncV3PetSleep ||
         _funTable.syncV3Swim ||
         _funTable.syncV3Pressure ||
         _funTable.syncV3Activity ||
