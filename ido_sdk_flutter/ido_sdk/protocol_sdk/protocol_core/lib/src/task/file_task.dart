@@ -466,7 +466,15 @@ extension _FileTaskSilfi on FileTask {
       }
       logger?.d("silfi - 2");
       _coreMgr.sifliChannel?.logBlock = (String logMsg) {
-        logger?.d("silfi - native - $logMsg");
+        if(Platform.isIOS && !_coreMgr.isWriteStreamByte) {
+          // ios 思澈ota日志记录到文件（c库打开流数据开关有效）
+          // HACK: 临时方案，在不修改通道接口情况下忽略大量ota日志
+          if (!logMsg.startsWith("[Sifli")) {
+            logger?.d("silfi - native - $logMsg");
+          }
+        }else {
+          logger?.d("silfi - native - $logMsg");
+        }
       };
 
       _coreMgr.sifliChannel?.stateBlock = (OTAUpdateState state, String desc) {

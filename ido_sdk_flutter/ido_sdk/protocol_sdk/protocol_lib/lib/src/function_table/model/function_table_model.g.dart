@@ -568,6 +568,9 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
       supportBatteryReminderSwitch:
           json['support_battery_reminder_switch'] as bool?,
       supportPetInfo: json['support_pet_info'] as bool?,
+      supportGetFindPhoneSwitch: json['support_get_find_phone_switch'] as bool?,
+      supportSyncHealthDataUseUtcTime:
+          json['support_sync_health_data_use_utc_time'] as bool?,
       supportBatteryLevelDependFirmware:
           json['support_battery_level_depend_firmware'] as bool?,
       supportBikeLockManager: json['support_bike_lock_manager'] as bool?,
@@ -1564,6 +1567,9 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
       'support_barometric_altimeter': instance.supportBarometricAltimeter,
       'support_battery_reminder_switch': instance.supportBatteryReminderSwitch,
       'support_pet_info': instance.supportPetInfo,
+      'support_get_find_phone_switch': instance.supportGetFindPhoneSwitch,
+      'support_sync_health_data_use_utc_time':
+          instance.supportSyncHealthDataUseUtcTime,
       'support_battery_level_depend_firmware':
           instance.supportBatteryLevelDependFirmware,
       'support_bike_lock_manager': instance.supportBikeLockManager,

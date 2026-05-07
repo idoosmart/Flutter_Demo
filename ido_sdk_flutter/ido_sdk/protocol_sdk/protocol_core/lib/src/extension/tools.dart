@@ -431,6 +431,7 @@ extension IDOProtocolCoreManagerExtTools on IDOProtocolCoreManager {
   /// iswrite 控制写入流数据开关公开 0不写入 1写入 默认不写入流数据
   /// 0 成功
   int setWriteStreamByte(int isWrite) {
+    isWriteStreamByte = isWrite == 1;
     return IDOProtocolClibManager().cLib.setWriteStreamByte(isWrite);
   }
 }

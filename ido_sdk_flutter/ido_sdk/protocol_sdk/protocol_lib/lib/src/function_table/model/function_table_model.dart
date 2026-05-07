@@ -841,6 +841,10 @@ class FunctionTableModel {
   final bool? supportBatteryReminderSwitch;
   @JsonKey(name: 'support_pet_info')
   final bool? supportPetInfo;
+  @JsonKey(name: 'support_get_find_phone_switch')
+  final bool? supportGetFindPhoneSwitch;
+  @JsonKey(name: 'support_sync_health_data_use_utc_time')
+  final bool? supportSyncHealthDataUseUtcTime;
   @JsonKey(name: 'support_battery_level_depend_firmware')
   final bool? supportBatteryLevelDependFirmware;
   @JsonKey(name: 'support_bike_lock_manager')
@@ -1917,6 +1921,8 @@ class FunctionTableModel {
     this.supportBarometricAltimeter,
     this.supportBatteryReminderSwitch,
     this.supportPetInfo,
+    this.supportGetFindPhoneSwitch,
+    this.supportSyncHealthDataUseUtcTime,
     this.supportBatteryLevelDependFirmware,
     this.supportBikeLockManager,
     this.supportBleControlPhotograph,

@@ -5,9 +5,9 @@ class _IDOProtocolLibManager
   static const _pathStorageC = 'c_files';
   static const _pathStorageLib = 'protocol_lib';
   static const _pathStorageLog = 'logs';
-  // 最后修改时间: 2026-03-26 11:37:45
-  static const _sdkVersion = '4.2.1';
-  static const _sdkBuildNum = '69C4AA17';
+  // 最后修改时间: 2026-05-07 17:54:45
+  static const _sdkVersion = '4.2.3';
+  static const _sdkBuildNum = '69FC6165';
 
   static bool _outputToConsoleClib = false;
   static bool _isReleaseClib = true;
@@ -963,6 +963,9 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
         final authCode = map['auth_code'] as int;
         //授权结果 0 成功 , 非0失败； 1:是手表点击拒绝； 2:密码校验失败，3：已经绑定
         if (authCode == 2) {
+          stopSyncConfig(); // 停止同步
+          dispose(); // 清除队列
+          logger?.d('check EncryptedData err:密码校验失败~');
           storage?.cleanBindEncryptedData(); // 清除缓存数据
           statusSdkNotification.add(IDOStatusNotification.unbindOnAuthCodeError);
         }

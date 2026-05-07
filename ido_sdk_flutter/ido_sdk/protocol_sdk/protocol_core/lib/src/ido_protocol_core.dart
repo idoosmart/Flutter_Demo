@@ -33,6 +33,11 @@ abstract class IDOProtocolCoreManager {
 
   late int mtu;
 
+  /// c库是否写入流数据（日志会比较大）
+  /// 可根据此开关同步记录记录其它比较大的日志到文件（如：思澈ota日志）
+  /// 该变量在setWriteStreamByte(int isWrite)方法中赋值
+  bool isWriteStreamByte = false;
+
   /// 初始化c库
   Future<bool> initClib();
 

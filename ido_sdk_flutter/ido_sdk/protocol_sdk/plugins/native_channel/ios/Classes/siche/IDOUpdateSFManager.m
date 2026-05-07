@@ -68,6 +68,7 @@ static IDOUpdateSFManager *_mgr = nil;
     _configDelegate = configDelegate;
     if(_configDelegate){
         [SFOTAManager share].delegate = self;
+        [SFOTALogManager share].delegate = self;
     }else{
         [SFOTAManager share].delegate = nil;
     }

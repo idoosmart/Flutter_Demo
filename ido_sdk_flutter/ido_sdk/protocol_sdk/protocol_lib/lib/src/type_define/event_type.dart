@@ -214,6 +214,11 @@ enum CmdEvtType {
       evtBase: _VBusEvtBase.base_app_get,
       evtType: _VBusEvtType.app_get_pet_info),
 
+  /// 获取寻找手机开关状态
+  getFindPhoneSwitch(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.app_get_find_phone_switch),
+
   /// 获得固件三级版本和bt的3级版本
   getFirmwareBtVersion(
       evtBase: _VBusEvtBase.base_app_get,
@@ -1976,6 +1981,9 @@ abstract class _VBusEvtType {
 
   /// 获取宠物信息（02 0A）
   static const int app_get_pet_info = 357;
+
+  /// 获取寻找手机开关状态（02 26）
+  static const int app_get_find_phone_switch = 359;
 
   /// 获得固件三级版本和bt的3级版本  struct protocol_firmware_bt_version_info_reply
   static const int app_get_get_firmware_bt_version = 336;

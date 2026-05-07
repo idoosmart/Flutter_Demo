@@ -1141,6 +1141,13 @@ class BaseFunctionTable {
   /// 支持宠物信息设置获取（SET:03 0A / GET:02 0A）
   bool get supportPetInfo => ft?.supportPetInfo ?? false;
 
+  /// 支持获取寻找手机开关状态（GET:02 26）
+  bool get supportGetFindPhoneSwitch => ft?.supportGetFindPhoneSwitch ?? false;
+
+  /// 健康数据同步使用 UTC 时间
+  bool get supportSyncHealthDataUseUtcTime =>
+      ft?.supportSyncHealthDataUseUtcTime ?? false;
+
   /// 呼吸率开关设置
   bool get setRespirationRate => ft?.v2V3SupportRespirationRate ?? false;
 
@@ -1533,6 +1540,9 @@ class BaseFunctionTable {
   bool get getSupportAppBaseInformation =>
       ft?.supportGetAppBaseInformation ?? false;
 
+  /// 绑定授权，授权绑定 12的长度的
+  bool get getSupportEncryptedAuth => ft?.exTableMain8EncryptedAuth ?? false;
+
 // ------------------ 闹钟 ------------------
 
   /// 闹钟个数
@@ -1731,6 +1741,9 @@ class BaseFunctionTable {
 
   /// 支持手势控制功能
   bool get supportOperateGestureControl => ft?.supportOperateGestureControl ?? false;
+
+  /// 设置吃药提醒
+  bool get supportTakeMedicineReminder => ft?.supportTakeMedicineReminder ?? false;
 
   FunctionTableModel? _ftModel;
 

@@ -187,8 +187,8 @@ class _LocalStorage implements LocalStorage {
 
   @override
   Future<bool> saveBindEncryptedDataToDisk(String data, [String? macAddress]) {
-    logger?.d('缓存授权码 ${macAddress ?? ''}');
-    return setString(key: _keyBindEncryptedData, value: data);
+    logger?.d('缓存授权码 mac:${macAddress ?? ''}');
+    return setString(key: _keyBindEncryptedData, value: data, macAddress: macAddress);
   }
 
   @override

@@ -26,7 +26,7 @@ abstract class IDODeviceBind {
   /// ```
   /// - osVersion: 系统版本 (取主版本号)
   /// - userId: 用户ID，最大14字节（超过14字节会提取后14字节）
-  /// - encryptedAuthData: 加密授权数据回调（仅支持的设备才会触发该回调，不需要换手机绑定，可忽略）
+  /// - encryptedAuthData: 加密授权数据回调（仅支持的设备才会触发该回调，没有换手机绑定场景，可忽略）
   ///   Encrypted authorization data callback (This callback will only be triggered on supported devices;
   ///   you do not need to change your phone number for binding, so you can ignore it).
   /// ```

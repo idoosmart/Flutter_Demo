@@ -11,7 +11,7 @@ public class IdoSifliPlugin: NSObject, FlutterPlugin, ApiSifliHost, IDOUpdateSFM
     public static func register(with registrar: FlutterPluginRegistrar) {
         let messenger: FlutterBinaryMessenger = registrar.messenger()
         let api: ApiSifliHost & IDOUpdateSFManagerDelegate & NSObjectProtocol = IdoSifliPlugin.init()
-        IDOUpdateSFManager().configDelegate = true;
+        IDOUpdateSFManager.shareInstance().configDelegate = true;
         ApiSifliHostSetup(messenger, api);
         _apiSifliFlutter = ApiSifliFlutter(binaryMessenger: messenger);
         IDOUpdateSFManager.shareInstance().delegate = api;

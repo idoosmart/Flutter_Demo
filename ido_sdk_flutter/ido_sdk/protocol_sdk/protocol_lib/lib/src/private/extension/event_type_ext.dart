@@ -48,6 +48,7 @@ final _cmdMap = {
   CmdEvtType.getActivitySwitch: {"desc": "运动模式自动识别开关获取", "cmd": "02 00"},
   CmdEvtType.getBatteryReminderSwitch: {"desc": "设备电量提醒开关获取", "cmd": "02 4A"},
   CmdEvtType.getPetInfo: {"desc": "获取宠物信息", "cmd": "02 0A"},
+  CmdEvtType.getFindPhoneSwitch: {"desc": "获取寻找手机开关状态", "cmd": "02 26"},
   CmdEvtType.getFirmwareBtVersion: {"desc": "获得固件三级版本和bt的3级版本", "cmd": "02 00"},
   CmdEvtType.getStressVal: {"desc": "获取压力值", "cmd": "02 00"},
   CmdEvtType.getHeartRateMode: {"desc": "获取心率监测模式", "cmd": "02 00"},

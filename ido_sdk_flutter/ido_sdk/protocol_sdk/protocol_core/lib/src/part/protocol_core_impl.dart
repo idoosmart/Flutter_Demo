@@ -26,6 +26,9 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
   @override
   NordicChannelImpl? nordicChannel;
 
+  @override
+  bool isWriteStreamByte = false;
+
   /// 不使用队列且不需要响应的指令
   ///
   /// 数据交换相关：620, 624, 626, 628, 622, 5055, 610, 612, 614

@@ -682,7 +682,7 @@ class IDOCache {
     return jsonEncode(ft.toJson());
   }
 
-  /// 加载指定设备绑定状态
+  /// 加载指定设备绑定状态 （仅限SDK内部使用)
   Future<bool> loadBindStatus({required String macAddress}) async {
     final macAddr = macAddress.replaceAll(':', '').toUpperCase();
     final rs = await storage?.loadBindStatus(macAddress: macAddr);
