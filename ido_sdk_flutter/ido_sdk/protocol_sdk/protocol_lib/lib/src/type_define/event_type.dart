@@ -219,6 +219,11 @@ enum CmdEvtType {
       evtBase: _VBusEvtBase.base_app_get,
       evtType: _VBusEvtType.app_get_find_phone_switch),
 
+  /// 获取设备状态（GET:0x02/0x49）
+  getDeviceStatusInfo(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.app_get_device_status_info),
+
   /// 获得固件三级版本和bt的3级版本
   getFirmwareBtVersion(
       evtBase: _VBusEvtBase.base_app_get,
@@ -1139,6 +1144,11 @@ enum CmdEvtType {
       evtBase: _VBusEvtBase.base_app_get,
       evtType: _VBusEvtType.func_v3_get_activity_data),
 
+  /// V3 多运动运动中全量快照（15.103，0x33/0x1E）
+  getActivityExchangeFullSnapshot(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.func_v3_activity_exchange_full_snapshot),
+
   /// app发起运动 ble操作暂停
   exchangeAppStartBlePause(
       evtBase: _VBusEvtBase.base_app_set,
@@ -1444,6 +1454,16 @@ enum CmdEvtType {
   evtBase: _VBusEvtBase.base_app_set,
   evtType: _VBusEvtType.vbus_evt_app_get_left_right_wear_settings),
 
+  /// 查询需设置左右手佩戴类型的运动类型列表（V3 15.104，0x33/0x93）
+  getSportTypesRequiringWristSideSetting(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.app_get_sport_types_requiring_wrist_side_setting),
+
+  /// 设备振动与铃声查询/设置（V3 15.106，0x33/0x94）
+  deviceVibrationRingtone(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.app_device_vibration_ringtone),
+
   /// 获取运动中设置提示音开关
   getSettingsDuringExercise(
   evtBase: _VBusEvtBase.base_app_set,
@@ -1489,6 +1509,11 @@ enum CmdEvtType {
   bikeLock(
       evtBase: _VBusEvtBase.base_app_set,
       evtType: _VBusEvtType.vbus_evt_func_v3_bike_lock),
+
+  /// CGM 手机下发指令（15.107）
+  cgmPhoneCommand(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.vbus_evt_func_v3_cgm_phone_command),
 
   /// 离线地图
   offlineMap(
@@ -1982,8 +2007,17 @@ abstract class _VBusEvtType {
   /// 获取宠物信息（02 0A）
   static const int app_get_pet_info = 357;
 
+  /// 设备振动与铃声（V3 15.106，33 94）
+  static const int app_device_vibration_ringtone = 358;
+
   /// 获取寻找手机开关状态（02 26）
   static const int app_get_find_phone_switch = 359;
+
+  /// 查询需设置左右手佩戴类型的运动类型列表（V3 15.104，33 93）
+  static const int app_get_sport_types_requiring_wrist_side_setting = 360;
+
+  /// 获取设备状态（02 49）
+  static const int app_get_device_status_info = 361;
 
   /// 获得固件三级版本和bt的3级版本  struct protocol_firmware_bt_version_info_reply
   static const int app_get_get_firmware_bt_version = 336;
@@ -2400,6 +2434,9 @@ abstract class _VBusEvtType {
 
   /// v3 多运动数据最后一次数据获取 protocol_v3_base， struct protocol_get_activity_data_reply
   static const int func_v3_get_activity_data = 5022;
+
+  /// V3 多运动运动中全量快照（15.103，33 1E）
+  static const int func_v3_activity_exchange_full_snapshot = 5114;
 
   /// v3 多运动数据数据交换中获取1分钟的心率数据  protocol_v3_base， struct sync_activity_exchange_hr_data_reply
   static const int func_v3_get_activity_exchange_heart_rate_data = 5023;
@@ -2882,6 +2919,9 @@ abstract class _VBusEvtType {
 
   /// 车锁管理
   static const int vbus_evt_func_v3_bike_lock = 5107;
+
+  /// CGM 手机下发指令（15.107）
+  static const int vbus_evt_func_v3_cgm_phone_command = 5108;
 
   /// 离线地图
   static const int vbus_evt_func_v3_offline_map = 5109;

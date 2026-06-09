@@ -373,6 +373,48 @@ Map<String, dynamic> _$IDOAppIngV3ReplyExchangeModelToJson(
       'count_second': instance.countSecond,
     };
 
+IDOActivitySwimmingLapItem _$IDOActivitySwimmingLapItemFromJson(
+        Map<String, dynamic> json) =>
+    IDOActivitySwimmingLapItem(
+      swolf: (json['swolf'] as num?)?.toInt(),
+      swimmingPosture: (json['swimming_posture'] as num?)?.toInt(),
+      strokesNumber: (json['strokes_number'] as num?)?.toInt(),
+      duration: (json['duration'] as num?)?.toInt(),
+      distance: (json['distance'] as num?)?.toInt(),
+      frequency: (json['frequency'] as num?)?.toInt(),
+      pace: (json['pace'] as num?)?.toInt(),
+      stopTime: (json['stop_time'] as num?)?.toInt(),
+      differenceTime: (json['difference_time'] as num?)?.toInt(),
+    );
+
+Map<String, dynamic> _$IDOActivitySwimmingLapItemToJson(
+        IDOActivitySwimmingLapItem instance) =>
+    <String, dynamic>{
+      'swolf': instance.swolf,
+      'swimming_posture': instance.swimmingPosture,
+      'strokes_number': instance.strokesNumber,
+      'duration': instance.duration,
+      'distance': instance.distance,
+      'frequency': instance.frequency,
+      'pace': instance.pace,
+      'stop_time': instance.stopTime,
+      'difference_time': instance.differenceTime,
+    };
+
+IDOActivityRopeSkipItem _$IDOActivityRopeSkipItemFromJson(
+        Map<String, dynamic> json) =>
+    IDOActivityRopeSkipItem(
+      ropeSkipCount: (json['rope_skip_count'] as num?)?.toInt(),
+      duration: (json['duration'] as num?)?.toInt(),
+    );
+
+Map<String, dynamic> _$IDOActivityRopeSkipItemToJson(
+        IDOActivityRopeSkipItem instance) =>
+    <String, dynamic>{
+      'rope_skip_count': instance.ropeSkipCount,
+      'duration': instance.duration,
+    };
+
 IDOAppActivityDataV3ExchangeModel _$IDOAppActivityDataV3ExchangeModelFromJson(
         Map<String, dynamic> json) =>
     IDOAppActivityDataV3ExchangeModel(
@@ -398,6 +440,7 @@ IDOAppActivityDataV3ExchangeModel _$IDOAppActivityDataV3ExchangeModelFromJson(
       anaerobicExerciseTime: (json['anaerobic_exercise_time'] as num?)?.toInt(),
       extremeExerciseTime: (json['extreme_exercise_time'] as num?)?.toInt(),
       avgSpeed: (json['avg_speed'] as num?)?.toInt(),
+      maxSpeed: (json['max_speed'] as num?)?.toInt(),
       avgStepStride: (json['avg_step_stride'] as num?)?.toInt(),
       maxStepStride: (json['max_step_stride'] as num?)?.toInt(),
       kmSpeed: (json['km_speed'] as num?)?.toInt(),
@@ -465,13 +508,99 @@ IDOAppActivityDataV3ExchangeModel _$IDOAppActivityDataV3ExchangeModelFromJson(
       thresholdZoneTime: (json['threshold_zone_time'] as num?)?.toInt(),
       anaerobicZoneTime: (json['anaerobic_zone_time'] as num?)?.toInt(),
       intervalZoneTime: (json['interval_zone_time'] as num?)?.toInt(),
+      actType: (json['act_type'] as num?)?.toInt(),
+      trainingOffset: (json['training_offset'] as num?)?.toInt(),
+      distance3d: (json['distance3d'] as num?)?.toInt(),
+      avg3dSpeed: (json['avg_3d_speed'] as num?)?.toInt(),
+      avgVerticalSpeed: (json['avg_vertical_speed'] as num?)?.toInt(),
+      avgSlope: (json['avg_slope'] as num?)?.toInt(),
+      maxAltitude: (json['max_altitude'] as num?)?.toInt(),
+      minAltitude: (json['min_altitude'] as num?)?.toInt(),
+      avgAltitude: (json['avg_altitude'] as num?)?.toInt(),
+      altitudeCount: (json['altitude_count'] as num?)?.toInt(),
+      altitudeItem: (json['altitude_item'] as List<dynamic>?)
+          ?.map((e) => (e as num).toInt())
+          .toList(),
+      gpsStatus: (json['gps_status'] as num?)?.toInt(),
+      anaerobicTrainingEffect:
+          (json['anaerobic_training_effect'] as num?)?.toInt(),
+      load: (json['load'] as num?)?.toInt(),
+      runningEconomy: (json['running_economy'] as num?)?.toInt(),
+      maxRunningPower: (json['max_running_power'] as num?)?.toInt(),
+      minRunningPower: (json['min_running_power'] as num?)?.toInt(),
+      avgRunningPower: (json['avg_running_power'] as num?)?.toInt(),
+      runningPowerCount: (json['running_power_count'] as num?)?.toInt(),
+      rtpeCount: (json['rtpe_count'] as num?)?.toInt(),
+      maxRtoc: (json['max_rtoc'] as num?)?.toInt(),
+      minRtoc: (json['min_rtoc'] as num?)?.toInt(),
+      avgRtoc: (json['avg_rtoc'] as num?)?.toInt(),
+      rtocCount: (json['rtoc_count'] as num?)?.toInt(),
+      maxRopeFrequency: (json['max_rope_frequency'] as num?)?.toInt(),
+      minRopeFrequency: (json['min_rope_frequency'] as num?)?.toInt(),
+      avgRopeFrequency: (json['avg_rope_frequency'] as num?)?.toInt(),
+      maxRopeSkipCount: (json['max_rope_skip_count'] as num?)?.toInt(),
+      ropeTripCount: (json['rope_trip_count'] as num?)?.toInt(),
+      totalRopeCount: (json['total_rope_count'] as num?)?.toInt(),
+      ropeItemCount: (json['rope_item_count'] as num?)?.toInt(),
+      kmPace: (json['km_pace'] as num?)?.toInt(),
+      fastKmPace: (json['fast_km_pace'] as num?)?.toInt(),
+      kmPaceCount: (json['km_pace_count'] as num?)?.toInt(),
+      miPaceCount: (json['mi_pace_count'] as num?)?.toInt(),
+      paceRealTimeCount: (json['pace_real_time_count'] as num?)?.toInt(),
+      aerobicPowerInterval: (json['aerobic_power_interval'] as num?)?.toInt(),
+      mixedOxygenPowerInterval:
+          (json['mixed_oxygen_power_interval'] as num?)?.toInt(),
+      thresholdRunningPowerInterval:
+          (json['threshold_running_power_interval'] as num?)?.toInt(),
+      intermittentRunPowerInterval:
+          (json['intermittent_run_power_interval'] as num?)?.toInt(),
+      sprintRunPowerInterval:
+          (json['sprint_run_power_interval'] as num?)?.toInt(),
+      strideCount: (json['stride_count'] as num?)?.toInt(),
+      strideItems: (json['stride_items'] as List<dynamic>?)
+          ?.map((e) => (e as num).toInt())
+          .toList(),
+      itemRunningPower: (json['item_running_power'] as List<dynamic>?)
+          ?.map((e) => (e as num).toInt())
+          .toList(),
+      itemRtpe: (json['item_rtpe'] as List<dynamic>?)
+          ?.map((e) => (e as num).toInt())
+          .toList(),
+      itemRtoc: (json['item_rtoc'] as List<dynamic>?)
+          ?.map((e) => (e as num).toInt())
+          .toList(),
+      itemRopeInfo: (json['item_rope_info'] as List<dynamic>?)
+          ?.map((e) =>
+              IDOActivityRopeSkipItem.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      smartCompetitor: (json['smart_competitor'] as num?)?.toInt(),
+      aiImageId: (json['ai_image_id'] as num?)?.toInt(),
+      userImageId: (json['user_image_id'] as num?)?.toInt(),
+      bgImageId: (json['bg_image_id'] as num?)?.toInt(),
+      smartCompetitorPace: (json['smart_competitor_pace'] as num?)?.toInt(),
+      tennisServeCount: (json['tennis_serve_count'] as num?)?.toInt(),
+      tennisForeheadCount: (json['tennis_forehead_count'] as num?)?.toInt(),
+      tennisBackhandCount: (json['tennis_backhand_count'] as num?)?.toInt(),
+      trips: (json['trips'] as num?)?.toInt(),
+      averageSwolf: (json['average_swolf'] as num?)?.toInt(),
+      totalStrokesNumber: (json['total_strokes_number'] as num?)?.toInt(),
+      swimmingPosture: (json['swimming_posture'] as num?)?.toInt(),
+      swimmingAvgPace: (json['swimming_avg_pace'] as num?)?.toInt(),
+      avgFrequency: (json['avg_frequency'] as num?)?.toInt(),
+      bodyAge: (json['body_age'] as num?)?.toInt(),
+      swimmingPoolDistance:
+          (json['swimming_pool_distance'] as num?)?.toDouble(),
+      swimmingItemCount: (json['swimming_item_count'] as num?)?.toInt(),
+      swimmingItems: (json['swimming_items'] as List<dynamic>?)
+          ?.map((e) =>
+              IDOActivitySwimmingLapItem.fromJson(e as Map<String, dynamic>))
+          .toList(),
     )
       ..day = (json['day'] as num?)?.toInt()
       ..hour = (json['hour'] as num?)?.toInt()
       ..minute = (json['minute'] as num?)?.toInt()
       ..second = (json['second'] as num?)?.toInt()
-      ..sportType = (json['sport_type'] as num?)?.toInt()
-      ..maxSpeed = (json['max_speed'] as num?)?.toInt();
+      ..sportType = (json['sport_type'] as num?)?.toInt();
 
 Map<String, dynamic> _$IDOAppActivityDataV3ExchangeModelToJson(
         IDOAppActivityDataV3ExchangeModel instance) =>
@@ -555,6 +684,72 @@ Map<String, dynamic> _$IDOAppActivityDataV3ExchangeModelToJson(
       'threshold_zone_time': instance.thresholdZoneTime,
       'anaerobic_zone_time': instance.anaerobicZoneTime,
       'interval_zone_time': instance.intervalZoneTime,
+      'act_type': instance.actType,
+      'training_offset': instance.trainingOffset,
+      'distance3d': instance.distance3d,
+      'avg_3d_speed': instance.avg3dSpeed,
+      'avg_vertical_speed': instance.avgVerticalSpeed,
+      'avg_slope': instance.avgSlope,
+      'max_altitude': instance.maxAltitude,
+      'min_altitude': instance.minAltitude,
+      'avg_altitude': instance.avgAltitude,
+      'altitude_count': instance.altitudeCount,
+      'altitude_item': instance.altitudeItem,
+      'gps_status': instance.gpsStatus,
+      'anaerobic_training_effect': instance.anaerobicTrainingEffect,
+      'load': instance.load,
+      'running_economy': instance.runningEconomy,
+      'max_running_power': instance.maxRunningPower,
+      'min_running_power': instance.minRunningPower,
+      'avg_running_power': instance.avgRunningPower,
+      'running_power_count': instance.runningPowerCount,
+      'rtpe_count': instance.rtpeCount,
+      'max_rtoc': instance.maxRtoc,
+      'min_rtoc': instance.minRtoc,
+      'avg_rtoc': instance.avgRtoc,
+      'rtoc_count': instance.rtocCount,
+      'max_rope_frequency': instance.maxRopeFrequency,
+      'min_rope_frequency': instance.minRopeFrequency,
+      'avg_rope_frequency': instance.avgRopeFrequency,
+      'max_rope_skip_count': instance.maxRopeSkipCount,
+      'rope_trip_count': instance.ropeTripCount,
+      'total_rope_count': instance.totalRopeCount,
+      'rope_item_count': instance.ropeItemCount,
+      'km_pace': instance.kmPace,
+      'fast_km_pace': instance.fastKmPace,
+      'km_pace_count': instance.kmPaceCount,
+      'mi_pace_count': instance.miPaceCount,
+      'pace_real_time_count': instance.paceRealTimeCount,
+      'aerobic_power_interval': instance.aerobicPowerInterval,
+      'mixed_oxygen_power_interval': instance.mixedOxygenPowerInterval,
+      'threshold_running_power_interval':
+          instance.thresholdRunningPowerInterval,
+      'intermittent_run_power_interval': instance.intermittentRunPowerInterval,
+      'sprint_run_power_interval': instance.sprintRunPowerInterval,
+      'stride_count': instance.strideCount,
+      'stride_items': instance.strideItems,
+      'item_running_power': instance.itemRunningPower,
+      'item_rtpe': instance.itemRtpe,
+      'item_rtoc': instance.itemRtoc,
+      'item_rope_info': instance.itemRopeInfo,
+      'smart_competitor': instance.smartCompetitor,
+      'ai_image_id': instance.aiImageId,
+      'user_image_id': instance.userImageId,
+      'bg_image_id': instance.bgImageId,
+      'smart_competitor_pace': instance.smartCompetitorPace,
+      'tennis_serve_count': instance.tennisServeCount,
+      'tennis_forehead_count': instance.tennisForeheadCount,
+      'tennis_backhand_count': instance.tennisBackhandCount,
+      'trips': instance.trips,
+      'average_swolf': instance.averageSwolf,
+      'total_strokes_number': instance.totalStrokesNumber,
+      'swimming_posture': instance.swimmingPosture,
+      'swimming_avg_pace': instance.swimmingAvgPace,
+      'avg_frequency': instance.avgFrequency,
+      'body_age': instance.bodyAge,
+      'swimming_pool_distance': instance.swimmingPoolDistance,
+      'swimming_item_count': instance.swimmingItemCount,
+      'swimming_items': instance.swimmingItems,
     };
 
 IDOAppHrDataExchangeModel _$IDOAppHrDataExchangeModelFromJson(

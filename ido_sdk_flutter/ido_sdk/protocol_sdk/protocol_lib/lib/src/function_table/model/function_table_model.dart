@@ -849,6 +849,8 @@ class FunctionTableModel {
   final bool? supportBatteryLevelDependFirmware;
   @JsonKey(name: 'support_bike_lock_manager')
   final bool? supportBikeLockManager;
+  @JsonKey(name: 'support_cgm_phone_command')
+  final bool? supportCgmPhoneCommand;
   @JsonKey(name: 'support_ble_control_photograph')
   final bool? supportBleControlPhotograph;
   @JsonKey(name: 'support_ble_to_app_dail_change')
@@ -1225,6 +1227,10 @@ class FunctionTableModel {
   final bool? supportSyncPetSleep;
   @JsonKey(name: 'support_sync_health_hr_use_version_compatible')
   final bool? supportSyncHealthHrUseVersionCompatible;
+  @JsonKey(name: 'support_sync_spo2_use_version_compatible')
+  final bool? supportSyncSpo2UseVersionCompatible;
+  @JsonKey(name: 'support_sync_pressure_use_version_compatible')
+  final bool? supportSyncPressureUseVersionCompatible;
   @JsonKey(name: 'support_sync_health_swim_get_avg_frequency')
   final bool? supportSyncHealthSwimGetAvgFrequency;
   @JsonKey(name: 'support_sync_health_swim_get_avg_speed')
@@ -1925,6 +1931,7 @@ class FunctionTableModel {
     this.supportSyncHealthDataUseUtcTime,
     this.supportBatteryLevelDependFirmware,
     this.supportBikeLockManager,
+    this.supportCgmPhoneCommand,
     this.supportBleControlPhotograph,
     this.supportBleToAppDailChange,
     this.supportBleToAppSetDailFinish,
@@ -2113,6 +2120,8 @@ class FunctionTableModel {
     this.supportSyncEmotionHealth,
     this.supportSyncPetSleep,
     this.supportSyncHealthHrUseVersionCompatible,
+    this.supportSyncSpo2UseVersionCompatible,
+    this.supportSyncPressureUseVersionCompatible,
     this.supportSyncHealthSwimGetAvgFrequency,
     this.supportSyncHealthSwimGetAvgSpeed,
     this.supportSyncMultiActivityNew,

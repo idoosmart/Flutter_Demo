@@ -76,6 +76,20 @@ class _IDOExchangeData implements IDOExchangeData {
   }
 
   @override
+  Future<String?> getActivityExchangeFullSnapshot() async {
+    if (!IDOProtocolLibManager().isConnected) {
+      return null;
+    }
+    logger?.d('exchange get activity full snapshot');
+    final response =
+        await _libMgr.send(evt: CmdEvtType.getActivityExchangeFullSnapshot, json: '{}').first;
+    if (_isSuccessCallback(response)) {
+      return response.json;
+    }
+    return null;
+  }
+
+  @override
   Future<bool> getActivityGpsData() {
     return _getActvityGpsData();
   }
@@ -578,23 +592,18 @@ extension _IDOExchangeExt on _IDOExchangeData {
             reply.anaerobicZoneTime ?? 0,
             reply.intervalZoneTime ?? 0);
 
-        // 补充字段 altitude_item
-        if (map["altitude_item"] != null) {
-          _v3Model?.altitudeItems ??= [];
-          try {
-            _v3Model?.altitudeItems = [
-              ...?_v3Model?.altitudeItems,
-              ...List<int>.from(map["altitude_item"] as List<dynamic>),
-            ];
-            _v3Model?.altitudeCount = _v3Model?.altitudeItems?.length ?? 0;
-          }catch(e) {
-            logger?.e("补充字段 altitude_item 异常");
+        if (_v3Model != null) {
+          _v3Model!.actType = reply.actType;
+          _v3Model!.altitudeItems = reply.altitudeItem ?? [];
+          _v3Model!.altitudeCount =
+              reply.altitudeCount ?? reply.altitudeItem?.length ?? 0;
+          _v3Model!.minAltitude = reply.minAltitude ?? 0;
+          _v3Model!.maxAltitude = reply.maxAltitude ?? 0;
+          _v3Model!.avgAltitude = reply.avgAltitude ?? 0;
+          if (reply.anaerobicTrainingEffect != null) {
+            _v3Model!.anaerobicTrainingEffect = reply.anaerobicTrainingEffect;
           }
-          //logger?.d("补充字段 altitude_item 到v3Model中");
         }
-        _v3Model?.minAltitude = (map["min_altitude"] as int?) ?? 0;
-        _v3Model?.maxAltitude = (map["max_altitude"] as int?) ?? 0;
-        _v3Model?.avgAltitude = (map["avg_altitude"] as int?) ?? 0;
 
         _streamV3Exchange.sink.add(_v3Model ?? IDOV3ExchangeModel());
 

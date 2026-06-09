@@ -506,6 +506,56 @@ class IDOAppIngV3ReplyExchangeModel extends IDOBaseExchangeModel {
   }
 }
 
+/// 游泳趟次详情（15.20 v52 swimming_items[]）
+@JsonSerializable()
+class IDOActivitySwimmingLapItem {
+  int? swolf;
+  @JsonKey(name: 'swimming_posture')
+  int? swimmingPosture;
+  @JsonKey(name: 'strokes_number')
+  int? strokesNumber;
+  int? duration;
+  int? distance;
+  int? frequency;
+  int? pace;
+  @JsonKey(name: 'stop_time')
+  int? stopTime;
+  @JsonKey(name: 'difference_time')
+  int? differenceTime;
+
+  IDOActivitySwimmingLapItem({
+    this.swolf,
+    this.swimmingPosture,
+    this.strokesNumber,
+    this.duration,
+    this.distance,
+    this.frequency,
+    this.pace,
+    this.stopTime,
+    this.differenceTime,
+  });
+
+  factory IDOActivitySwimmingLapItem.fromJson(Map<String, dynamic> json) =>
+      _$IDOActivitySwimmingLapItemFromJson(json);
+
+  Map<String, dynamic> toJson() => _$IDOActivitySwimmingLapItemToJson(this);
+}
+
+/// 跳绳详情（15.20 item_rope_info[]）
+@JsonSerializable()
+class IDOActivityRopeSkipItem {
+  @JsonKey(name: 'rope_skip_count')
+  int? ropeSkipCount;
+  int? duration;
+
+  IDOActivityRopeSkipItem({this.ropeSkipCount, this.duration});
+
+  factory IDOActivityRopeSkipItem.fromJson(Map<String, dynamic> json) =>
+      _$IDOActivityRopeSkipItemFromJson(json);
+
+  Map<String, dynamic> toJson() => _$IDOActivityRopeSkipItemToJson(this);
+}
+
 /// app 获取v3多运动数据
 @JsonSerializable()
 class IDOAppActivityDataV3ExchangeModel extends IDOBaseExchangeModel {
@@ -818,6 +868,203 @@ class IDOAppActivityDataV3ExchangeModel extends IDOBaseExchangeModel {
   @JsonKey(name: 'interval_zone_time')
   int? intervalZoneTime;
 
+  /// 计划类型（跑步计划/课程等）
+  @JsonKey(name: 'act_type')
+  int? actType;
+
+  /// 训练课程日期偏移
+  @JsonKey(name: 'training_offset')
+  int? trainingOffset;
+
+  /// 3D 距离（米）
+  @JsonKey(name: 'distance3d')
+  int? distance3d;
+
+  @JsonKey(name: 'avg_3d_speed')
+  int? avg3dSpeed;
+
+  @JsonKey(name: 'avg_vertical_speed')
+  int? avgVerticalSpeed;
+
+  @JsonKey(name: 'avg_slope')
+  int? avgSlope;
+
+  @JsonKey(name: 'max_altitude')
+  int? maxAltitude;
+
+  @JsonKey(name: 'min_altitude')
+  int? minAltitude;
+
+  @JsonKey(name: 'avg_altitude')
+  int? avgAltitude;
+
+  @JsonKey(name: 'altitude_count')
+  int? altitudeCount;
+
+  @JsonKey(name: 'altitude_item')
+  List<int>? altitudeItem;
+
+  @JsonKey(name: 'gps_status')
+  int? gpsStatus;
+
+  @JsonKey(name: 'anaerobic_training_effect')
+  int? anaerobicTrainingEffect;
+
+  int? load;
+
+  @JsonKey(name: 'running_economy')
+  int? runningEconomy;
+
+  @JsonKey(name: 'max_running_power')
+  int? maxRunningPower;
+
+  @JsonKey(name: 'min_running_power')
+  int? minRunningPower;
+
+  @JsonKey(name: 'avg_running_power')
+  int? avgRunningPower;
+
+  @JsonKey(name: 'running_power_count')
+  int? runningPowerCount;
+
+  @JsonKey(name: 'rtpe_count')
+  int? rtpeCount;
+
+  @JsonKey(name: 'max_rtoc')
+  int? maxRtoc;
+
+  @JsonKey(name: 'min_rtoc')
+  int? minRtoc;
+
+  @JsonKey(name: 'avg_rtoc')
+  int? avgRtoc;
+
+  @JsonKey(name: 'rtoc_count')
+  int? rtocCount;
+
+  @JsonKey(name: 'max_rope_frequency')
+  int? maxRopeFrequency;
+
+  @JsonKey(name: 'min_rope_frequency')
+  int? minRopeFrequency;
+
+  @JsonKey(name: 'avg_rope_frequency')
+  int? avgRopeFrequency;
+
+  @JsonKey(name: 'max_rope_skip_count')
+  int? maxRopeSkipCount;
+
+  @JsonKey(name: 'rope_trip_count')
+  int? ropeTripCount;
+
+  @JsonKey(name: 'total_rope_count')
+  int? totalRopeCount;
+
+  @JsonKey(name: 'rope_item_count')
+  int? ropeItemCount;
+
+  @JsonKey(name: 'km_pace')
+  int? kmPace;
+
+  @JsonKey(name: 'fast_km_pace')
+  int? fastKmPace;
+
+  @JsonKey(name: 'km_pace_count')
+  int? kmPaceCount;
+
+  @JsonKey(name: 'mi_pace_count')
+  int? miPaceCount;
+
+  @JsonKey(name: 'pace_real_time_count')
+  int? paceRealTimeCount;
+
+  @JsonKey(name: 'aerobic_power_interval')
+  int? aerobicPowerInterval;
+
+  @JsonKey(name: 'mixed_oxygen_power_interval')
+  int? mixedOxygenPowerInterval;
+
+  @JsonKey(name: 'threshold_running_power_interval')
+  int? thresholdRunningPowerInterval;
+
+  @JsonKey(name: 'intermittent_run_power_interval')
+  int? intermittentRunPowerInterval;
+
+  @JsonKey(name: 'sprint_run_power_interval')
+  int? sprintRunPowerInterval;
+
+  @JsonKey(name: 'stride_count')
+  int? strideCount;
+
+  @JsonKey(name: 'stride_items')
+  List<int>? strideItems;
+
+  @JsonKey(name: 'item_running_power')
+  List<int>? itemRunningPower;
+
+  @JsonKey(name: 'item_rtpe')
+  List<int>? itemRtpe;
+
+  @JsonKey(name: 'item_rtoc')
+  List<int>? itemRtoc;
+
+  @JsonKey(name: 'item_rope_info')
+  List<IDOActivityRopeSkipItem>? itemRopeInfo;
+
+  @JsonKey(name: 'smart_competitor')
+  int? smartCompetitor;
+
+  @JsonKey(name: 'ai_image_id')
+  int? aiImageId;
+
+  @JsonKey(name: 'user_image_id')
+  int? userImageId;
+
+  @JsonKey(name: 'bg_image_id')
+  int? bgImageId;
+
+  @JsonKey(name: 'smart_competitor_pace')
+  int? smartCompetitorPace;
+
+  @JsonKey(name: 'tennis_serve_count')
+  int? tennisServeCount;
+
+  @JsonKey(name: 'tennis_forehead_count')
+  int? tennisForeheadCount;
+
+  @JsonKey(name: 'tennis_backhand_count')
+  int? tennisBackhandCount;
+
+  int? trips;
+
+  @JsonKey(name: 'average_swolf')
+  int? averageSwolf;
+
+  @JsonKey(name: 'total_strokes_number')
+  int? totalStrokesNumber;
+
+  @JsonKey(name: 'swimming_posture')
+  int? swimmingPosture;
+
+  @JsonKey(name: 'swimming_avg_pace')
+  int? swimmingAvgPace;
+
+  @JsonKey(name: 'avg_frequency')
+  int? avgFrequency;
+
+  @JsonKey(name: 'body_age')
+  int? bodyAge;
+
+  /// 泳池长度（米，协议库已换算为 double）
+  @JsonKey(name: 'swimming_pool_distance')
+  double? swimmingPoolDistance;
+
+  @JsonKey(name: 'swimming_item_count')
+  int? swimmingItemCount;
+
+  @JsonKey(name: 'swimming_items')
+  List<IDOActivitySwimmingLapItem>? swimmingItems;
+
   IDOAppActivityDataV3ExchangeModel(
       {this.year,
       this.month,
@@ -841,6 +1088,7 @@ class IDOAppActivityDataV3ExchangeModel extends IDOBaseExchangeModel {
       this.anaerobicExerciseTime,
       this.extremeExerciseTime,
       this.avgSpeed,
+      this.maxSpeed,
       this.avgStepStride,
       this.maxStepStride,
       this.kmSpeed,
@@ -891,7 +1139,72 @@ class IDOAppActivityDataV3ExchangeModel extends IDOBaseExchangeModel {
       this.marathonZoneTime,
       this.thresholdZoneTime,
       this.anaerobicZoneTime,
-      this.intervalZoneTime});
+      this.intervalZoneTime,
+      this.actType,
+      this.trainingOffset,
+      this.distance3d,
+      this.avg3dSpeed,
+      this.avgVerticalSpeed,
+      this.avgSlope,
+      this.maxAltitude,
+      this.minAltitude,
+      this.avgAltitude,
+      this.altitudeCount,
+      this.altitudeItem,
+      this.gpsStatus,
+      this.anaerobicTrainingEffect,
+      this.load,
+      this.runningEconomy,
+      this.maxRunningPower,
+      this.minRunningPower,
+      this.avgRunningPower,
+      this.runningPowerCount,
+      this.rtpeCount,
+      this.maxRtoc,
+      this.minRtoc,
+      this.avgRtoc,
+      this.rtocCount,
+      this.maxRopeFrequency,
+      this.minRopeFrequency,
+      this.avgRopeFrequency,
+      this.maxRopeSkipCount,
+      this.ropeTripCount,
+      this.totalRopeCount,
+      this.ropeItemCount,
+      this.kmPace,
+      this.fastKmPace,
+      this.kmPaceCount,
+      this.miPaceCount,
+      this.paceRealTimeCount,
+      this.aerobicPowerInterval,
+      this.mixedOxygenPowerInterval,
+      this.thresholdRunningPowerInterval,
+      this.intermittentRunPowerInterval,
+      this.sprintRunPowerInterval,
+      this.strideCount,
+      this.strideItems,
+      this.itemRunningPower,
+      this.itemRtpe,
+      this.itemRtoc,
+      this.itemRopeInfo,
+      this.smartCompetitor,
+      this.aiImageId,
+      this.userImageId,
+      this.bgImageId,
+      this.smartCompetitorPace,
+      this.tennisServeCount,
+      this.tennisForeheadCount,
+      this.tennisBackhandCount,
+      this.trips,
+      this.averageSwolf,
+      this.totalStrokesNumber,
+      this.swimmingPosture,
+      this.swimmingAvgPace,
+      this.avgFrequency,
+      this.bodyAge,
+      this.swimmingPoolDistance,
+      this.swimmingItemCount,
+      this.swimmingItems});
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> newMap = {};

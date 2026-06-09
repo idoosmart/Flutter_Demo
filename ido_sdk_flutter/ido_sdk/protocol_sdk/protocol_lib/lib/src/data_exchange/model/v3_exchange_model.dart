@@ -384,6 +384,24 @@ class IDOV3ExchangeModel {
   int? intervalZoneTime;
 
 
+  /// ```dart
+  /// 计划类型：
+  /// 0x01：跑步计划3km
+  /// 0x02：跑步计划5km
+  /// 0x03：跑步计划10km
+  /// 0x04：半程马拉松训练（二期）
+  /// 0x05：马拉松训练（二期）
+  /// 0x40：6分钟轻松跑
+  /// 0x41：10分钟轻松跑
+  /// 0x42：15分钟轻松跑
+  /// 0x43：走跑结合初级
+  /// 0x44：走跑结合进阶
+  /// 0x45：走跑结合强化
+  /// 0x80：跑后拉伸
+  /// 0x81：跑前热身(需要功能表支持,bool support_warm_up_before_running; //支持跑前热身)
+  /// ```
+  @JsonKey(name: "act_type")
+  int? actType;
 
   IDOV3ExchangeModel({
     this.year = 0,

@@ -155,7 +155,7 @@ IDOV3ExchangeModel _$IDOV3ExchangeModelFromJson(Map<String, dynamic> json) =>
       thresholdZoneTime: (json['threshold_zone_time'] as num?)?.toInt() ?? 0,
       anaerobicZoneTime: (json['anaerobic_zone_time'] as num?)?.toInt() ?? 0,
       intervalZoneTime: (json['interval_zone_time'] as num?)?.toInt() ?? 0,
-    );
+    )..actType = (json['act_type'] as num?)?.toInt();
 
 Map<String, dynamic> _$IDOV3ExchangeModelToJson(IDOV3ExchangeModel instance) =>
     <String, dynamic>{
@@ -271,4 +271,5 @@ Map<String, dynamic> _$IDOV3ExchangeModelToJson(IDOV3ExchangeModel instance) =>
       'threshold_zone_time': instance.thresholdZoneTime,
       'anaerobic_zone_time': instance.anaerobicZoneTime,
       'interval_zone_time': instance.intervalZoneTime,
+      'act_type': instance.actType,
     };

@@ -151,8 +151,11 @@ abstract class IDOExchangeData {
   /// IDOAppBleEndReplyExchangeModel : ble设备发送交换运动数据结束 app回复
   void appReplyExec({required IDOBaseExchangeModel model});
 
-  /// 获取多运动数据最后一次数据
+  /// 获取多运动数据最后一次数据（15.20，5022）
   Future<bool> getLastActivityData();
+
+  /// V3 多运动运动中全量快照（15.103，5114）
+  Future<String?> getActivityExchangeFullSnapshot();
 
   /// 获取多运动一分钟心率数据
   Future<bool> getActivityHrData();

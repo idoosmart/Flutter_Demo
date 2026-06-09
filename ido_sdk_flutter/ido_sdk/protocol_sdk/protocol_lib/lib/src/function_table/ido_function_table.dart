@@ -1261,6 +1261,14 @@ class BaseFunctionTable {
   bool get getSupportSyncHealthHrUseVersionCompatible =>
       ft?.supportSyncHealthHrUseVersionCompatible ?? false;
 
+  /// 支持同步血氧使用version字段兼容（table68 BIT_4）
+  bool get getSupportSyncSpo2UseVersionCompatible =>
+      ft?.supportSyncSpo2UseVersionCompatible ?? false;
+
+  /// 支持同步压力使用version字段兼容（table68 BIT_5）
+  bool get getSupportSyncPressureUseVersionCompatible =>
+      ft?.supportSyncPressureUseVersionCompatible ?? false;
+
   /// v3天气设置增加下发48小时天气数据
   bool get getSupportSetV3Add48HourWeatherData =>
       ft?.v3SupportSetV3Add48HourWeatherData ?? false;
@@ -1699,6 +1707,9 @@ class BaseFunctionTable {
 
   /// 车锁管理
   bool get supportBikeLockManager => ft?.supportBikeLockManager ?? false;
+
+  /// CGM 手机下发指令（15.107，table69 bit6）
+  bool get supportCgmPhoneCommand => ft?.supportCgmPhoneCommand ?? false;
 
   /// 支持算法数据的采集
   bool get supportAlgorithmRawDataCollect => ft?.v3AlgorithmRawDataCollectSupport ?? false;

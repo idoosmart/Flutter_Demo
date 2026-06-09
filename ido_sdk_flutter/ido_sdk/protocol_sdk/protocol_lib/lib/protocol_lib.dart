@@ -4,6 +4,7 @@ export 'src/ido_protocol_lib.dart';
 
 // cmd
 export 'src/type_define/event_type.dart';
+export 'src/type_define/cgm_phone_command.dart';
 
 // bind
 export 'src/device_bind/ido_device_bind.dart';

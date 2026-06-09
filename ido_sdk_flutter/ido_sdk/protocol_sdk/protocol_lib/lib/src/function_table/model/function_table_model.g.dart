@@ -574,6 +574,7 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
       supportBatteryLevelDependFirmware:
           json['support_battery_level_depend_firmware'] as bool?,
       supportBikeLockManager: json['support_bike_lock_manager'] as bool?,
+      supportCgmPhoneCommand: json['support_cgm_phone_command'] as bool?,
       supportBleControlPhotograph:
           json['support_ble_control_photograph'] as bool?,
       supportBleToAppDailChange:
@@ -860,6 +861,10 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
       supportSyncPetSleep: json['support_sync_pet_sleep'] as bool?,
       supportSyncHealthHrUseVersionCompatible:
           json['support_sync_health_hr_use_version_compatible'] as bool?,
+      supportSyncSpo2UseVersionCompatible:
+          json['support_sync_spo2_use_version_compatible'] as bool?,
+      supportSyncPressureUseVersionCompatible:
+          json['support_sync_pressure_use_version_compatible'] as bool?,
       supportSyncHealthSwimGetAvgFrequency:
           json['support_sync_health_swim_get_avg_frequency'] as bool?,
       supportSyncHealthSwimGetAvgSpeed:
@@ -1573,6 +1578,7 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
       'support_battery_level_depend_firmware':
           instance.supportBatteryLevelDependFirmware,
       'support_bike_lock_manager': instance.supportBikeLockManager,
+      'support_cgm_phone_command': instance.supportCgmPhoneCommand,
       'support_ble_control_photograph': instance.supportBleControlPhotograph,
       'support_ble_to_app_dail_change': instance.supportBleToAppDailChange,
       'support_ble_to_app_set_dail_finish':
@@ -1826,6 +1832,10 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
       'support_sync_pet_sleep': instance.supportSyncPetSleep,
       'support_sync_health_hr_use_version_compatible':
           instance.supportSyncHealthHrUseVersionCompatible,
+      'support_sync_spo2_use_version_compatible':
+          instance.supportSyncSpo2UseVersionCompatible,
+      'support_sync_pressure_use_version_compatible':
+          instance.supportSyncPressureUseVersionCompatible,
       'support_sync_health_swim_get_avg_frequency':
           instance.supportSyncHealthSwimGetAvgFrequency,
       'support_sync_health_swim_get_avg_speed':
