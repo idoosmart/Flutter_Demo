@@ -95,14 +95,30 @@ import CoreBluetooth
         // 假设已实现 Swift 版本的日志记录（根据实际框架调整）
         _logNative("[Ring OTA] : \(desc)")
         
+        // iPhone SE (第二代)，降低发包频率，保证能正常升级
         // iPhone 8 及以下所有型号列表
         let oldPhoneModels = [
-            "iPhone1,1", "iPhone1,2", "iPhone2,1",
-            "iPhone3,1", "iPhone3,2", "iPhone3,3", "iPhone4,1",
-            "iPhone5,1", "iPhone5,2", "iPhone5,3", "iPhone5,4",
-            "iPhone6,1", "iPhone6,2", "iPhone7,1", "iPhone7,2",
-            "iPhone8,1", "iPhone8,2", "iPhone8,4",
-            "iPhone9,1", "iPhone9,2"
+            "iPhone1,1", // iPhone (初代)
+            "iPhone1,2", // iPhone 3G
+            "iPhone2,1", // iPhone 3GS
+            "iPhone3,1", // iPhone 4 (GSM)
+            "iPhone3,2", // iPhone 4 (GSM, 2012修订版)
+            "iPhone3,3", // iPhone 4 (CDMA)
+            "iPhone4,1", // iPhone 4S
+            "iPhone5,1", // iPhone 5 (GSM)
+            "iPhone5,2", // iPhone 5 (Global)
+            "iPhone5,3", // iPhone 5c (GSM)
+            "iPhone5,4", // iPhone 5c (Global)
+            "iPhone6,1", // iPhone 5s (GSM)
+            "iPhone6,2", // iPhone 5s (Global)
+            "iPhone7,1", // iPhone 6 Plus
+            "iPhone7,2", // iPhone 6
+            "iPhone8,1", // iPhone 6s
+            "iPhone8,2", // iPhone 6s Plus
+            "iPhone8,4", // iPhone SE (第一代)
+            "iPhone9,1", // iPhone 7 (Global)
+            "iPhone9,2", // iPhone 7 Plus (Global)
+            "iPhone12,8" // iPhone SE (第二代)
         ]
         
         return oldPhoneModels.contains(platform)

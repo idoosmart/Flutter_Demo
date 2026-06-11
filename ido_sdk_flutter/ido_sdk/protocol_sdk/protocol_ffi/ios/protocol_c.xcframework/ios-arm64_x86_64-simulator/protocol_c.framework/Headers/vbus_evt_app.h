@@ -212,8 +212,11 @@ typedef enum
 	VBUS_EVT_APP_GET_CONTACT_REVICE_TIME_STOP_TIMER  = 355,    //处理关闭353定时器事件
     VBUS_EVT_APP_GET_BATTERY_REMINDER_SWITCH         = 356,    //获取设备电量提醒开关 struct protocol_head head; struct protocol_get_battery_reminder_switch_reply
     VBUS_EVT_APP_GET_PET_INFO                        = 357,    //获取宠物信息 struct protocol_head head; struct protocol_get_pet_info_reply
+    VBUS_EVT_APP_DEVICE_VIBRATION_RINGTONE           = 358,    //设备振动与铃声查询/设置（V3 15.106，33 94）；JSON operate：1 查询 / 2 设置
     VBUS_EVT_APP_GET_FIND_PHONE_SWITCH               = 359,    //获取寻找手机开关状态 struct protocol_head head; struct protocol_get_find_phone_switch_reply
-	
+    VBUS_EVT_APP_GET_SPORT_TYPES_REQUIRING_WRIST_SIDE_SETTING = 360, // V3 33 93：查询需设置左/右手佩戴的运动类型列表
+    VBUS_EVT_APP_GET_DEVICE_STATUS_INFO              = 361,    //获取设备状态 02 49 struct protocol_get_device_status_info / protocol_get_device_status_info_app_reply
+
     VBUS_EVT_APP_OTA_START                           = 400,	   //进入升级模式	struct protocol_ota_reply 里面包含电量标志
 	VBUS_EVT_APP_OTA_DIRECT_START                    = 401,	   //直接进入升级模式(忽略电量)
 	VBUS_EVT_APP_SYSTEM_OFF                          = 402,	   //进入关机模式
@@ -437,7 +440,9 @@ typedef enum
     VBUS_EVT_FUNC_V3_GLUCOSE_INFORMATION                   = 5104,  //v3血糖数据下发
     VBUS_EVT_FUNC_V3_ALGORITHM_RAW_DATA                    = 5105,  //算法原始数据采集
     VBUS_EVT_FUNC_V3_BIKE_LOCK                             = 5107,  //车锁管理
+    VBUS_EVT_FUNC_V3_CGM_PHONE_COMMAND                     = 5108,  //CGM 手机下发指令（15.107）
     VBUS_EVT_FUNC_V3_OFFLINE_MAP                           = 5109,  //离线地图
+    VBUS_EVT_FUNC_V3_ACTIVITY_EXCHANGE_FULL_SNAPSHOT       = 5114,  //15.103 V3 多运动运动中全量快照（cmd=0x33,cmd_id=0x1E，按字节分包）
 
 
 

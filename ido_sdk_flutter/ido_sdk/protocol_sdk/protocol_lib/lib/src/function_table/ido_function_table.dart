@@ -461,6 +461,21 @@ class BaseFunctionTable {
   /// v3 足排球
   bool get sportFootvolley => ft?.footvolley ?? false;
 
+  /// 登山
+  bool get mountaineering => ft?.mountaineering ?? false;
+
+  /// 深蹲
+  bool get squat => ft?.squat ?? false;
+
+  /// 跳伞
+  bool get parachuting => ft?.parachuting ?? false;
+
+  /// 定向越野
+  bool get orienteering => ft?.orienteering ?? false;
+
+  /// 弓步
+  bool get lunge => ft?.lunge ?? false;
+
   /// v3 站立滑水
   bool get sportStandWaterSkiing => ft?.standingWaterSkiing ?? false;
 
@@ -1559,6 +1574,18 @@ class BaseFunctionTable {
   /// 刷牙
   bool get alarmBrushTeeth => ft?.alarmBrushTeeth ?? false;
 
+  /// 洗澡
+  bool get alarmBath => ft?.alarmBath ?? false;
+
+  /// 课程
+  bool get alarmCourse => ft?.alarmCourse ?? false;
+
+  /// 学习
+  bool get alarmLearn => ft?.alarmLearn ?? false;
+
+  /// 玩耍
+  bool get alarmPlayTime => ft?.alarmPlayTime ?? false;
+
   /// 约会
   bool get alarmDating => ft?.alarmDating ?? false;
 
@@ -1755,6 +1782,123 @@ class BaseFunctionTable {
 
   /// 设置吃药提醒
   bool get supportTakeMedicineReminder => ft?.supportTakeMedicineReminder ?? false;
+
+  /// 通知支持 Zoom Workplace，type 0x82（table71 BIT_5）
+  bool get supportZoomWorkplace => ft?.supportZoomWorkplace ?? false;
+
+  /// 支持手机日历提醒文件下发（02 4B + .cal 文件传输 type=0x20，table71 BIT_4）
+  bool get v2SupportPhoneCalendarReminder => ft?.v2SupportPhoneCalendarReminder ?? false;
+
+  /// 支持获取设备状态（V2 02 49，table71 BIT_0）
+  bool get supportGetDeviceStatus => ft?.supportGetDeviceStatus ?? false;
+
+  /// 支持获取设备运动状态（V2 02 49，table71 BIT_1）
+  bool get supportGetDeviceSportStatus => ft?.supportGetDeviceSportStatus ?? false;
+
+  /// 支持睡前故事（15.44/15.45，table71 BIT_2）
+  bool get supportBedtimeStory => ft?.supportBedtimeStory ?? false;
+
+  /// 支持第三套运动图标（table71 BIT_3）
+  bool get supportThirdSportIcon => ft?.supportThirdSportIcon ?? false;
+
+  /// 控制测量血压（06 06 bp_flag，table70 BIT_0）
+  bool get supportControlMeasureBp => ft?.supportControlMeasureBp ?? false;
+
+  /// 控制测量心率（06 06 hr_flag，table70 BIT_1）
+  bool get supportControlMeasureHr => ft?.supportControlMeasureHr ?? false;
+
+  /// 控制测量血氧（06 06 spo2_flag，table70 BIT_2）
+  bool get supportControlMeasureSpo2 => ft?.supportControlMeasureSpo2 ?? false;
+
+  /// 控制测量体成分（06 06 body_composition_flag，table70 BIT_3）
+  bool get supportControlMeasureBodyComposition => ft?.supportControlMeasureBodyComposition ?? false;
+
+  /// 控制测量压力（06 06 stress_flag，table70 BIT_4）
+  bool get supportControlMeasureStress => ft?.supportControlMeasureStress ?? false;
+
+  /// 控制一键测量（06 06 one_click_measure_flag，table70 BIT_5）
+  bool get supportControlMeasureOneClick => ft?.supportControlMeasureOneClick ?? false;
+
+  /// 控制测量体温（06 06 temperature_flag，table70 BIT_6）
+  bool get supportControlMeasureTemperature => ft?.supportControlMeasureTemperature ?? false;
+
+  /// 多运动同步 body_age（table69 BIT_0）
+  bool get supportSyncActivityDataBodyAge => ft?.supportSyncActivityDataBodyAge ?? false;
+
+  /// idb05 步数目标协议时间戳用本地时间（table69 BIT_1）
+  bool get supportIdb05UseLocaltimeForStepGoalCmd => ft?.supportIdb05UseLocaltimeForStepGoalCmd ?? false;
+
+  /// 查询需设置佩戴手的运动类型（33 93，table69 BIT_2）
+  bool get supportGetSportTypesRequiringWristSideSetting => ft?.supportGetSportTypesRequiringWristSideSetting ?? false;
+
+  /// 支持训练计划同步（33 22，table69 BIT_3）
+  bool get supportTrainingPlan => ft?.supportTrainingPlan ?? false;
+
+  /// 多运动交互使用 v21（33 12，table69 BIT_4）
+  bool get supportExchangeActivityUseV21 => ft?.supportExchangeActivityUseV21 ?? false;
+
+  /// 设备振动与铃声（33 94，table69 BIT_5）
+  bool get supportDeviceVibrationRingtone => ft?.supportDeviceVibrationRingtone ?? false;
+
+  /// V3闹钟不支持延时分钟（table68 BIT_0）
+  bool get v3AlarmNotSupportDelayMin => ft?.v3AlarmNotSupportDelayMin ?? false;
+
+  /// 三环目标基于固件（table68 BIT_1）
+  bool get supportThreeRingGoalBasedOnFirmware => ft?.supportThreeRingGoalBasedOnFirmware ?? false;
+
+  /// 健康数据同步含时区字段（table68 BIT_3）
+  bool get supportSyncHealthDataWithTimeZone => ft?.supportSyncHealthDataWithTimeZone ?? false;
+
+  /// 获取固件配置上限（33 92，table68 BIT_6）
+  bool get supportGetFirmwareSupportedConfig => ft?.supportGetFirmwareSupportedConfig ?? false;
+
+  /// 运动中全量快照（33 1E，table68 BIT_7）
+  bool get supportV3ActivityExchangeFullSnapshot => ft?.supportV3ActivityExchangeFullSnapshot ?? false;
+
+  /// 通知支持 Google Messages，type 0x7B（table62 BIT_3）
+  bool get supportGoogleMessages => ft?.supportGoogleMessages ?? false;
+
+  /// 通知支持 Apple Calendar，type 0x7C（table62 BIT_4）
+  bool get supportAppleCalendar => ft?.supportAppleCalendar ?? false;
+
+  /// 通知支持 Apple Mail，type 0x7D（table62 BIT_5）
+  bool get supportAppleMail => ft?.supportAppleMail ?? false;
+
+  /// 通知支持 Google Calendar，type 0x52（table62 BIT_6）
+  bool get supportGoogleCalendar => ft?.supportGoogleCalendar ?? false;
+
+  /// 支持 Health-U 通知，type 0x7F（table62 BIT_7）
+  bool get supportHealthU => ft?.supportHealthU ?? false;
+
+  /// 支持宠物设备（table66）
+  bool get supportPetDevice => ft?.supportPetDevice ?? false;
+
+  /// 支持 Zalo 通知（table66）
+  bool get supportZalo => ft?.supportZalo ?? false;
+
+  /// 支持滴滴打车通知（table67）
+  bool get supportDidiTaxi => ft?.supportDidiTaxi ?? false;
+
+  /// 支持抬腕亮屏时间段（table67）
+  bool get supportUpHandGestureTimeRange => ft?.supportUpHandGestureTimeRange ?? false;
+
+  /// 支持查询自定义壁纸表盘状态（33 8F，table67）
+  bool get supportQueryCustomWallpaperDialState => ft?.supportQueryCustomWallpaperDialState ?? false;
+
+  /// 支持 APP 节拍器（table67）
+  bool get supportAppMetronome => ft?.supportAppMetronome ?? false;
+
+  /// 支持振动设置（33 94，table67）
+  bool get supportVibrationSetting => ft?.supportVibrationSetting ?? false;
+
+  /// 支持闹钟音量设置（33 94，table67）
+  bool get supportAlarmVolumeSetting => ft?.supportAlarmVolumeSetting ?? false;
+
+  /// 支持来电提醒音量设置（33 94，table67）
+  bool get supportCallReminderVolumeSetting => ft?.supportCallReminderVolumeSetting ?? false;
+
+  /// V3闹钟不支持重复（table67）
+  bool get v3AlarmNotSupportRepeat => ft?.v3AlarmNotSupportRepeat ?? false;
 
   FunctionTableModel? _ftModel;
 
