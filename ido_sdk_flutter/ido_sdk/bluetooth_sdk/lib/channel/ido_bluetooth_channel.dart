@@ -57,6 +57,9 @@ class IDOBluetoothChannel {
   bool isConnecting = false;
 
   register(){
+    print("channel register.");
+    bluetoothManager.addLog("channel register",
+            method: "register");
     callHandle();
     bluetoothState();
     if (Platform.isAndroid) {

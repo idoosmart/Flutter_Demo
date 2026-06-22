@@ -58,27 +58,32 @@ object DeviceBusinessManager {
         }
     }
 
+    private var activeBindStateCallback: ((Boolean) -> Unit)? = null
+
     @JvmStatic
     fun checkBindState(macAddress: String, callback: (Boolean) -> Unit) {
-        if (bindStateTimeoutRunnable != null) {
-            mHandler.removeCallbacks(bindStateTimeoutRunnable!!)
-            bindStateTimeoutRunnable = null
-        }
-        bindStateTimeoutRunnable = TimeoutRunnable("bind state check ", callback, false)
+        Logger.p("DeviceBindManager", "checkBindState macAddress = $macAddress callback = $callback")
+        bindStateTimeoutRunnable?.let { mHandler.removeCallbacks(it) }
+        bindStateTimeoutRunnable = null
+        activeBindStateCallback = callback
+        bindStateTimeoutRunnable = TimeoutRunnable("bind state check ", {
+            deliverBindState(false, "timeout")
+        }, false)
         mHandler.postDelayed(bindStateTimeoutRunnable!!, 5000)
         runOnUiThread {
-            bindStateChannel?.send(mapOf(Pair("mac", macAddress))) { reply ->
-                Logger.p("DeviceBindManager", "checkBindState reply: $reply")
-                bindStateTimeoutRunnable?.let {
-                    mHandler.removeCallbacks(it)
-                }
-                if (reply is Boolean) {
-                    callback(reply)
-                } else {
-                    callback(false)
-                }
+            bindStateChannel?.send(mapOf("mac" to macAddress)) { reply ->
+                Logger.p("DeviceBindManager", "checkBindState reply = $reply  callback = $callback activeBindStateCallback = $activeBindStateCallback")
+                deliverBindState(if (reply is Boolean) reply else false, "reply")
             }
         }
+    }
+    private fun deliverBindState(bindState: Boolean, reason: String) {
+        val cb = activeBindStateCallback ?: return  // 已消费，直接丢弃（含 stale reply）
+        activeBindStateCallback = null
+        bindStateTimeoutRunnable?.let { mHandler.removeCallbacks(it) }
+        bindStateTimeoutRunnable = null
+        Logger.p(TAG, "checkBindState done: reason=$reason, bindState=$bindState")
+        cb(bindState)
     }
 
     private fun runOnUiThread(callback: () -> Unit) {
