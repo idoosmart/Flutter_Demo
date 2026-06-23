@@ -224,6 +224,11 @@ enum CmdEvtType {
       evtBase: _VBusEvtBase.base_app_get,
       evtType: _VBusEvtType.app_get_device_status_info),
 
+  /// 获取睡眠模式（GET:0x02/0x4C）
+  getAppSleepMode(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.app_get_app_sleep_mode),
+
   /// 获得固件三级版本和bt的3级版本
   getFirmwareBtVersion(
       evtBase: _VBusEvtBase.base_app_get,
@@ -936,6 +941,11 @@ enum CmdEvtType {
   setBatteryReminderSwitch(
       evtBase: _VBusEvtBase.base_app_set,
       evtType: _VBusEvtType.app_set_battery_reminder_switch),
+
+  /// 睡眠模式设置（SET:0x03/0x4C）
+  setAppSleepMode(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.app_set_app_sleep_mode),
 
   /// 设置宠物信息
   setPetInfo(
@@ -1782,6 +1792,9 @@ abstract class _VBusEvtType {
   /// 设备电量提醒开关设置（03 4A）
   static const int app_set_battery_reminder_switch = 198;
 
+  /// 睡眠模式设置（03 4C）
+  static const int app_set_app_sleep_mode = 212;
+
   /// 宠物信息设置（03 0A）
   static const int app_set_pet_info = 197;
 
@@ -2057,6 +2070,9 @@ abstract class _VBusEvtType {
 
   /// 处理关闭353定时器事件
   static const int app_get_contact_revice_time_stop_timer = 355;
+
+  /// 获取睡眠模式（02 4C）
+  static const int app_get_app_sleep_mode = 367;
 
   /// 进入升级模式	; struct protocol_ota_reply 里面包含电量标志
   static const int app_ota_start = 400;

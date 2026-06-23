@@ -147,6 +147,10 @@ typedef enum
 	VBUS_EVT_APP_SET_ENCRYPTED_AUTH                  = 204,    //发送计算好的授权数据     struct protocol_start_encrypted_auth,struct protocol_start_encrypted_auth_reply
     VBUS_EVT_APP_GET_ENCRYPTED_CODE                  = 205,    //获取授权数据 protocol_start_aut_code_reply
     VBUS_EVT_APP_SEND_BIND_RESULTE                   = 206,    //APP下发配对结果 struct protocol_app_send_bind_resulte
+    VBUS_EVT_APP_SET_LOCATION_INFO_NOTIFY            = 207,    //手机app通过这个命令开关，设置位置信息通知  struct protocol_location_info_notify（协议库为206，此处207因206已被占用）
+    VBUS_EVT_APP_SET_FALL_MONITORING_SWITCH          = 210,    //跌倒监测开关设置 03 58 struct protocol_set_fall_monitoring_switch / protocol_set_fall_monitoring_switch_reply
+    VBUS_EVT_APP_SET_SWITCH_MODE                     = 211,    //定位开关模式设置 03 59 struct protocol_set_switch_mode / protocol_set_switch_mode_reply
+    VBUS_EVT_APP_SET_APP_SLEEP_MODE                  = 212,    //睡眠模式设置 03 4C struct protocol_set_app_sleep_mode / protocol_set_app_sleep_mode_reply
     
 	VBUS_EVT_APP_APP_GET_MAC                         = 300,	   //获得mac struct protocol_device_mac
 	VBUS_EVT_APP_GET_DEVICE_INFO                     = 301,	   //获得设备信息 struct protocol_device_info
@@ -216,6 +220,12 @@ typedef enum
     VBUS_EVT_APP_GET_FIND_PHONE_SWITCH               = 359,    //获取寻找手机开关状态 struct protocol_head head; struct protocol_get_find_phone_switch_reply
     VBUS_EVT_APP_GET_SPORT_TYPES_REQUIRING_WRIST_SIDE_SETTING = 360, // V3 33 93：查询需设置左/右手佩戴的运动类型列表
     VBUS_EVT_APP_GET_DEVICE_STATUS_INFO              = 361,    //获取设备状态 02 49 struct protocol_get_device_status_info / protocol_get_device_status_info_app_reply
+    VBUS_EVT_APP_GET_FIRMWARE_STATUS_INFO            = 362,    //固件状态信息查询 02 48 struct protocol_head / protocol_get_firmware_status_info_reply
+    VBUS_EVT_APP_GET_FALL_MONITORING_SWITCH          = 363,    //跌倒监测开关获取 02 58 struct protocol_head / protocol_get_fall_monitoring_switch_reply
+    VBUS_EVT_APP_SET_NOTICE_NEW                      = 364,    //V3固定消息类型通知提醒开关设置完成 struct protocol_v2_set_notice_ack_reply
+    VBUS_EVT_APP_GET_NOTICE_STATUS_NEW               = 365,    //V3固定消息类型通知提醒开关查询完成 struct protocol_set_notice_for_app
+    VBUS_EVT_APP_GET_SWITCH_MODE                     = 366,    //定位开关模式获取 02 5A struct protocol_head / protocol_get_switch_mode_reply（协议库为357，此处366因357已被占用）
+    VBUS_EVT_APP_GET_APP_SLEEP_MODE                  = 367,    //获取睡眠模式 02 4C struct protocol_head / protocol_get_app_sleep_mode_reply
 
     VBUS_EVT_APP_OTA_START                           = 400,	   //进入升级模式	struct protocol_ota_reply 里面包含电量标志
 	VBUS_EVT_APP_OTA_DIRECT_START                    = 401,	   //直接进入升级模式(忽略电量)
@@ -439,9 +449,13 @@ typedef enum
     VBUS_EVT_FUNC_V3_PHYSIOLOGICAL_RECORD                  = 5102,  //女性生理日常记录
     VBUS_EVT_FUNC_V3_GLUCOSE_INFORMATION                   = 5104,  //v3血糖数据下发
     VBUS_EVT_FUNC_V3_ALGORITHM_RAW_DATA                    = 5105,  //算法原始数据采集
+    VBUS_EVT_FUNC_V3_FIRMWARE_POSITION_INFO                = 5106,  //固件上报定位信息（15.93 cmd=0x33 key=0x89，协议库为5107）
     VBUS_EVT_FUNC_V3_BIKE_LOCK                             = 5107,  //车锁管理
     VBUS_EVT_FUNC_V3_CGM_PHONE_COMMAND                     = 5108,  //CGM 手机下发指令（15.107）
     VBUS_EVT_FUNC_V3_OFFLINE_MAP                           = 5109,  //离线地图
+    VBUS_EVT_FUNC_V3_TAKE_MEDICINE_REMIND                  = 5110,  //吃药提醒（15.90 cmd=0x33 key=0x86）
+    VBUS_EVT_FUNC_V3_PAYMENT_SCAN_INFO                    = 5111,  //APP内支付码扫码信息下发（15.91 cmd=0x33 key=0x87）
+    VBUS_EVT_FUNC_V3_APP_DOWNLOAD_STATUS_INFO             = 5112,  //APP设置下载状态（15.92 cmd=0x33 key=0x88）
     VBUS_EVT_FUNC_V3_ACTIVITY_EXCHANGE_FULL_SNAPSHOT       = 5114,  //15.103 V3 多运动运动中全量快照（cmd=0x33,cmd_id=0x1E，按字节分包）
 
 

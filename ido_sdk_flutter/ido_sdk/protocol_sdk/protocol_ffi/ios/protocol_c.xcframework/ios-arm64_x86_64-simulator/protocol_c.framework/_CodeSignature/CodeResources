@@ -18,11 +18,11 @@
 		</data>
 		<key>Headers/vbus_evt_app.h</key>
 		<data>
-		fES94hsT5y/Ho3cs7ytZDaIc7ZE=
+		Qji4HYI2pFTwdEK4K1hSc8oB8kg=
 		</data>
 		<key>Info.plist</key>
 		<data>
-		PBKsgqaIPID/Sru0uanjSdY2n90=
+		qcPYgM4Fn+z5gRgS7dOPV0XzMLU=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -30,7 +30,7 @@
 		</data>
 		<key>protocol_c.bundle/Info.plist</key>
 		<data>
-		MnLC6kIQivELM1BUceCgI0zQq3o=
+		AvFKs0HnrEyEAwu0oxrpbD4xIXM=
 		</data>
 		<key>protocol_c.bundle/PrivacyInfo.xcprivacy</key>
 		<data>
@@ -76,11 +76,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			fES94hsT5y/Ho3cs7ytZDaIc7ZE=
+			Qji4HYI2pFTwdEK4K1hSc8oB8kg=
 			</data>
 			<key>hash2</key>
 			<data>
-			wUGvOnBhUQKfCKQ6y+1NDDC3kBKX7EdCJvoCMuqR9T0=
+			i59oW4rq6DLsb0UuwUKEz9u/mDb8JWMIpwcdFmhG7hU=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>
@@ -98,11 +98,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			MnLC6kIQivELM1BUceCgI0zQq3o=
+			AvFKs0HnrEyEAwu0oxrpbD4xIXM=
 			</data>
 			<key>hash2</key>
 			<data>
-			Sh0w4TD6sVzb66WuW9LZeIaQoysT5SI2UBXV4opENq0=
+			AThZzXP8smal6gDTmxN2OjytEFKpyNpJofkvSNgtiWs=
 			</data>
 		</dict>
 		<key>protocol_c.bundle/PrivacyInfo.xcprivacy</key>

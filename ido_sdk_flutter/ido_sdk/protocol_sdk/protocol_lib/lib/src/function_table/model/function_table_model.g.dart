@@ -558,9 +558,12 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
           json['support_app_download_status_info'] as bool?,
       supportAppNotDisplayAlarmName:
           json['support_app_not_display_alarm_name'] as bool?,
+      supportAppNotDisplaySportTypeSetting:
+          json['support_app_not_display_sport_type_setting'] as bool?,
       supportAppSendPhoneSystemInfo:
           json['support_app_send_phone_system_info'] as bool?,
       supportAppMetronome: json['support_app_metronome'] as bool?,
+      supportAppSleepMode: json['support_app_sleep_mode'] as bool?,
       supportAppleCalendar: json['support_apple_calendar'] as bool?,
       supportAppleMail: json['support_apple_mail'] as bool?,
       supportBaidu: json['support_baidu'] as bool?,
@@ -570,6 +573,7 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
       supportBatteryReminderSwitch:
           json['support_battery_reminder_switch'] as bool?,
       supportBedtimeStory: json['support_bedtime_story'] as bool?,
+      supportBuzud: json['support_buzud'] as bool?,
       supportPetInfo: json['support_pet_info'] as bool?,
       supportPetDevice: json['support_pet_device'] as bool?,
       supportGetFindPhoneSwitch: json['support_get_find_phone_switch'] as bool?,
@@ -830,6 +834,7 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
       supportSetScreenBrightInterval:
           json['support_set_screen_bright_interval'] as bool?,
       supportSetSleepRemind: json['support_set_sleep_remind'] as bool?,
+      supportSetSportRecordName: json['support_set_sport_record_name'] as bool?,
       supportSetSportGoal: json['support_set_sport_goal'] as bool?,
       supportSetStrideDeviceSync:
           json['support_set_stride_device_sync'] as bool?,
@@ -1617,9 +1622,12 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
       'support_app_download_status_info': instance.supportAppDownloadStatusInfo,
       'support_app_not_display_alarm_name':
           instance.supportAppNotDisplayAlarmName,
+      'support_app_not_display_sport_type_setting':
+          instance.supportAppNotDisplaySportTypeSetting,
       'support_app_send_phone_system_info':
           instance.supportAppSendPhoneSystemInfo,
       'support_app_metronome': instance.supportAppMetronome,
+      'support_app_sleep_mode': instance.supportAppSleepMode,
       'support_apple_calendar': instance.supportAppleCalendar,
       'support_apple_mail': instance.supportAppleMail,
       'support_baidu': instance.supportBaidu,
@@ -1628,6 +1636,7 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
       'support_barometric_altimeter': instance.supportBarometricAltimeter,
       'support_battery_reminder_switch': instance.supportBatteryReminderSwitch,
       'support_bedtime_story': instance.supportBedtimeStory,
+      'support_buzud': instance.supportBuzud,
       'support_pet_info': instance.supportPetInfo,
       'support_pet_device': instance.supportPetDevice,
       'support_get_find_phone_switch': instance.supportGetFindPhoneSwitch,
@@ -1862,6 +1871,7 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
       'support_set_screen_bright_interval':
           instance.supportSetScreenBrightInterval,
       'support_set_sleep_remind': instance.supportSetSleepRemind,
+      'support_set_sport_record_name': instance.supportSetSportRecordName,
       'support_set_sport_goal': instance.supportSetSportGoal,
       'support_set_stride_device_sync': instance.supportSetStrideDeviceSync,
       'support_set_take_picture': instance.supportSetTakePicture,

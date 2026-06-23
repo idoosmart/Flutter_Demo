@@ -304,6 +304,58 @@ class BaseFunctionTable {
   /// 饿了么
   bool get reminderEleme => ft?.supportEleme ?? false;
 
+  /// 通知支持 Google Messages，type 0x7B
+  bool get reminderGoogleMessages => ft?.supportGoogleMessages ?? false;
+
+  /// 通知支持 Apple Calendar，type 0x7C
+  bool get reminderAppleCalendar => ft?.supportAppleCalendar ?? false;
+
+  /// 通知支持 Apple Mail，type 0x7D
+  bool get reminderAppleMail => ft?.supportAppleMail ?? false;
+
+  /// 通知支持 Google Calendar，type 0x7E
+  bool get reminderGoogleCalendar => ft?.supportGoogleCalendar ?? false;
+
+  /// 通知支持 Health &U，type 0x7F
+  bool get reminderHealthU => ft?.supportHealthU ?? false;
+
+  /// 通知支持 Zalo V3，type 0x80
+  bool get reminderZalo => ft?.supportZalo ?? false;
+
+  /// 通知支持滴滴打车，type 0x81
+  bool get reminderDidiTaxi => ft?.supportDidiTaxi ?? false;
+
+  /// 通知支持 Zoom Workplace，type 0x82
+  bool get reminderZoomWorkplace => ft?.supportZoomWorkplace ?? false;
+
+  /// 通知支持 BUZUD，type 0x83
+  bool get reminderBuzud => ft?.supportBuzud ?? false;
+
+  /// ------------------ 旧通知功能表名称兼容 ------------------
+  /// 通知支持 Google Messages，type 0x7B（table62 BIT_3）
+  bool get supportGoogleMessages => ft?.supportGoogleMessages ?? false;
+
+  /// 通知支持 Apple Calendar，type 0x7C（table62 BIT_4）
+  bool get supportAppleCalendar => ft?.supportAppleCalendar ?? false;
+
+  /// 通知支持 Apple Mail，type 0x7D（table62 BIT_5）
+  bool get supportAppleMail => ft?.supportAppleMail ?? false;
+
+  /// 通知支持 Google Calendar，type 0x52（table62 BIT_6）
+  bool get supportGoogleCalendar => ft?.supportGoogleCalendar ?? false;
+
+  /// 支持 Health-U 通知，type 0x7F（table62 BIT_7）
+  bool get supportHealthU => ft?.supportHealthU ?? false;
+
+  /// 通知支持 Zoom Workplace，type 0x82（table71 BIT_5）
+  bool get supportZoomWorkplace => ft?.supportZoomWorkplace ?? false;
+
+  /// 支持 Zalo 通知（table66）
+  bool get supportZalo => ft?.supportZalo ?? false;
+
+  /// 支持滴滴打车通知（table67）
+  bool get supportDidiTaxi => ft?.supportDidiTaxi ?? false;
+
   // ------------------ 运动 ------------------
 
   /// v2 走路
@@ -1783,8 +1835,12 @@ class BaseFunctionTable {
   /// 设置吃药提醒
   bool get supportTakeMedicineReminder => ft?.supportTakeMedicineReminder ?? false;
 
-  /// 通知支持 Zoom Workplace，type 0x82（table71 BIT_5）
-  bool get supportZoomWorkplace => ft?.supportZoomWorkplace ?? false;
+  /// 支持设置运动记录名称（15.108，table71 BIT_6）
+  bool get supportSetSportRecordName => ft?.supportSetSportRecordName ?? false;
+
+  /// app 不显示运动类型设置入口（table71 BIT_7）
+  bool get supportAppNotDisplaySportTypeSetting =>
+      ft?.supportAppNotDisplaySportTypeSetting ?? false;
 
   /// 支持手机日历提醒文件下发（02 4B + .cal 文件传输 type=0x20，table71 BIT_4）
   bool get v2SupportPhoneCalendarReminder => ft?.v2SupportPhoneCalendarReminder ?? false;
@@ -1822,6 +1878,9 @@ class BaseFunctionTable {
   /// 控制测量体温（06 06 temperature_flag，table70 BIT_6）
   bool get supportControlMeasureTemperature => ft?.supportControlMeasureTemperature ?? false;
 
+  /// 睡眠模式设置获取（SET:03 4C / GET:02 4C，table70 BIT_7）
+  bool get supportAppSleepMode => ft?.supportAppSleepMode ?? false;
+
   /// 多运动同步 body_age（table69 BIT_0）
   bool get supportSyncActivityDataBodyAge => ft?.supportSyncActivityDataBodyAge ?? false;
 
@@ -1855,29 +1914,8 @@ class BaseFunctionTable {
   /// 运动中全量快照（33 1E，table68 BIT_7）
   bool get supportV3ActivityExchangeFullSnapshot => ft?.supportV3ActivityExchangeFullSnapshot ?? false;
 
-  /// 通知支持 Google Messages，type 0x7B（table62 BIT_3）
-  bool get supportGoogleMessages => ft?.supportGoogleMessages ?? false;
-
-  /// 通知支持 Apple Calendar，type 0x7C（table62 BIT_4）
-  bool get supportAppleCalendar => ft?.supportAppleCalendar ?? false;
-
-  /// 通知支持 Apple Mail，type 0x7D（table62 BIT_5）
-  bool get supportAppleMail => ft?.supportAppleMail ?? false;
-
-  /// 通知支持 Google Calendar，type 0x52（table62 BIT_6）
-  bool get supportGoogleCalendar => ft?.supportGoogleCalendar ?? false;
-
-  /// 支持 Health-U 通知，type 0x7F（table62 BIT_7）
-  bool get supportHealthU => ft?.supportHealthU ?? false;
-
   /// 支持宠物设备（table66）
   bool get supportPetDevice => ft?.supportPetDevice ?? false;
-
-  /// 支持 Zalo 通知（table66）
-  bool get supportZalo => ft?.supportZalo ?? false;
-
-  /// 支持滴滴打车通知（table67）
-  bool get supportDidiTaxi => ft?.supportDidiTaxi ?? false;
 
   /// 支持抬腕亮屏时间段（table67）
   bool get supportUpHandGestureTimeRange => ft?.supportUpHandGestureTimeRange ?? false;

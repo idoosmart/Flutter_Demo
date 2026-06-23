@@ -825,10 +825,14 @@ class FunctionTableModel {
   final bool? supportAppDownloadStatusInfo;
   @JsonKey(name: 'support_app_not_display_alarm_name')
   final bool? supportAppNotDisplayAlarmName;
+  @JsonKey(name: 'support_app_not_display_sport_type_setting')
+  final bool? supportAppNotDisplaySportTypeSetting;
   @JsonKey(name: 'support_app_send_phone_system_info')
   final bool? supportAppSendPhoneSystemInfo;
   @JsonKey(name: 'support_app_metronome')
   final bool? supportAppMetronome;
+  @JsonKey(name: 'support_app_sleep_mode')
+  final bool? supportAppSleepMode;
   @JsonKey(name: 'support_apple_calendar')
   final bool? supportAppleCalendar;
   @JsonKey(name: 'support_apple_mail')
@@ -845,6 +849,8 @@ class FunctionTableModel {
   final bool? supportBatteryReminderSwitch;
   @JsonKey(name: 'support_bedtime_story')
   final bool? supportBedtimeStory;
+  @JsonKey(name: 'support_buzud')
+  final bool? supportBuzud;
   @JsonKey(name: 'support_pet_info')
   final bool? supportPetInfo;
   @JsonKey(name: 'support_pet_device')
@@ -1195,6 +1201,8 @@ class FunctionTableModel {
   final bool? supportSetScreenBrightInterval;
   @JsonKey(name: 'support_set_sleep_remind')
   final bool? supportSetSleepRemind;
+  @JsonKey(name: 'support_set_sport_record_name')
+  final bool? supportSetSportRecordName;
   @JsonKey(name: 'support_set_sport_goal')
   final bool? supportSetSportGoal;
   @JsonKey(name: 'support_set_stride_device_sync')
@@ -1989,8 +1997,10 @@ class FunctionTableModel {
     this.supportAppConnectWithSpp,
     this.supportAppDownloadStatusInfo,
     this.supportAppNotDisplayAlarmName,
+    this.supportAppNotDisplaySportTypeSetting,
     this.supportAppSendPhoneSystemInfo,
     this.supportAppMetronome,
+    this.supportAppSleepMode,
     this.supportAppleCalendar,
     this.supportAppleMail,
     this.supportBaidu,
@@ -1999,6 +2009,7 @@ class FunctionTableModel {
     this.supportBarometricAltimeter,
     this.supportBatteryReminderSwitch,
     this.supportBedtimeStory,
+    this.supportBuzud,
     this.supportPetInfo,
     this.supportPetDevice,
     this.supportGetFindPhoneSwitch,
@@ -2174,6 +2185,7 @@ class FunctionTableModel {
     this.supportSetPeripheralsInfo,
     this.supportSetScreenBrightInterval,
     this.supportSetSleepRemind,
+    this.supportSetSportRecordName,
     this.supportSetSportGoal,
     this.supportSetStrideDeviceSync,
     this.supportSetTakePicture,
