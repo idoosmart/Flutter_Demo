@@ -224,6 +224,26 @@ enum CmdEvtType {
       evtBase: _VBusEvtBase.base_app_get,
       evtType: _VBusEvtType.app_get_device_status_info),
 
+  /// 获取固件显示版本号（GET:0x02/0x4B）
+  getFirmwareDisplayVersion(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.app_get_firmware_display_version),
+
+  /// 固件状态信息查询（GET:0x02/0x48）
+  getFirmwareStatusInfo(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.app_get_firmware_status_info),
+
+  /// 跌倒监测开关获取（GET:0x02/0x58）
+  getFallMonitoringSwitch(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.app_get_fall_monitoring_switch),
+
+  /// 定位开关模式获取（GET:0x02/0x5A）
+  getPositionSwitchMode(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.app_get_position_switch_mode),
+
   /// 获取睡眠模式（GET:0x02/0x4C）
   getAppSleepMode(
       evtBase: _VBusEvtBase.base_app_get,
@@ -947,6 +967,21 @@ enum CmdEvtType {
       evtBase: _VBusEvtBase.base_app_set,
       evtType: _VBusEvtType.app_set_app_sleep_mode),
 
+  /// 位置信息通知（SET:0x05/0x07）
+  setLocationInfoNotify(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.app_set_location_info_notify),
+
+  /// 跌倒监测开关设置（SET:0x03/0x58）
+  setFallMonitoringSwitch(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.app_set_fall_monitoring_switch),
+
+  /// 定位开关模式设置（SET:0x03/0x59）
+  setPositionSwitchMode(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.app_set_position_switch_mode),
+
   /// 设置宠物信息
   setPetInfo(
       evtBase: _VBusEvtBase.base_app_set,
@@ -1530,6 +1565,31 @@ enum CmdEvtType {
       evtBase: _VBusEvtBase.base_app_set,
       evtType: _VBusEvtType.vbus_evt_func_v3_offline_map),
 
+  /// 手机日历提醒查询/设置（V3 15.110，0x33/0x98）
+  phoneCalendarReminder(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.func_v3_phone_calendar_reminder),
+
+  /// 固件定位信息（V3 15.93，0x33/0x89；含查询/确认 operate）
+  getFirmwarePositionInfo(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.func_v3_firmware_position_info),
+
+  /// 吃药提醒 V3（15.90，0x33/0x86）
+  takeMedicineRemind(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.func_v3_take_medicine_remind),
+
+  /// 已购表盘信息下发（15.91，0x33/0x87；C 事件仍为 payment_scan_info）
+  setPurchasedWatchFaceInfo(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.func_v3_payment_scan_info),
+
+  /// APP 设置下载状态（15.92，0x33/0x88）
+  setAppDownloadStatusInfo(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.func_v3_app_download_status_info),
+
   /// 手势控制
   setGestureControl(
       evtBase: _VBusEvtBase.base_app_set,
@@ -1900,8 +1960,17 @@ abstract class _VBusEvtType {
   /// APP下发配对结果   04 07,struct protocol_app_send_bind_resulte
   static const int app_send_bind_result = 206;
 
+  /// 位置信息通知（05 07）
+  static const int app_set_location_info_notify = 207;
+
   /// 获得设备信息so临时保存
   static const int app_get_device_info_lin = 209;
+
+  /// 跌倒监测开关设置（03 58）
+  static const int app_set_fall_monitoring_switch = 210;
+
+  /// 定位开关模式设置（03 59）
+  static const int app_set_position_switch_mode = 211;
 
   /// 获得设备信息 单独事件 不会组合一起下发获取bt名称指令 初次绑定时使用此事件去获取设备信息struct protocol_device_info
   static const intapp_get_device_info_only = 290;
@@ -2071,8 +2140,20 @@ abstract class _VBusEvtType {
   /// 处理关闭353定时器事件
   static const int app_get_contact_revice_time_stop_timer = 355;
 
+  /// 固件状态信息查询（02 48）
+  static const int app_get_firmware_status_info = 362;
+
+  /// 跌倒监测开关获取（02 58）
+  static const int app_get_fall_monitoring_switch = 363;
+
+  /// 定位开关模式获取（02 5A）
+  static const int app_get_position_switch_mode = 366;
+
   /// 获取睡眠模式（02 4C）
   static const int app_get_app_sleep_mode = 367;
+
+  /// 获取固件显示版本号（02 4B）
+  static const int app_get_firmware_display_version = 368;
 
   /// 进入升级模式	; struct protocol_ota_reply 里面包含电量标志
   static const int app_ota_start = 400;
@@ -2450,6 +2531,21 @@ abstract class _VBusEvtType {
 
   /// v3 多运动数据最后一次数据获取 protocol_v3_base， struct protocol_get_activity_data_reply
   static const int func_v3_get_activity_data = 5022;
+
+  /// 固件上报定位信息（15.93 cmd=0x33 key=0x89）
+  static const int func_v3_firmware_position_info = 5106;
+
+  /// 吃药提醒 V3（15.90 cmd=0x33 key=0x86）
+  static const int func_v3_take_medicine_remind = 5110;
+
+  /// 已购表盘信息下发（15.91 cmd=0x33 key=0x87；C/事件名仍 payment_scan_info，SDK API 为 setPurchasedWatchFaceInfo）
+  static const int func_v3_payment_scan_info = 5111;
+
+  /// APP设置下载状态（15.92 cmd=0x33 key=0x88）
+  static const int func_v3_app_download_status_info = 5112;
+
+  /// 手机日历提醒（15.110 cmd=0x33 cmd_id=0x98）
+  static const int func_v3_phone_calendar_reminder = 5113;
 
   /// V3 多运动运动中全量快照（15.103，33 1E）
   static const int func_v3_activity_exchange_full_snapshot = 5114;

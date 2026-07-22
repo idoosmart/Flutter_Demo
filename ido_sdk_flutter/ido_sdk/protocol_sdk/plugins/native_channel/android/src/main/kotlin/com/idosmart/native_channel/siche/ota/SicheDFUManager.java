@@ -42,7 +42,7 @@ public class SicheDFUManager {
     ArrayList<DFUImagePath> paths = new ArrayList<>();
     LocalBroadcastReceiver localBroadcastReceiver = null;
     int progress = 0;
-    private int retryTimes = 1;
+    private int retryTimes = 2;
     private int currentTimes = 0;
     private SicheDFUManager(){}
     private String update_mac;
@@ -227,8 +227,10 @@ public class SicheDFUManager {
             Config.getApplication().getApplicationContext().unbindService(serviceConnection);
             isBond = false;
         }
-        LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(localBroadcastReceiver);
-        localBroadcastReceiver = null;
+        if (localBroadcastReceiver != null) {
+            LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(localBroadcastReceiver);
+            localBroadcastReceiver = null;
+        }
         if (delayTimeHandler != null) {
             delayTimeHandler.removeCallbacksAndMessages(null);
         }
@@ -237,7 +239,6 @@ public class SicheDFUManager {
 
     private void upgrade(){
        printLog("upgrade... platform:"+platForm +"--misinduf:"+isIndfu);
-        localBroadcastReceiver = new LocalBroadcastReceiver();
         regitsterDfuLocalBroadcast();
         if(paths==null || paths.size()==0){
             printLog("update paths null");
@@ -284,11 +285,12 @@ public class SicheDFUManager {
     }
 
     private void regitsterDfuLocalBroadcast(){
+        localBroadcastReceiver = new LocalBroadcastReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(SifliDFUService.BROADCAST_DFU_LOG);
         intentFilter.addAction(SifliDFUService.BROADCAST_DFU_PROGRESS);
         intentFilter.addAction(SifliDFUService.BROADCAST_DFU_STATE);
-        LocalBroadcastManager.getInstance(getContext()).registerReceiver(new LocalBroadcastReceiver(),intentFilter);
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(localBroadcastReceiver,intentFilter);
     }
 
     class LocalBroadcastReceiver extends BroadcastReceiver {
@@ -325,13 +327,13 @@ public class SicheDFUManager {
                                 SicheToFlutterImpl.INSTANCE.updateManageState(OTAUpdateState.COMPLETED,"success");
                                 break;
                             case 78:
-                                printLog("dfuState: failed by user not permmsion");
+                                printLog("dfuState: failed by user not permission");
                                 upgradeFailed();
                                 SicheToFlutterImpl.INSTANCE.updateManageState(OTAUpdateState.FAIL,"fail");
                                 break;
                             case 10://调用重试
                                  if(currentTimes < retryTimes){
-                                     printLog("dfuState:  retry update：curentTimes:"+currentTimes);
+                                     printLog("dfuState:  retry update：currentTimes:"+currentTimes);
                                      currentTimes++;
                                      reTryUpdate();
                                  }else {
@@ -339,6 +341,27 @@ public class SicheDFUManager {
                                      SicheToFlutterImpl.INSTANCE.updateManageState(OTAUpdateState.FAIL,"fail");
                                      upgradeFailed();
                                  }
+                                break;
+                            case 102:
+                            case 127://部分三星手机，升级过程中重启蓝牙，出现发现服务超时失败，重试可以成功
+                            case 128:
+                            case 129:
+                            case 130://进入OTA后连接失败
+                                if(currentTimes < retryTimes){
+                                    printLog("dfuState =  retry update：currentTimes:"+currentTimes);
+                                    currentTimes++;
+                                    //不加延迟马上重试会busy失败
+                                    new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            reTryUpdate();
+                                        }
+                                    },5000);
+                                }else {
+                                    printLog("dfuState: 超出重试次数");
+                                    SicheToFlutterImpl.INSTANCE.updateManageState(OTAUpdateState.FAIL,"fail");
+                                    upgradeFailed();
+                                }
                                 break;
                             default:
                                 printLog("dfuState: failed");

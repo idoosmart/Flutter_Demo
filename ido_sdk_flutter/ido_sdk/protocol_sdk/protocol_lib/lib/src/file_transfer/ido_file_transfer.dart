@@ -15,7 +15,9 @@ import 'module/message_file.dart';
 import 'module/epo_file.dart';
 import 'module/sport_file.dart';
 import 'module/contact_file.dart';
+import 'module/cal_file.dart';
 import 'module/voice_file.dart';
+import 'module/medic_file.dart';
 import '../private/logger/logger.dart';
 
 part 'part/file_transfer_impl.dart';

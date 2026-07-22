@@ -340,6 +340,20 @@ extension IDOProtocolAPIExtFileOperation on IDOProtocolAPI {
     return str;
   }
 
+  /// 手机日历全量同步：策略裁剪 + 组包 phone_calendar.cal
+  ///
+  /// 返回 JSON：{ err_code, path, packed_item_count }
+  String? syncPhoneCalendarCal({required String jsonData}) {
+    ffi.Pointer<ffi.Char> jsonDataUtf8 = jsonData.toNativeUtf8().cast();
+    final rs = bindings.syncPhoneCalendarCal(jsonDataUtf8);
+    final str = rs.cast<pkg_ffi.Utf8>().toDartString();
+    pkg_ffi.calloc.free(jsonDataUtf8);
+    if (str.isEmpty) {
+      return null;
+    }
+    return str;
+  }
+
   /// 音频文件采样率转换  将采样率转化为44.1khz
   /// ```dart
   /// inPath   音频输入文件路径 目录及文件名、文件名后缀

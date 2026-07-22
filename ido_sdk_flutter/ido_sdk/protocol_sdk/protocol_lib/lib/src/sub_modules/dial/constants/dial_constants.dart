@@ -5,12 +5,8 @@ import 'package:path/path.dart' as path;
 
 import '../../../private/local_storage/local_storage.dart';
 
-//照片表盘在表盘市场上的自定义id值
-const kPhotoMarketId = -1000;
-const kPhotoOtaFaceName = 'wallpaper.z';
-
 //表盘类型 内置, 云表盘(通用), 旧自定义, 功能,    照片,  云照片
-enum DialType {
+enum IDODialType {
   local,
   common,
   // customize,
@@ -19,23 +15,23 @@ enum DialType {
   cloudPhoto;
 }
 
-DialType checkTheDialType(String faceType, String customFaceType) {
-  if (customFaceType == 'CUSTOM_PHOTO' ||
-      customFaceType == 'CUSTOM_FIXED_PHOTO') {
-    return DialType.cloudPhoto;
-  }
-  if (faceType == 'COMMON') {
-    return DialType.common;
-  } else if (customFaceType == 'CUSTOM_FUNCTION') {
-    return DialType.function;
-  } else if (customFaceType == 'DEFAULT') {
-    return DialType.common;
-  }
-  return DialType.common;
-}
+// IDODialType checkTheDialType(String faceType, String customFaceType) {
+//   if (customFaceType == 'CUSTOM_PHOTO' ||
+//       customFaceType == 'CUSTOM_FIXED_PHOTO') {
+//     return IDODialType.cloudPhoto;
+//   }
+//   if (faceType == 'COMMON') {
+//     return IDODialType.common;
+//   } else if (customFaceType == 'CUSTOM_FUNCTION') {
+//     return IDODialType.function;
+//   } else if (customFaceType == 'DEFAULT') {
+//     return IDODialType.common;
+//   }
+//   return IDODialType.common;
+// }
 
 ///方形 矩形 圆形 手环
-enum DialShapeType {
+enum IDODialShapeType {
   square,
   rectangle,
   circle,
@@ -43,9 +39,9 @@ enum DialShapeType {
 
   String getPhotoDefaultImageName() {
     switch (this) {
-      case DialShapeType.bracelet:
+      case IDODialShapeType.bracelet:
         return 'photo_default_bracelet.webp';
-      case DialShapeType.circle:
+      case IDODialShapeType.circle:
         return 'photo_default_circle.webp';
       default:
         return 'photo_default_rectangle.webp';
@@ -54,40 +50,46 @@ enum DialShapeType {
 }
 
 //表盘列表 表盘详情 管理管理 设备首页
-enum DialShapeLoc { faceList, faceDetail, managerDial, deviceHome }
+enum IDODialShapeLoc { faceList, faceDetail, managerDial, deviceHome }
 
-enum DialThemeStyle {
+enum IDODialThemeStyle {
   classicWhite, //('classic_white'),
   boundless; //('boundless');
 
-  // const DialThemeStyle(this.styleName);
+  // const IDODialThemeStyle(this.styleName);
   // final String styleName;
 
   /// 是否是经典白模式
-  bool isClassic() => (this == DialThemeStyle.classicWhite);
+  bool isClassic() => (this == IDODialThemeStyle.classicWhite);
 }
 
 
-enum DialFirmwarePlatform {
+enum IDODialFirmwarePlatform {
   common({0}),
   persimwear({97}), //恒玄
   sifli({98, 99}); //思澈
 
-  const DialFirmwarePlatform(this.typeSet);
+  const IDODialFirmwarePlatform(this.typeSet);
   final Set<int> typeSet;
 
   bool isContains(int type) => typeSet.isEmpty || typeSet.contains(type);
 
   ///获取平台类型
-  static DialFirmwarePlatform getPlatform(int type) {
-    return DialFirmwarePlatform.values.firstWhere(
+  static IDODialFirmwarePlatform getPlatform(int type) {
+    return IDODialFirmwarePlatform.values.firstWhere(
           (element) => element.isContains(type),
-      orElse: () => DialFirmwarePlatform.common,
+      orElse: () => IDODialFirmwarePlatform.common,
     );
   }
 }
 
-class DialConstants {
+class IDODialConstants {
+  /// 照片表盘在表盘市场上的自定义 id（原 `kPhotoMarketId`）
+  static const int photoMarketId = -1000;
+
+  /// 照片表盘 OTA face 名（原 `kPhotoOtaFaceName`）
+  static const String photoOtaFaceName = 'wallpaper.z';
+
   static Future<String> dialStoreFolderPath(String deviceId) async {
     //Directory documentsDirectory = await getApplicationDocumentsDirectory();
     final rootPath = await LocalStorage.pathSDKStatic();
@@ -144,7 +146,7 @@ class DialConstants {
 }
 
 ///照片表盘支持的小组件，不能改名字、顺序
-enum WallpaperWidgetType {
+enum IDOWallpaperWidgetType {
   date,
   step,
   distance,
@@ -153,7 +155,7 @@ enum WallpaperWidgetType {
   battery,
 }
 
-extension WallpaperWidgetTypeExtension on WallpaperWidgetType {
+extension IDOWallpaperWidgetTypeExtension on IDOWallpaperWidgetType {
   String get sdkName {
     return toString().split('.').last;
   }
@@ -162,23 +164,23 @@ extension WallpaperWidgetTypeExtension on WallpaperWidgetType {
     return index + 1;
   }
 
-  static WallpaperWidgetType formSdkName(String name) {
-    return WallpaperWidgetType.values.firstWhere(
+  static IDOWallpaperWidgetType formSdkName(String name) {
+    return IDOWallpaperWidgetType.values.firstWhere(
       (element) => element.sdkName == name,
-      orElse: () => WallpaperWidgetType.date,
+      orElse: () => IDOWallpaperWidgetType.date,
     );
   }
 }
 
 // 表盘底部操作区的状态
-enum DialOperationStatus {
+enum IDODialOperationStatus {
   uninstall, //未安装
   installed, //已安装
   current, //已安装，第一表盘
 }
 
 // 表盘Header上的安装状态
-enum DialInstallStatus {
+enum IDODialInstallStatus {
   uninstall,
   downloading,
   installing,
@@ -188,7 +190,7 @@ enum DialInstallStatus {
   spaceOrganize, // 空间整理
 }
 
-enum DialFuncType {
+enum IDODialFuncType {
   describe, //描述
   background, //背景
   style, //样式
@@ -204,7 +206,7 @@ enum DialFuncType {
 //对应sdk的位置
 //*0:无效 1:表盘（上左）参考九宫格 2:表盘（上中）3:表盘（上右) 4:表盘（中左）
 //*5:表盘（中中）6:表盘（中右）7:表盘（下左）8:表盘（下中）9:表盘（下右) 55:表盘（居中竖排)
-enum DialLocType {
+enum IDODialLocType {
   unknown(0),
   topLeft(1),
   topCenter(2),
@@ -217,37 +219,37 @@ enum DialLocType {
   bottomRight(9),
   centerVertical(55);
 
-  const DialLocType(this.type);
+  const IDODialLocType(this.type);
   final int type;
 
-  static DialLocType getLocTypeForValue(int type) {
-    return DialLocType.values.firstWhere((element) => element.type == type, orElse: () => DialLocType.unknown);
+  static IDODialLocType getLocTypeForValue(int type) {
+    return IDODialLocType.values.firstWhere((element) => element.type == type, orElse: () => IDODialLocType.unknown);
   }
 }
 
 //表盘SDK的位置、转换为Alignment对应的值
-extension DialLocTypeExtension on DialLocType {
+extension IDODialLocTypeExtension on IDODialLocType {
   // Alignment bottomLeft
   AlignmentGeometry get toAlignment {
     switch (this) {
-      case DialLocType.topLeft:
+      case IDODialLocType.topLeft:
         return Alignment.topLeft;
-      case DialLocType.topCenter:
+      case IDODialLocType.topCenter:
         return Alignment.topCenter;
-      case DialLocType.topRight:
+      case IDODialLocType.topRight:
         return Alignment.topRight;
-      case DialLocType.centerLeft:
+      case IDODialLocType.centerLeft:
         return Alignment.centerLeft;
-      case DialLocType.center:
-      case DialLocType.centerVertical:
+      case IDODialLocType.center:
+      case IDODialLocType.centerVertical:
         return Alignment.center;
-      case DialLocType.centerRight:
+      case IDODialLocType.centerRight:
         return Alignment.centerRight;
-      case DialLocType.bottomLeft:
+      case IDODialLocType.bottomLeft:
         return Alignment.bottomLeft;
-      case DialLocType.bottomCenter:
+      case IDODialLocType.bottomCenter:
         return Alignment.bottomCenter;
-      case DialLocType.bottomRight:
+      case IDODialLocType.bottomRight:
         return Alignment.bottomRight;
       default:
         return Alignment.topLeft;
@@ -255,7 +257,7 @@ extension DialLocTypeExtension on DialLocType {
   }
 }
 
-extension DialNameExtension on String {
+extension IDODialNameExtension on String {
   String deleteIWF() {
     //lz为兼容
     return replaceAll('.iwf', '').replaceAll('.lz', '');

@@ -41,6 +41,30 @@ class IDOTool {
     final rs = _coreMgr.png2Bmp(
         inPath: inPath, outPath: outPath, format: format.realValue);
     logger?.d("png2Bmp rs: $rs inPath:$inPath, outPath:$outPath} format:$format");
+    // 如果失败（非0）把inPath 文件大小、图片信息记录到日志
+    if (rs != 0) {
+      try {
+        final file = File(inPath);
+        if (file.existsSync()) {
+          final size = file.lengthSync();
+          final bytes = file.readAsBytesSync();
+          final decoder = img.findDecoderForData(bytes);
+          final String fileType = decoder != null
+              ? decoder.runtimeType.toString().replaceAll('Decoder', '').toLowerCase()
+              : 'unknown';
+          final image = img.decodeImage(bytes);
+          if (image != null) {
+            logger?.e("png2Bmp failed! rs: $rs, inPath: $inPath, fileSize: $size bytes, fileType: $fileType, imageInfo: width=${image.width}, height=${image.height}");
+          } else {
+            logger?.e("png2Bmp failed! rs: $rs, inPath: $inPath, fileSize: $size bytes, fileType: $fileType, imageInfo: failed to decode image");
+          }
+        } else {
+          logger?.e("png2Bmp failed! rs: $rs, inPath: $inPath, file does not exist");
+        }
+      } catch (e) {
+        logger?.e("png2Bmp failed! rs: $rs, inPath: $inPath, failed to read file or decode image: $e");
+      }
+    }
     return rs;
   }
 
@@ -563,7 +587,7 @@ class IDOCache {
   /// 导出日志 返回压缩后日志zip文件绝对路径
   Future<String?> exportLog() async {
     final pathSDK = await LocalStorage.pathSDKStatic();
-    final info = _ExportInfo("$pathSDK/logs", "$pathSDK/protocol_logs.zip");
+    final info = _ExportInfo("$pathSDK", "$pathSDK/protocol_logs.zip");
 
     /// 打包zip文件
     Future<String?> execute(dynamic obj) async {
@@ -710,6 +734,10 @@ class IDOCache {
     return storage?.loadDeviceInfoListByDisk(sortDesc: sortDesc);
   }
 
+  Future<DeviceInfoModel?> loadDeviceInfoByDiskWith(String macAddress) async {
+    final addr = macAddress.replaceAll(':', '').toUpperCase();
+    return storage?.loadDeviceInfoByDiskWith(addr);
+  }
 
   /// 记录原生层log（内部使用）
   void recordNativeLog(String msg) {

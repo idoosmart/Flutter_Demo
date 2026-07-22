@@ -95,6 +95,12 @@ abstract class IDOBluetoothManager {
   /// Use this to reconnect the device
   autoConnect({IDOBluetoothDeviceModel? device});
 
+  ///检查是否要需要重连
+  ///如果用户之前是自动回连[autoConnect]，则执行自动回连
+  ///如果之前是直连[connect],则不执行回连
+  checkIfNeedAutoConnect({IDOBluetoothDeviceModel? device});
+
+
   /// 取消连接
   /// macAddress： 指定设备
   /// cancel connection

@@ -16,7 +16,6 @@ abstract class Worker {
 }
 
 class _Worker implements Worker {
-  late Completer<Object?> _result;
   Function? _onUpdateProgress;
   int? _runnableNumber;
   Task? _task;
@@ -37,24 +36,24 @@ class _Worker implements Worker {
     _task = task;
     _runnableNumber = task.number;
     _onUpdateProgress = task.onUpdateProgress;
-    _result = Completer<Object?>();
+    final resultCompleter = Completer<Object?>();
     try {
       final result = await task.runnable();
-      if (!_result.isCompleted) {
-        _result.complete(result);
+      if (!resultCompleter.isCompleted) {
+        resultCompleter.complete(result);
       }else{
         debugPrint('存在Completer调度异常 worker.dart 44行');
       }
       _cleanOnNewMessage();
     } catch (error) {
-      if (!_result.isCompleted) {
-        _result.completeError(error);
+      if (!resultCompleter.isCompleted) {
+        resultCompleter.completeError(error);
       }else{
         debugPrint('存在Completer调度异常 worker.dart 51行');
       }
     }
 
-    final resultValue = await (_result.future as Future<O>);
+    final resultValue = await (resultCompleter.future as Future<O>);
     return resultValue;
   }
 

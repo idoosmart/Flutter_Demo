@@ -1,34 +1,35 @@
-/// 配置类，用于存储照片表盘的相关配置
-class PhotoDialConfig {
+import 'photo_dial_constants.dart';
+
+/// 用户安装照片表盘时的配置，对齐 Android [IDOPhotoDialConfig.java]
+class IDOPhotoDialConfig {
+  /// 表盘名称（OTA face name）
+  String? dialName;
+
   /// 背景图路径
   String? bgPicPath;
 
   /// 预览图路径
   String? previewPicPath;
 
-  /// 时间颜色
-  int timeColor;
+  /// 时间颜色（#RRGGBB）
+  String timeColor;
 
-  /// 功能颜色
-  int functionColor;
+  /// 功能颜色（#RRGGBB）
+  String functionColor;
 
-  /// 位置 [PhotoDialConstants.WidgetPosition]
+  /// 位置 [IDOPhotoDialWidgetPosition]
   int position;
 
-  /// 要展示的功能，不支持功能则不传 [PhotoDialConstants.WidgetFunction]
+  /// 要展示的功能 [IDOPhotoDialWidgetFunction]
   int showFunction;
 
-  // /// 基础表盘包路径，如果不传或传空串，则默认使用 [IPhotoDial.prepare] 解析出来的基础表盘包
-  // String? baseDialPackagePath;
-
-  /// 构造函数
-  PhotoDialConfig({
+  IDOPhotoDialConfig({
+    this.dialName,
     this.bgPicPath,
     this.previewPicPath,
     required this.timeColor,
     required this.functionColor,
     required this.position,
-    this.showFunction = 1,
-    //this.baseDialPackagePath = '',
+    this.showFunction = IDOPhotoDialWidgetFunction.weekDate,
   });
 }

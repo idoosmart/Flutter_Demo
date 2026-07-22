@@ -237,6 +237,11 @@ extension IDOProtocolCoreManagerExtTools on IDOProtocolCoreManager {
     return IDOProtocolClibManager().cLib.makeContactFile(jsonData: jsonData);
   }
 
+  /// 手机日历全量同步：策略裁剪 + 组包 phone_calendar.cal
+  String? syncPhoneCalendarCal({required String jsonData}) {
+    return IDOProtocolClibManager().cLib.syncPhoneCalendarCal(jsonData: jsonData);
+  }
+
   /// @brief 模拟器回应数据解释，传入key`replyinfo`，输出对应的字节数据
   /// @param json_data 素材JSON数据，对应事件号的`replyinfo`
   /// @param json_data_len 素材JSON数据长度

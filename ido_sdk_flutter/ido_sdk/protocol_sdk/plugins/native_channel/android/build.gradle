@@ -31,7 +31,6 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    namespace 'com.idosmart.native_channel'
     compileSdkVersion 31
 
     compileOptions {

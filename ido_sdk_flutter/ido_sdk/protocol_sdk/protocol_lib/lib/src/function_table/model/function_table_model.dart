@@ -997,6 +997,8 @@ class FunctionTableModel {
   final bool? supportGetDeviceSportStatus;
   @JsonKey(name: 'support_get_firmware_status_info')
   final bool? supportGetFirmwareStatusInfo;
+  @JsonKey(name: 'support_get_firmware_display_version')
+  final bool? supportGetFirmwareDisplayVersion;
   @JsonKey(name: 'support_get_firmware_supported_config')
   final bool? supportGetFirmwareSupportedConfig;
   @JsonKey(name: 'support_get_flash_log_size')
@@ -1109,8 +1111,9 @@ class FunctionTableModel {
   final bool? supportOperateSetSportScreen;
   @JsonKey(name: 'support_over_find_phone')
   final bool? supportOverFindPhone;
+  /// C JSON 仍为 support_payment_scan_info_send；SDK 对外名见 getter
   @JsonKey(name: 'support_payment_scan_info_send')
-  final bool? supportPaymentScanInfoSend;
+  final bool? supportPurchasedWatchFaceInfo;
   @JsonKey(name: 'support_query_custom_wallpaper_dial_state')
   final bool? supportQueryCustomWallpaperDialState;
   @JsonKey(name: 'support_per_minute_one')
@@ -1418,8 +1421,8 @@ class FunctionTableModel {
   final bool? v2SupportGetBatteryMode;
   @JsonKey(name: 'v2_support_notice_icon_information')
   final bool? v2SupportNoticeIconInformation;
-  @JsonKey(name: 'v2_support_phone_calendar_reminder')
-  final bool? v2SupportPhoneCalendarReminder;
+  @JsonKey(name: 'support_phone_calendar_reminder')
+  final bool? supportPhoneCalendarReminder;
   @JsonKey(name: 'v2_support_set_bright_screen_time')
   final bool? v2SupportSetBrightScreenTime;
   @JsonKey(name: 'v2_support_set_distance_to_firware')
@@ -2083,6 +2086,7 @@ class FunctionTableModel {
     this.supportGetDeviceStatus,
     this.supportGetDeviceSportStatus,
     this.supportGetFirmwareStatusInfo,
+    this.supportGetFirmwareDisplayVersion,
     this.supportGetFirmwareSupportedConfig,
     this.supportGetFlashLogSize,
     this.supportGetLeftRightHandWearSettings,
@@ -2139,7 +2143,7 @@ class FunctionTableModel {
     this.supportOperateSetGame,
     this.supportOperateSetSportScreen,
     this.supportOverFindPhone,
-    this.supportPaymentScanInfoSend,
+    this.supportPurchasedWatchFaceInfo,
     this.supportQueryCustomWallpaperDialState,
     this.supportPerMinuteOne,
     this.supportPet,
@@ -2297,7 +2301,7 @@ class FunctionTableModel {
     this.v2SupportGetAllContact,
     this.v2SupportGetBatteryMode,
     this.v2SupportNoticeIconInformation,
-    this.v2SupportPhoneCalendarReminder,
+    this.supportPhoneCalendarReminder,
     this.v2SupportSetBrightScreenTime,
     this.v2SupportSetDistanceToFirware,
     this.v2SupportSetGetMainSportGoal,

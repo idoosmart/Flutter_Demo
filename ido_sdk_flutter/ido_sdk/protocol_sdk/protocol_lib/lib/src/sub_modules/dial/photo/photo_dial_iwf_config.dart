@@ -3,7 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 part 'photo_dial_iwf_config.g.dart';
 
 @JsonSerializable()
-class PhotoDialIwfConfig {
+class IDOPhotoDialIwfConfig {
   int? version;
   int? clouddialversion;
   String? preview;
@@ -11,10 +11,10 @@ class PhotoDialIwfConfig {
   String? author;
   String? description;
   String? compress;
-  List<IWFItem>? item;
+  List<IDOPhotoDialIwfItem>? item;
   String? jsonFilePath;
 
-  PhotoDialIwfConfig({
+  IDOPhotoDialIwfConfig({
     this.version,
     this.clouddialversion,
     this.preview,
@@ -26,7 +26,7 @@ class PhotoDialIwfConfig {
     this.jsonFilePath
   });
 
-  factory PhotoDialIwfConfig.fromJson(Map<String, dynamic> json) =>
+  factory IDOPhotoDialIwfConfig.fromJson(Map<String, dynamic> json) =>
       _$PhotoDialIwfConfigFromJson(json);
 
   Map<String, dynamic> toJson() => _$PhotoDialIwfConfigToJson(this);
@@ -34,7 +34,7 @@ class PhotoDialIwfConfig {
 }
 
 @JsonSerializable()
-class IWFItem {
+class IDOPhotoDialIwfItem {
   String? widget;
   String? type;
   int? x;
@@ -44,7 +44,7 @@ class IWFItem {
   String? bg;
   String? bgcolor;
 
-  IWFItem({
+  IDOPhotoDialIwfItem({
     this.widget,
     this.type,
     this.x,
@@ -55,7 +55,7 @@ class IWFItem {
     this.bgcolor,
   });
 
-  factory IWFItem.fromJson(Map<String, dynamic> json) =>
+  factory IDOPhotoDialIwfItem.fromJson(Map<String, dynamic> json) =>
       _$IWFItemFromJson(json);
 
   Map<String, dynamic> toJson() => _$IWFItemToJson(this);

@@ -140,6 +140,8 @@ abstract class LocalStorage {
   Future<DeviceInfoModel?> loadDeviceInfoByDisk();
   Future<bool> saveDeviceInfoToDisk(DeviceInfoModel deviceInfoModel);
   Future<List<DeviceInfoModel>> loadDeviceInfoListByDisk({bool sortDesc = true});
+  /// 获取指定macAddress的设备信息
+  Future<DeviceInfoModel?> loadDeviceInfoByDiskWith(String macAddress);
 
   // 固件三级版本
   Future<FirmwareVersionModel?> loadFirmwareVersionByDisk();

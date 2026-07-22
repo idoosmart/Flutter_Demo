@@ -156,6 +156,20 @@ class _LocalStorage implements LocalStorage {
   }
 
   @override
+  Future<DeviceInfoModel?> loadDeviceInfoByDiskWith(String macAddress) async {
+    final storage = await getStorage();
+    try {
+      final json = storage.read<String>(k(_keyDeviceInfo, macAddress));
+      if (json != null) {
+        return DeviceInfoModel.fromJson(jsonDecode(json));
+      }
+    }catch(e) {
+      logger?.e(e);
+    }
+    return null;
+  }
+
+  @override
   Future<FunctionTableModel?> loadFunctionTableByDisk() async {
     final json = await getString(key: _keyFunctionTable);
     if (json != null) {

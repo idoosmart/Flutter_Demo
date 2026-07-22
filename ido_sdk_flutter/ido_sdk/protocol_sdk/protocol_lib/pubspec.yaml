@@ -1,6 +1,6 @@
 name: protocol_lib
 description: ido protocol_lib (private)
-version: 4.2.6
+version: 4.2.7
 homepage:
 publish_to: none
 
@@ -35,7 +35,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
-  json_serializable: ^6.9.5
+  json_serializable: ^6.9.0
   build_runner: ^2.4.13
 
 # For information on the generic Dart part of this file, see the

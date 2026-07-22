@@ -6,8 +6,14 @@ class _IDOFileTransfer implements IDOFileTransfer {
   _IDOFileTransfer._internal() {
     IDOProtocolLibManager().listenConnectStatusChanged((isConnected) {
       if (!isConnected) {
-        logger?.d("cleanFileTransType on disconnected");
-        _cleanFileTransType();
+        if ([98,99].contains(_libMgr.lastDevicePlatform) &&
+            libManager.transFile.transFileType == FileTransType.fw) {
+          logger?.d("keep transFile on disconnected");
+        }else {
+          logger?.d("cleanFileTransType on disconnected");
+          _cleanFileTransType();
+          _cleanCallbacks();
+        }
       }
     });
   }
@@ -20,6 +26,9 @@ class _IDOFileTransfer implements IDOFileTransfer {
 
   late final _subjectSifliOtaFinished =
       StreamController<int>.broadcast();
+
+  // 任务版本号，每次 transferMultiple 递增，用于过滤旧任务的延迟回调
+  int _taskId = 0;
 
   CallbackFileTransStatusMultiple? _funcStatus;
   CallbackFileTransProgressMultiple? _funcProgress;
@@ -137,6 +146,8 @@ class _IDOFileTransfer implements IDOFileTransfer {
       return Future(() => _resultList).asStream();
     }
 
+    _taskId++;
+    final currentTaskId = _taskId;
     _funcStatus = funcStatus;
     _funcProgress = funcProgress;
     _funError = funError;
@@ -147,7 +158,7 @@ class _IDOFileTransfer implements IDOFileTransfer {
 
     // 创建可取消的stream任务
     final cancelableOpt =
-        CancelableOperation.fromFuture(_exec(fileItems), onCancel: () {
+        CancelableOperation.fromFuture(_exec(fileItems, currentTaskId), onCancel: () {
       logger?.d('file transfer canceled');
       _didCancel();
     });
@@ -211,12 +222,20 @@ class _IDOFileTransfer implements IDOFileTransfer {
 }
 
 extension _IDOFileTransferExt on _IDOFileTransfer {
+  /// 清理回调引用，防止旧闭包被持有
+  void _cleanCallbacks() {
+    _funcStatus = null;
+    _funcProgress = null;
+    _funError = null;
+  }
+
   /// 任务取消
   void _didCancel() {
     _currentTask?.cancel();
     _isCanceled = true;
     _isBusy = false;
     _cleanFileTransType();
+    _cleanCallbacks();
     _completer?.complete(_resultList);
     _completer = null;
     // _closeFastMode();
@@ -224,7 +243,7 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
   }
 
   /// 执行传输任务
-  Future<List<bool>> _exec(List<BaseFileModel> fileItems) async {
+  Future<List<bool>> _exec(List<BaseFileModel> fileItems, int taskId) async {
     final tranFileList = <BaseFile>[];
     int totalSize = 0;
     _ratioSize.clear();
@@ -234,13 +253,14 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
     for (int i = 0; i < fileItems.length; i++) {
       final fileItem = fileItems[i];
       logger?.v("file $i = ${fileItem.toString()}");
-      final tranFile = _createTranFile(fileItem);
+      final tranFile = _createTranFile(fileItem, taskId);
       if (tranFile == null) {
         // 创建tranFile失败
         logger?.e('create tranFile failed ${fileItem.filePath}');
         _funcStatus!(i, FileTransStatus.invalid);
         _completer?.complete(_resultList);
         _cleanFileTransType();
+        _cleanCallbacks();
         return _completer!.future;
       }
 
@@ -252,6 +272,7 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
         _funcStatus!(i, FileTransStatus.invalid);
         _completer?.complete(_resultList);
         _cleanFileTransType();
+        _cleanCallbacks();
         return _completer!.future;
       }
 
@@ -263,6 +284,7 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
         _funcStatus!(i, FileTransStatus.notExists);
         _completer?.complete(_resultList);
         _cleanFileTransType();
+        _cleanCallbacks();
         return _completer!.future;
       }
 
@@ -324,12 +346,13 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
           // 完成回调
           if (_completer != null && !_completer!.isCompleted) {
             _completer?.complete(_resultList);
-            logger?.d('trans rs: $_resultList');
+            logger?.d('trans rs: $_resultList, platform:${_libMgr.lastDevicePlatform}');
             if (__fileTransType == FileTransType.fw && _libMgr.lastDevicePlatform == 98) {
               logger?.d('trans send SifliOtaFinished notification, lastDevicePlatform:${_libMgr.lastDevicePlatform}');
               _subjectSifliOtaFinished.add(_libMgr.lastDevicePlatform);
             }
             _cleanFileTransType();
+            _cleanCallbacks();
             _cancelableOperation = null;
             return _completer!.future;
           }
@@ -343,6 +366,7 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
       if (_completer != null && !_completer!.isCompleted) {
         _completer?.complete(_resultList);
         _cleanFileTransType();
+        _cleanCallbacks();
         return _completer!.future;
       }
     }
@@ -353,11 +377,14 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
   /// 取消前文件传输任务
   void _cancelPrevTranIfExists() {
     if (_cancelableOperation != null) {
-      _cancelableOperation?.cancel();
+      // 必须在 cancel/_didCancel 清回调之前通知前一次任务
+      final prevError = _funError;
+      final prevIndex = _currentExecIndex;
+      prevError?.call(prevIndex, -1, -1, 0);
+
+      _cancelableOperation?.cancel(); // 内部 _didCancel 会 cleanCallbacks
       _cancelableOperation = null;
       _isBusy = false;
-      // 回调被通知上传被取消
-      _funError?.call(_currentExecIndex, -1, -1, 0);
       logger?.v('call _cancelPrevTranIfExists -1');
     }
 
@@ -365,11 +392,12 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
       _completer!.complete(_resultList);
       _completer = null;
       _cleanFileTransType();
+      _cleanCallbacks();
     }
   }
 
   /// 根据要传输的文件基础信息，转换为对应的传输文件
-  BaseFile? _createTranFile(BaseFileModel item) {
+  BaseFile? _createTranFile(BaseFileModel item, int taskId) {
     final type = item.fileType;
     BaseFile? bf;
     switch (type) {
@@ -387,6 +415,9 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
       case FileTransType.map:
       case FileTransType.gpx:
         bf = NormalFile(type, item);
+        break;
+      case FileTransType.cal:
+        bf = CalFile(type, item);
         break;
       case FileTransType.iwf_lz:
       case FileTransType.wallpaper_z:
@@ -406,6 +437,9 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
       case FileTransType.msg:
         bf = MsgFile(type, item);
         break;
+      case FileTransType.medic:
+        bf = MedicFile(type, item);
+        break;
       case FileTransType.sport:
       case FileTransType.sports:
         bf = SportFile(type, item);
@@ -421,10 +455,24 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
         bf = VoiceFile(type, item);
         break;
     }
-    // 设置回调
+    // 设置回调（闭包捕获 taskId 快照，过滤旧任务延迟回调）
     bf.setCallbackFunc(
-        (error, errorVal, index) => _statusCallback(error, errorVal, index),
-        (progress, index) => _progressCallback(progress, index));
+        (error, errorVal, index) {
+          if (taskId == _taskId) {
+            _statusCallback(error, errorVal, index);
+          } else {
+            logger?.d(
+                'stale status callback ignored: task=$taskId current=$_taskId');
+          }
+        },
+        (progress, index) {
+          if (taskId == _taskId) {
+            _progressCallback(progress, index);
+          } else {
+            logger?.d(
+                'stale progress callback ignored: task=$taskId current=$_taskId');
+          }
+        });
     return bf;
   }
 
@@ -553,6 +601,10 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
 
   /// 状态回调
   void _statusCallback(int error, int errorVal, int index) {
+    if (_funcStatus == null || _funcProgress == null) {
+      logger?.d('callback is null (task ended), ignore');
+      return;
+    }
     logger?.d('file transfer error: $error errorVal: $errorVal idx:$index fileTransType: $__fileTransType');
     if (!_isCanceled) {
       final flag = [24, 25].contains(error);
@@ -583,6 +635,9 @@ extension _IDOFileTransferExt on _IDOFileTransfer {
 
   /// 进度回调
   void _progressCallback(double progress, index) {
+    if (_funcProgress == null) {
+      return;
+    }
     if (progress == 1.0 || progress - _lastLoggedProgress >= _progressThreshold) {
       logger?.d('progress: ${progress.toStringAsFixed(3)} index:$index');
       _lastLoggedProgress = progress;

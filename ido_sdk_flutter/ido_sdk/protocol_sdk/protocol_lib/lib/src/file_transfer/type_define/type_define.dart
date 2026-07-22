@@ -139,6 +139,12 @@ enum FileTransType {
   /// 轨迹文件
   gpx({}),
 
+  /// 吃药提醒图标 `.medic`（使用 [MedicineFileModel]）
+  medic({'.jpg', '.png'}),
+
+  /// 手机日历 phone_calendar.cal
+  cal({'.cal'}),
+
   /// 其它类型：不限后缀，不对文件二次加工，直接上传到设备
   /// ```
   /// hid: 检测引导程序hid更新(android专用)

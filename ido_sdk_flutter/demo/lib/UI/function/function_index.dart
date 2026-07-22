@@ -13,6 +13,7 @@ import '../../generated/l10n.dart';
 import 'package:flutter_bluetooth/ido_bluetooth.dart';
 import 'package:protocol_lib/protocol_lib.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import '../detail/photo_dial/photo_dial_test_page.dart';
 
 typedef _Fn = void Function();
 
@@ -51,7 +52,8 @@ class _FunctionContentState extends State<FunctionContent> {
     S.current.setfunction,
     S.current.getfunction,
     S.current.syncfunction,
-    S.current.alexa
+    S.current.alexa,
+    '照片表盘',
   ];
 
   final typeMap = {
@@ -380,7 +382,7 @@ class _FunctionContentState extends State<FunctionContent> {
                 builder: (context) =>
                 const AlexaTestHomePage(title: 'Alexa', did: 1)));
       } : null;
-    }else if (title == S.current.syncfunction) {
+    } else if (title == S.current.syncfunction) {
       // sync data
       return isConnected && isBinded ? () {
         Navigator.push(
@@ -388,6 +390,13 @@ class _FunctionContentState extends State<FunctionContent> {
             MaterialPageRoute(
                 builder: (context) =>
                 FunctionSync(navTitle: S.current.syncfunction)));
+      } : null;
+    } else if (title == '照片表盘') {
+      return isConnected && isBinded ? () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const PhotoDialTestPage()),
+        );
       } : null;
     }
 

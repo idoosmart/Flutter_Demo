@@ -5,9 +5,9 @@ class _IDOProtocolLibManager
   static const _pathStorageC = 'c_files';
   static const _pathStorageLib = 'protocol_lib';
   static const _pathStorageLog = 'logs';
-  // 最后修改时间: 2026-06-23 12:11:55
-  static const _sdkVersion = '4.2.6';
-  static const _sdkBuildNum = '6A3A078B';
+  // 最后修改时间: 2026-07-16 18:17:55
+  static const _sdkVersion = '4.2.7';
+  static const _sdkBuildNum = '6A5EC9DF';
 
   static bool _outputToConsoleClib = false;
   static bool _isReleaseClib = true;
@@ -462,9 +462,6 @@ class _IDOProtocolLibManager
 
   @override
   IDOCache get cache => _cache;
-
-  @override
-  IDOMeasureManager get measure => IDOMeasureManager();
 
   @override
   String get getClibVersion => _clibVersion;

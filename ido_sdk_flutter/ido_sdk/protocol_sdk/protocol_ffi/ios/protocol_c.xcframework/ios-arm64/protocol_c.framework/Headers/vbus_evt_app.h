@@ -226,6 +226,7 @@ typedef enum
     VBUS_EVT_APP_GET_NOTICE_STATUS_NEW               = 365,    //V3固定消息类型通知提醒开关查询完成 struct protocol_set_notice_for_app
     VBUS_EVT_APP_GET_SWITCH_MODE                     = 366,    //定位开关模式获取 02 5A struct protocol_head / protocol_get_switch_mode_reply（协议库为357，此处366因357已被占用）
     VBUS_EVT_APP_GET_APP_SLEEP_MODE                  = 367,    //获取睡眠模式 02 4C struct protocol_head / protocol_get_app_sleep_mode_reply
+    VBUS_EVT_APP_GET_FIRMWARE_DISPLAY_VERSION        = 368,    //获取固件显示版本号 02 4B struct protocol_head / protocol_get_firmware_display_version_reply
 
     VBUS_EVT_APP_OTA_START                           = 400,	   //进入升级模式	struct protocol_ota_reply 里面包含电量标志
 	VBUS_EVT_APP_OTA_DIRECT_START                    = 401,	   //直接进入升级模式(忽略电量)
@@ -456,6 +457,7 @@ typedef enum
     VBUS_EVT_FUNC_V3_TAKE_MEDICINE_REMIND                  = 5110,  //吃药提醒（15.90 cmd=0x33 key=0x86）
     VBUS_EVT_FUNC_V3_PAYMENT_SCAN_INFO                    = 5111,  //APP内支付码扫码信息下发（15.91 cmd=0x33 key=0x87）
     VBUS_EVT_FUNC_V3_APP_DOWNLOAD_STATUS_INFO             = 5112,  //APP设置下载状态（15.92 cmd=0x33 key=0x88）
+    VBUS_EVT_FUNC_V3_PHONE_CALENDAR_REMINDER               = 5113,  //手机日历提醒（15.110 cmd=0x33 cmd_id=0x98）
     VBUS_EVT_FUNC_V3_ACTIVITY_EXCHANGE_FULL_SNAPSHOT       = 5114,  //15.103 V3 多运动运动中全量快照（cmd=0x33,cmd_id=0x1E，按字节分包）
 
 

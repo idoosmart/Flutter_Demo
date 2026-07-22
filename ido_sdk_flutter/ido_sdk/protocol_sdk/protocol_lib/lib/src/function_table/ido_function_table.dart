@@ -1835,6 +1835,30 @@ class BaseFunctionTable {
   /// 设置吃药提醒
   bool get supportTakeMedicineReminder => ft?.supportTakeMedicineReminder ?? false;
 
+  /// 支持获取固件状态信息（2.53，table63 BIT_4）
+  bool get supportGetFirmwareStatusInfo =>
+      ft?.supportGetFirmwareStatusInfo ?? false;
+
+  /// 支持获取固件显示版本号（V2 02 4B，table72 BIT_3）
+  bool get supportGetFirmwareDisplayVersion =>
+      ft?.supportGetFirmwareDisplayVersion ?? false;
+
+  /// 支持跌倒监测开关（2.54，table63 BIT_7）
+  bool get supportSetFallMonitoringSwitch =>
+      ft?.supportSetFallMonitoringSwitch ?? false;
+
+  /// 支持固件上报定位信息（15.93/2.56/5.6，table64 BIT_5）
+  bool get supportFirmwarePositionInfo =>
+      ft?.supportFirmwarePositionInfo ?? false;
+
+  /// 支持已购表盘信息下发（15.91，table64 BIT_3；映射 C `support_payment_scan_info_send`）
+  bool get supportPurchasedWatchFaceInfo =>
+      ft?.supportPurchasedWatchFaceInfo ?? false;
+
+  /// 支持 APP 设置下载状态（15.92，table64 BIT_4）
+  bool get supportAppDownloadStatusInfo =>
+      ft?.supportAppDownloadStatusInfo ?? false;
+
   /// 支持设置运动记录名称（15.108，table71 BIT_6）
   bool get supportSetSportRecordName => ft?.supportSetSportRecordName ?? false;
 
@@ -1842,8 +1866,8 @@ class BaseFunctionTable {
   bool get supportAppNotDisplaySportTypeSetting =>
       ft?.supportAppNotDisplaySportTypeSetting ?? false;
 
-  /// 支持手机日历提醒文件下发（02 4B + .cal 文件传输 type=0x20，table71 BIT_4）
-  bool get v2SupportPhoneCalendarReminder => ft?.v2SupportPhoneCalendarReminder ?? false;
+  /// 支持手机日历提醒（15.110，0x33/0x98，table71 BIT_4）
+  bool get supportPhoneCalendarReminder => ft?.supportPhoneCalendarReminder ?? false;
 
   /// 支持获取设备状态（V2 02 49，table71 BIT_0）
   bool get supportGetDeviceStatus => ft?.supportGetDeviceStatus ?? false;

@@ -1010,7 +1010,7 @@ class _IDOBluetoothManager
     String className = 'IDOBluetoothManager',
     required String method,
   }) {
-    // print('$method - $detail');
+    print('$method - $detail');
     final json = {
       'platform': 3, //1 ios  2 android 3 flutter;
       'className': className,
@@ -1039,6 +1039,15 @@ class _IDOBluetoothManager
       _autoConnectAndroid(device: device);
     } else {
       connect(device);
+    }
+  }
+
+  @override
+  checkIfNeedAutoConnect({IDOBluetoothDeviceModel? device}) {
+    addLog('checkIfNeedConnect: ${device?.macAddress}, isAutoConnect: $isAutoConnect', method: 'checkIfNeedConnect');
+    if (isAutoConnect) {
+      //用户上次连接是自动连接
+      autoConnect(device: device);
     }
   }
 

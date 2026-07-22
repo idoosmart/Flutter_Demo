@@ -394,6 +394,12 @@ extension BaseFileExt on BaseFile {
       case FileTransType.gpx:
         rs = FileTranCompressionType.fastlz;
         break;
+      case FileTransType.medic:
+        rs = FileTranCompressionType.fastlz;
+        break;
+      case FileTransType.cal:
+        rs = FileTranCompressionType.none;
+        break;
     }
     return rs;
   }
@@ -467,6 +473,11 @@ extension BaseFileExt on BaseFile {
       case FileTransType.gpx:
         fileExt = ''; // 不指定后缀
         break;
+      case FileTransType.medic:
+        fileExt = '.medic';
+        break;
+      case FileTransType.cal:
+        return 'phone_calendar.cal';
       case FileTransType.app:
         fileExt = '.app';
         break;
@@ -505,6 +516,12 @@ extension BaseFileExt on BaseFile {
         break;
       case FileTransType.gpx:
         dataType = FileTranDataType.gpx;
+        break;
+      case FileTransType.medic:
+        dataType = FileTranDataType.medic;
+        break;
+      case FileTransType.cal:
+        dataType = FileTranDataType.cal;
         break;
       default:
         break;

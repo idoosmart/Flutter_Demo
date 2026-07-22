@@ -112,6 +112,8 @@ extension _FileTask on FileTask {
         return 0x1B;
       case FileTranDataType.medic:
         return 0x1C;
+      case FileTranDataType.cal:
+        return 0x20;
     }
   }
 

@@ -685,6 +685,8 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
           json['support_get_device_sport_status'] as bool?,
       supportGetFirmwareStatusInfo:
           json['support_get_firmware_status_info'] as bool?,
+      supportGetFirmwareDisplayVersion:
+          json['support_get_firmware_display_version'] as bool?,
       supportGetFirmwareSupportedConfig:
           json['support_get_firmware_supported_config'] as bool?,
       supportGetFlashLogSize: json['support_get_flash_log_size'] as bool?,
@@ -765,7 +767,7 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
       supportOperateSetSportScreen:
           json['support_operate_set_sport_screen'] as bool?,
       supportOverFindPhone: json['support_over_find_phone'] as bool?,
-      supportPaymentScanInfoSend:
+      supportPurchasedWatchFaceInfo:
           json['support_payment_scan_info_send'] as bool?,
       supportQueryCustomWallpaperDialState:
           json['support_query_custom_wallpaper_dial_state'] as bool?,
@@ -1008,8 +1010,8 @@ FunctionTableModel _$FunctionTableModelFromJson(Map<String, dynamic> json) =>
       v2SupportGetBatteryMode: json['v2_support_get_battery_mode'] as bool?,
       v2SupportNoticeIconInformation:
           json['v2_support_notice_icon_information'] as bool?,
-      v2SupportPhoneCalendarReminder:
-          json['v2_support_phone_calendar_reminder'] as bool?,
+      supportPhoneCalendarReminder:
+          json['support_phone_calendar_reminder'] as bool?,
       v2SupportSetBrightScreenTime:
           json['v2_support_set_bright_screen_time'] as bool?,
       v2SupportSetDistanceToFirware:
@@ -1735,6 +1737,8 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
       'support_get_device_status': instance.supportGetDeviceStatus,
       'support_get_device_sport_status': instance.supportGetDeviceSportStatus,
       'support_get_firmware_status_info': instance.supportGetFirmwareStatusInfo,
+      'support_get_firmware_display_version':
+          instance.supportGetFirmwareDisplayVersion,
       'support_get_firmware_supported_config':
           instance.supportGetFirmwareSupportedConfig,
       'support_get_flash_log_size': instance.supportGetFlashLogSize,
@@ -1807,7 +1811,7 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
       'support_operate_set_game': instance.supportOperateSetGame,
       'support_operate_set_sport_screen': instance.supportOperateSetSportScreen,
       'support_over_find_phone': instance.supportOverFindPhone,
-      'support_payment_scan_info_send': instance.supportPaymentScanInfoSend,
+      'support_payment_scan_info_send': instance.supportPurchasedWatchFaceInfo,
       'support_query_custom_wallpaper_dial_state':
           instance.supportQueryCustomWallpaperDialState,
       'support_per_minute_one': instance.supportPerMinuteOne,
@@ -2026,8 +2030,7 @@ Map<String, dynamic> _$FunctionTableModelToJson(FunctionTableModel instance) =>
       'v2_support_get_battery_mode': instance.v2SupportGetBatteryMode,
       'v2_support_notice_icon_information':
           instance.v2SupportNoticeIconInformation,
-      'v2_support_phone_calendar_reminder':
-          instance.v2SupportPhoneCalendarReminder,
+      'support_phone_calendar_reminder': instance.supportPhoneCalendarReminder,
       'v2_support_set_bright_screen_time':
           instance.v2SupportSetBrightScreenTime,
       'v2_support_set_distance_to_firware':

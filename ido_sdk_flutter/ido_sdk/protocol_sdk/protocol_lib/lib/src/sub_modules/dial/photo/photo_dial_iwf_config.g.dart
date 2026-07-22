@@ -6,8 +6,8 @@ part of 'photo_dial_iwf_config.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-PhotoDialIwfConfig _$PhotoDialIwfConfigFromJson(Map<String, dynamic> json) =>
-    PhotoDialIwfConfig(
+IDOPhotoDialIwfConfig _$PhotoDialIwfConfigFromJson(Map<String, dynamic> json) =>
+    IDOPhotoDialIwfConfig(
       version: (json['version'] as num?)?.toInt(),
       clouddialversion: (json['clouddialversion'] as num?)?.toInt(),
       preview: json['preview'] as String?,
@@ -16,12 +16,12 @@ PhotoDialIwfConfig _$PhotoDialIwfConfigFromJson(Map<String, dynamic> json) =>
       description: json['description'] as String?,
       compress: json['compress'] as String?,
       item: (json['item'] as List<dynamic>?)
-          ?.map((e) => IWFItem.fromJson(e as Map<String, dynamic>))
+          ?.map((e) => IDOPhotoDialIwfItem.fromJson(e as Map<String, dynamic>))
           .toList(),
       jsonFilePath: json['jsonFilePath'] as String?,
     );
 
-Map<String, dynamic> _$PhotoDialIwfConfigToJson(PhotoDialIwfConfig instance) =>
+Map<String, dynamic> _$PhotoDialIwfConfigToJson(IDOPhotoDialIwfConfig instance) =>
     <String, dynamic>{
       'version': instance.version,
       'clouddialversion': instance.clouddialversion,
@@ -34,7 +34,7 @@ Map<String, dynamic> _$PhotoDialIwfConfigToJson(PhotoDialIwfConfig instance) =>
       'jsonFilePath': instance.jsonFilePath,
     };
 
-IWFItem _$IWFItemFromJson(Map<String, dynamic> json) => IWFItem(
+IDOPhotoDialIwfItem _$IWFItemFromJson(Map<String, dynamic> json) => IDOPhotoDialIwfItem(
       widget: json['widget'] as String?,
       type: json['type'] as String?,
       x: (json['x'] as num?)?.toInt(),
@@ -45,7 +45,7 @@ IWFItem _$IWFItemFromJson(Map<String, dynamic> json) => IWFItem(
       bgcolor: json['bgcolor'] as String?,
     );
 
-Map<String, dynamic> _$IWFItemToJson(IWFItem instance) => <String, dynamic>{
+Map<String, dynamic> _$IWFItemToJson(IDOPhotoDialIwfItem instance) => <String, dynamic>{
       'widget': instance.widget,
       'type': instance.type,
       'x': instance.x,

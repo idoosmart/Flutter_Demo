@@ -1528,6 +1528,22 @@ class ProtocolFfiBindings {
   late final _mkConnactFile = _mkConnactFilePtr
       .asFunction<ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Char>)>();
 
+  /// @brief 手机日历全量同步：策略裁剪 + 组包 phone_calendar.cal
+  ffi.Pointer<ffi.Char> syncPhoneCalendarCal(
+    ffi.Pointer<ffi.Char> jsondata,
+  ) {
+    return _syncPhoneCalendarCal(
+      jsondata,
+    );
+  }
+
+  late final _syncPhoneCalendarCalPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.Char> Function(
+              ffi.Pointer<ffi.Char>)>>('syncPhoneCalendarCal');
+  late final _syncPhoneCalendarCal = _syncPhoneCalendarCalPtr
+      .asFunction<ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.Char>)>();
+
   /// @brief 制作思澈表盘文件,会在输入路径下生成(.watch)表盘文件
   /// @param file_path 素材文件路径
   /// @return 0成功 非0失败 -1: 没有控件 -2: json文件加载失败

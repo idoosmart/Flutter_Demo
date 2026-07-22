@@ -3,6 +3,7 @@ library dial_manager;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:archive/archive_io.dart';
 
@@ -13,24 +14,31 @@ import 'package:path/path.dart' as path;
 import '../../../../protocol_lib.dart';
 import '../../private/logger/logger.dart';
 import '../../private/local_storage/local_storage.dart';
-import '../extension/completer_ext.dart';
 
 import 'constants/dial_constants.dart';
+import 'photo/cwd_dial_config.dart';
+import 'photo/photo_dial_constants.dart';
 import 'photo/photo_dial.dart';
+import 'photo/photo_dial_ui_preset.dart';
 import 'photo/photo_dial_preset_config.dart';
 import 'photo/photo_dial_config.dart';
-import 'photo/photo_dial_iwf_config.dart';
 
 part 'utils/json_helper.dart';
 part 'utils/ido_file_manager.dart';
 part 'utils/dial_extensions.dart';
-part 'photo/photo_dial_impl.dart';
+part 'photo/wallpaper_dial_manager.dart';
+part 'photo/common_photo_dial_delegate.dart';
+part 'photo/sifli_photo_dial.dart';
+part 'photo/actions_photo_dial.dart';
+part 'photo/photo_dial_router.dart';
+part 'photo/photo_dial_image_handler.dart';
+part 'photo/photo_dial_image_processor.dart';
 
 abstract class IDODialManager {
   factory IDODialManager() => _IDODialManager();
 
   /// 照片表盘
-  IPhotoDial get dialPhoto;
+  IDOPhotoDial get dialPhoto;
 }
 
 class _IDODialManager implements IDODialManager {
@@ -39,5 +47,5 @@ class _IDODialManager implements IDODialManager {
   factory _IDODialManager() => _instance;
 
   @override
-  IPhotoDial get dialPhoto => _PhotoDialImpl();
+  IDOPhotoDial get dialPhoto => _PhotoDialRouter.instance;
 }

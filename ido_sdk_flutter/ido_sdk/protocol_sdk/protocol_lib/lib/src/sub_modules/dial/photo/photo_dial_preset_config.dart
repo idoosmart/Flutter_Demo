@@ -5,7 +5,7 @@ import '../../extension/list_ext.dart';
 import 'photo_dial_config.dart';
 
 /// 表盘包预置内容
-// class PhotoDialPresetConfig {
+// class IDOPhotoDialPresetConfig {
 // //预置背景图路径
 // //预置预览图路径
 // //预置默认位置
@@ -21,9 +21,9 @@ import 'photo_dial_config.dart';
 part 'photo_dial_preset_config.g.dart';
 
 @JsonSerializable()
-class PhotoDialPresetConfig extends Object {
+class IDOPhotoDialPresetConfig extends Object {
   @JsonKey(name: 'app')
-  DialJsonApp? app;
+  IDODialJsonApp? app;
 
   @JsonKey(name: 'zipName')
   int? zipName;
@@ -41,43 +41,44 @@ class PhotoDialPresetConfig extends Object {
   String? dialZipName;
 
   @JsonKey(name: 'backgrounds')
-  List<DialJsonBackgrounds>? backgrounds;
+  List<IDODialJsonBackgrounds>? backgrounds;
 
   @JsonKey(name: 'imagegroupsize')
-  Imagegroupsize? imagegroupsize;
+  IDOPhotoDialImageGroupSize? imagegroupsize;
 
   @JsonKey(name: 'clock')
-  DialJsonClock? clock;
+  IDODialJsonClock? clock;
 
   @JsonKey(name: 'funcInfo')
-  DialJsonFuncInfo? funcInfo;
+  IDODialJsonFuncInfo? funcInfo;
 
   @JsonKey(name: 'select')
-  DialJsonSelect? select;
+  IDODialJsonSelect? select;
 
+  /// 时间/功能可选颜色列表，对齐 Android [CwdAppBean.colors]
   @JsonKey(name: 'colors')
-  String? colors;
+  List<String>? colors;
 
   @JsonKey(name: 'styles')
-  List<DialJsonStyles>? styles;
+  List<IDODialJsonStyles>? styles;
 
   @JsonKey(name: 'palettes')
-  List<DialJsonPalettes>? palettes;
+  List<IDODialJsonPalettes>? palettes;
 
   @JsonKey(name: 'locations')
-  List<DialJsonLocations>? locations;
+  List<IDODialJsonLocations>? locations;
 
   @JsonKey(name: 'counterTimers')
-  List<DialJsonCounterTimers>? counterTimers;
+  List<IDODialJsonCounterTimers>? counterTimers;
 
   @JsonKey(name: 'cloudWallpaper')
-  DialJsonCloudWallpaper? cloudWallpaper;
+  IDODialJsonCloudWallpaper? cloudWallpaper;
 
   @JsonKey(name: 'function_list')
-  List<FunctionList>? functionList;
+  List<IDOPhotoDialFunctionList>? functionList;
 
   @JsonKey(name: 'time_widget_list')
-  List<TimeWidgetListItem>? timeWidgetList;
+  List<IDOPhotoDialTimeWidgetListItem>? timeWidgetList;
 
   /// 表盘尺寸
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -89,9 +90,9 @@ class PhotoDialPresetConfig extends Object {
 
   /// 当前表盘配置
   @JsonKey(includeFromJson: false, includeToJson: false)
-  PhotoDialConfig? photoDialConfig;
+  IDOPhotoDialConfig? photoDialConfig;
 
-  PhotoDialPresetConfig(
+  IDOPhotoDialPresetConfig(
       this.app,
       this.zipName,
       this.dialZipName,
@@ -108,40 +109,42 @@ class PhotoDialPresetConfig extends Object {
       this.cloudWallpaper,
       );
 
-  factory PhotoDialPresetConfig.fromJson(Map<String, dynamic> srcJson) =>
+  factory IDOPhotoDialPresetConfig.fromJson(Map<String, dynamic> srcJson) =>
       _$PhotoDialPresetConfigFromJson(srcJson);
 
   Map<String, dynamic> toJson() => _$PhotoDialPresetConfigToJson(this);
 
   List<String> palettesToColorList() {
-    List<String> list = [];
-
+    if (colors != null && colors!.isNotEmpty) {
+      return List<String>.from(colors!);
+    }
+    final list = <String>[];
     if (palettes != null) {
-      for (DialJsonPalettes palettes in palettes!) {
-        if (palettes.colors != null) {
-          list.add(palettes.colors!);
+      for (final palette in palettes!) {
+        final c = palette.colors;
+        if (c != null && c.isNotEmpty) {
+          list.add(c);
         }
       }
     }
-
     return list;
   }
 
-  DialJsonLocations? locationsForType(int type) {
+  IDODialJsonLocations? locationsForType(int type) {
     if (locations?.isEmpty ?? true) {
       return null;
     }
     return locations!.firstWhereOrNull((element) => element.type == type);
   }
 
-  FunctionList? functionListForType(String type) {
+  IDOPhotoDialFunctionList? functionListForType(String type) {
     if (functionList?.isEmpty ?? true) {
       return null;
     }
     return functionList!.firstWhereOrNull((element) => element.name == type);
   }
 
-  FunctionList? functionListForFuncation(String type) {
+  IDOPhotoDialFunctionList? functionListForFuncation(String type) {
     if (functionList?.isEmpty ?? true) {
       return null;
     }
@@ -150,7 +153,7 @@ class PhotoDialPresetConfig extends Object {
 }
 
 @JsonSerializable()
-class DialJsonApp extends Object {
+class IDODialJsonApp extends Object {
   @JsonKey(name: 'name')
   String? name;
 
@@ -160,20 +163,20 @@ class DialJsonApp extends Object {
   @JsonKey(name: 'format')
   String? format;
 
-  DialJsonApp(
+  IDODialJsonApp(
       this.name,
       this.bpp,
       this.format,
       );
 
-  factory DialJsonApp.fromJson(Map<String, dynamic> srcJson) =>
+  factory IDODialJsonApp.fromJson(Map<String, dynamic> srcJson) =>
       _$DialJsonAppFromJson(srcJson);
 
   Map<String, dynamic> toJson() => _$DialJsonAppToJson(this);
 }
 
 @JsonSerializable()
-class DialJsonBackgrounds extends Object {
+class IDODialJsonBackgrounds extends Object {
   @JsonKey(name: 'canChangeColor')
   int? canChangeColor;
 
@@ -192,7 +195,7 @@ class DialJsonBackgrounds extends Object {
   @JsonKey(name: 'image')
   String? image;
 
-  DialJsonBackgrounds(
+  IDODialJsonBackgrounds(
       this.canChangeColor,
       this.backgroundColor,
       this.borderColor,
@@ -201,26 +204,26 @@ class DialJsonBackgrounds extends Object {
       this.image,
       );
 
-  factory DialJsonBackgrounds.fromJson(Map<String, dynamic> srcJson) =>
+  factory IDODialJsonBackgrounds.fromJson(Map<String, dynamic> srcJson) =>
       _$DialJsonBackgroundsFromJson(srcJson);
 
   Map<String, dynamic> toJson() => _$DialJsonBackgroundsToJson(this);
 }
 
 @JsonSerializable()
-class Imagegroupsize extends Object {
+class IDOPhotoDialImageGroupSize extends Object {
   @JsonKey(name: 'height')
   int? height;
 
   @JsonKey(name: 'width')
   int? width;
 
-  Imagegroupsize(
+  IDOPhotoDialImageGroupSize(
       this.height,
       this.width,
       );
 
-  factory Imagegroupsize.fromJson(Map<String, dynamic> srcJson) =>
+  factory IDOPhotoDialImageGroupSize.fromJson(Map<String, dynamic> srcJson) =>
       _$ImagegroupsizeFromJson(srcJson);
 
   Map<String, dynamic> toJson() => _$ImagegroupsizeToJson(this);
@@ -228,7 +231,7 @@ class Imagegroupsize extends Object {
 
 // 时间指针的对象
 @JsonSerializable()
-class DialJsonClock extends Object {
+class IDODialJsonClock extends Object {
   @JsonKey(name: 'canChangeColor')
   int? canChangeColor;
 
@@ -247,7 +250,7 @@ class DialJsonClock extends Object {
   @JsonKey(name: 'cityLocation')
   List<dynamic>? dialJsonCityLocation;
 
-  DialJsonClock(
+  IDODialJsonClock(
       this.canChangeColor,
       this.image,
       this.type,
@@ -255,14 +258,14 @@ class DialJsonClock extends Object {
       this.dialJsonCityLocation,
       );
 
-  factory DialJsonClock.fromJson(Map<String, dynamic> srcJson) =>
+  factory IDODialJsonClock.fromJson(Map<String, dynamic> srcJson) =>
       _$DialJsonClockFromJson(srcJson);
 
   Map<String, dynamic> toJson() => _$DialJsonClockToJson(this);
 }
 
 @JsonSerializable()
-class DialJsonFuncInfo extends Object {
+class IDODialJsonFuncInfo extends Object {
   @JsonKey(name: 'name')
   String? name;
 
@@ -273,15 +276,15 @@ class DialJsonFuncInfo extends Object {
   int? canChangeColor;
 
   @JsonKey(name: 'defaultFuncs')
-  List<DialJsonDefaultFuncs>? dialJsonDefaultFuncs;
+  List<IDODialJsonDefaultFuncs>? dialJsonDefaultFuncs;
 
   @JsonKey(name: 'list')
-  List<DialJsonFuncList>? dialJsonFuncList;
+  List<IDODialJsonFuncList>? dialJsonFuncList;
 
   @JsonKey(name: 'isSupportClose')
   int? isSupportClose;
 
-  DialJsonFuncInfo(
+  IDODialJsonFuncInfo(
       this.name,
       this.version,
       this.canChangeColor,
@@ -290,14 +293,14 @@ class DialJsonFuncInfo extends Object {
       this.isSupportClose,
       );
 
-  factory DialJsonFuncInfo.fromJson(Map<String, dynamic> srcJson) =>
+  factory IDODialJsonFuncInfo.fromJson(Map<String, dynamic> srcJson) =>
       _$DialJsonFuncInfoFromJson(srcJson);
 
   Map<String, dynamic> toJson() => _$DialJsonFuncInfoToJson(this);
 }
 
 @JsonSerializable()
-class DialJsonDefaultFuncs extends Object {
+class IDODialJsonDefaultFuncs extends Object {
   @JsonKey(name: 'isClose')
   int? isClose;
 
@@ -316,7 +319,7 @@ class DialJsonDefaultFuncs extends Object {
   @JsonKey(name: 'location')
   List<int>? location;
 
-  DialJsonDefaultFuncs(
+  IDODialJsonDefaultFuncs(
       this.isClose,
       this.funcType,
       this.funcIcon,
@@ -325,33 +328,33 @@ class DialJsonDefaultFuncs extends Object {
       this.location,
       );
 
-  factory DialJsonDefaultFuncs.fromJson(Map<String, dynamic> srcJson) =>
+  factory IDODialJsonDefaultFuncs.fromJson(Map<String, dynamic> srcJson) =>
       _$DialJsonDefaultFuncsFromJson(srcJson);
 
   Map<String, dynamic> toJson() => _$DialJsonDefaultFuncsToJson(this);
 }
 
 @JsonSerializable()
-class DialJsonFuncList extends Object {
+class IDODialJsonFuncList extends Object {
   @JsonKey(name: 'type')
   String? type;
 
   @JsonKey(name: 'items')
-  List<DialJsonFuncItems>? dialJsonFuncItems;
+  List<IDODialJsonFuncItems>? dialJsonFuncItems;
 
-  DialJsonFuncList(
+  IDODialJsonFuncList(
       this.type,
       this.dialJsonFuncItems,
       );
 
-  factory DialJsonFuncList.fromJson(Map<String, dynamic> srcJson) =>
+  factory IDODialJsonFuncList.fromJson(Map<String, dynamic> srcJson) =>
       _$DialJsonFuncListFromJson(srcJson);
 
   Map<String, dynamic> toJson() => _$DialJsonFuncListToJson(this);
 }
 
 @JsonSerializable()
-class DialJsonFuncItems extends Object {
+class IDODialJsonFuncItems extends Object {
   @JsonKey(name: 'type')
   String? type;
 
@@ -365,21 +368,21 @@ class DialJsonFuncItems extends Object {
   @JsonKey(name: 'widgetType')
   int? widgetType;
 
-  DialJsonFuncItems(
+  IDODialJsonFuncItems(
       this.type,
       this.icon,
       this.contentStr,
       this.widgetType,
       );
 
-  factory DialJsonFuncItems.fromJson(Map<String, dynamic> srcJson) =>
+  factory IDODialJsonFuncItems.fromJson(Map<String, dynamic> srcJson) =>
       _$DialJsonFuncItemsFromJson(srcJson);
 
   Map<String, dynamic> toJson() => _$DialJsonFuncItemsToJson(this);
 }
 
 @JsonSerializable()
-class DialJsonSelect extends Object {
+class IDODialJsonSelect extends Object {
   @JsonKey(name: 'styleIndex')
   int? styleIndex;
 
@@ -410,7 +413,7 @@ class DialJsonSelect extends Object {
   @JsonKey(name: 'worldClock')
   String? worldClock;
 
-  DialJsonSelect(
+  IDODialJsonSelect(
       this.styleIndex,
       this.backgroundIndex,
       this.color,
@@ -423,14 +426,14 @@ class DialJsonSelect extends Object {
       this.worldClock,
       );
 
-  factory DialJsonSelect.fromJson(Map<String, dynamic> srcJson) =>
+  factory IDODialJsonSelect.fromJson(Map<String, dynamic> srcJson) =>
       _$DialJsonSelectFromJson(srcJson);
 
   Map<String, dynamic> toJson() => _$DialJsonSelectToJson(this);
 }
 
 @JsonSerializable()
-class DialJsonStyles extends Object {
+class IDODialJsonStyles extends Object {
   @JsonKey(name: 'name')
   String? name;
 
@@ -449,7 +452,7 @@ class DialJsonStyles extends Object {
   @JsonKey(name: 'borderWidth')
   double? borderWidth;
 
-  DialJsonStyles(
+  IDODialJsonStyles(
       this.name,
       this.canChangeColor,
       this.images,
@@ -458,14 +461,14 @@ class DialJsonStyles extends Object {
       this.borderWidth,
       );
 
-  factory DialJsonStyles.fromJson(Map<String, dynamic> srcJson) =>
+  factory IDODialJsonStyles.fromJson(Map<String, dynamic> srcJson) =>
       _$DialJsonStylesFromJson(srcJson);
 
   Map<String, dynamic> toJson() => _$DialJsonStylesToJson(this);
 }
 
 @JsonSerializable()
-class DialJsonPalettes extends Object {
+class IDODialJsonPalettes extends Object {
   @JsonKey(name: 'num')
   String? num;
 
@@ -475,20 +478,20 @@ class DialJsonPalettes extends Object {
   @JsonKey(name: 'index')
   int? index;
 
-  DialJsonPalettes(
+  IDODialJsonPalettes(
       this.num,
       this.colors,
       this.index,
       );
 
-  factory DialJsonPalettes.fromJson(Map<String, dynamic> srcJson) =>
+  factory IDODialJsonPalettes.fromJson(Map<String, dynamic> srcJson) =>
       _$DialJsonPalettesFromJson(srcJson);
 
   Map<String, dynamic> toJson() => _$DialJsonPalettesToJson(this);
 }
 
 @JsonSerializable()
-class DialJsonLocations extends Object {
+class IDODialJsonLocations extends Object {
   @JsonKey(name: 'type')
   int? type;
 
@@ -505,23 +508,23 @@ class DialJsonLocations extends Object {
   List<Map>? timeWidget;
 
   @JsonKey(name: 'function_coordinate')
-  List<FunctionCoordinate>? functionCoordinate;
+  List<IDOPhotoDialFunctionCoordinate>? functionCoordinate;
 
-  DialJsonLocations(
+  IDODialJsonLocations(
       this.type,
       this.time,
       this.day,
       this.week,
       );
 
-  factory DialJsonLocations.fromJson(Map<String, dynamic> srcJson) =>
+  factory IDODialJsonLocations.fromJson(Map<String, dynamic> srcJson) =>
       _$DialJsonLocationsFromJson(srcJson);
 
   Map<String, dynamic> toJson() => _$DialJsonLocationsToJson(this);
 }
 
 @JsonSerializable()
-class DialJsonCounterTimers extends Object {
+class IDODialJsonCounterTimers extends Object {
   @JsonKey(name: 'location')
   List<int>? location;
 
@@ -541,7 +544,7 @@ class DialJsonCounterTimers extends Object {
   @JsonKey(name: 'fontSize')
   int? fontSize;
 
-  DialJsonCounterTimers(
+  IDODialJsonCounterTimers(
       this.location,
       this.defaultIndex,
       this.cornerRadius,
@@ -550,14 +553,14 @@ class DialJsonCounterTimers extends Object {
       this.fontSize,
       );
 
-  factory DialJsonCounterTimers.fromJson(Map<String, dynamic> srcJson) =>
+  factory IDODialJsonCounterTimers.fromJson(Map<String, dynamic> srcJson) =>
       _$DialJsonCounterTimersFromJson(srcJson);
 
   Map<String, dynamic> toJson() => _$DialJsonCounterTimersToJson(this);
 }
 
 @JsonSerializable()
-class DialJsonCloudWallpaper extends Object {
+class IDODialJsonCloudWallpaper extends Object {
   ///是否支持功能 默认0不支持，  1：支持功能切换
   @JsonKey(name: 'function_support')
   int? functionSupport;
@@ -570,39 +573,39 @@ class DialJsonCloudWallpaper extends Object {
   @JsonKey(name: 'no_support_colors')
   int? noSupportColors;
 
-  DialJsonCloudWallpaper(
+  IDODialJsonCloudWallpaper(
       this.functionSupport,
       this.noSupportLocation,
       this.noSupportColors,
       );
 
-  factory DialJsonCloudWallpaper.fromJson(Map<String, dynamic> srcJson) =>
+  factory IDODialJsonCloudWallpaper.fromJson(Map<String, dynamic> srcJson) =>
       _$DialJsonCloudWallpaperFromJson(srcJson);
 
   Map<String, dynamic> toJson() => _$DialJsonCloudWallpaperToJson(this);
 }
 
 @JsonSerializable()
-class FunctionCoordinate extends Object {
+class IDOPhotoDialFunctionCoordinate extends Object {
   @JsonKey(name: 'function')
   int function;
 
   @JsonKey(name: 'item')
-  List<FunctionCoordinateItem> item;
+  List<IDOPhotoDialFunctionCoordinateItem> item;
 
-  FunctionCoordinate(
+  IDOPhotoDialFunctionCoordinate(
       this.function,
       this.item,
       );
 
-  factory FunctionCoordinate.fromJson(Map<String, dynamic> srcJson) =>
+  factory IDOPhotoDialFunctionCoordinate.fromJson(Map<String, dynamic> srcJson) =>
       _$FunctionCoordinateFromJson(srcJson);
 
   Map<String, dynamic> toJson() => _$FunctionCoordinateToJson(this);
 }
 
 @JsonSerializable()
-class FunctionCoordinateItem extends Object {
+class IDOPhotoDialFunctionCoordinateItem extends Object {
   @JsonKey(name: 'widget')
   String widget;
 
@@ -612,20 +615,20 @@ class FunctionCoordinateItem extends Object {
   @JsonKey(name: 'coordinate')
   List<int> coordinate;
 
-  FunctionCoordinateItem(
+  IDOPhotoDialFunctionCoordinateItem(
       this.widget,
       this.type,
       this.coordinate,
       );
 
-  factory FunctionCoordinateItem.fromJson(Map<String, dynamic> srcJson) =>
+  factory IDOPhotoDialFunctionCoordinateItem.fromJson(Map<String, dynamic> srcJson) =>
       _$FunctionCoordinateItemFromJson(srcJson);
 
   Map<String, dynamic> toJson() => _$FunctionCoordinateItemToJson(this);
 }
 
 @JsonSerializable()
-class FunctionList extends Object {
+class IDOPhotoDialFunctionList extends Object {
   @JsonKey(name: 'function')
   int function;
 
@@ -635,32 +638,32 @@ class FunctionList extends Object {
   @JsonKey(name: 'item')
   List<Map> item;
 
-  FunctionList(
+  IDOPhotoDialFunctionList(
       this.function,
       this.name,
       this.item,
       );
 
-  factory FunctionList.fromJson(Map<String, dynamic> srcJson) =>
+  factory IDOPhotoDialFunctionList.fromJson(Map<String, dynamic> srcJson) =>
       _$FunctionListFromJson(srcJson);
 
   Map<String, dynamic> toJson() => _$FunctionListToJson(this);
 }
 
 @JsonSerializable()
-class TimeWidgetListItem extends Object {
+class IDOPhotoDialTimeWidgetListItem extends Object {
   @JsonKey(name: 'widget')
   String widget;
 
   @JsonKey(name: 'type')
   String type;
 
-  TimeWidgetListItem(
+  IDOPhotoDialTimeWidgetListItem(
       this.widget,
       this.type,
       );
 
-  factory TimeWidgetListItem.fromJson(Map<String, dynamic> srcJson) =>
+  factory IDOPhotoDialTimeWidgetListItem.fromJson(Map<String, dynamic> srcJson) =>
       _$TimeWidgetListItemFromJson(srcJson);
 
   Map<String, dynamic> toJson() => _$TimeWidgetListItemToJson(this);

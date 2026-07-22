@@ -868,6 +868,17 @@ extern int mkPhotoFile(const char * file_path,const char * save_file_path,int fo
 extern char *mkConnactFile(const char * jsondata);
 
 /**
+ * @brief 制作手机日历提醒文件 phone_calendar.cal
+ */
+extern char *mkPhoneCalendarCalFile(const char * jsondata);
+
+/**
+ * @brief 手机日历全量同步：策略裁剪 + 组包 phone_calendar.cal
+ * @return JSON：{ err_code, path, packed_item_count }
+ */
+extern char *syncPhoneCalendarCal(const char * jsondata);
+
+/**
  * @brief 制作思澈表盘文件,会在输入路径下生成(.watch)表盘文件
  * @param file_path 素材文件路径
  * @return 0成功 非0失败 -1: 没有控件 -2: json文件加载失败

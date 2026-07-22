@@ -43,6 +43,9 @@ enum FileTranDataType {
   /// 轨迹
   gpx,
 
+  /// 手机日历 phone_calendar.cal
+  cal,
+
   /// 吃药提醒图⽚
   medic
 }

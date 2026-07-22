@@ -40,6 +40,7 @@ export 'src/file_transfer/model/message_file_model.dart';
 export 'src/file_transfer/model/music_file_model.dart';
 export 'src/file_transfer/model/sport_file_model.dart';
 export 'src/file_transfer/model/normal_file_model.dart';
+export 'src/file_transfer/model/medicine_file_model.dart';
 export 'src/file_transfer/device2app/device_to_app.dart';
 export 'src/file_transfer/device2app/device_trans_item.dart';
 
@@ -62,9 +63,11 @@ export 'src/sub_modules/model/ota_gps_info.dart';
 
 // dial
 export 'src/sub_modules/dial/dial_manager.dart';
-// export 'src/sub_modules/dial/photo/photo_dial.dart';
-// export 'src/sub_modules/dial/photo/photo_dial_preset_config.dart';
-// export 'src/sub_modules/dial/photo/photo_dial_config.dart';
+export 'src/sub_modules/dial/photo/photo_dial.dart';
+export 'src/sub_modules/dial/photo/photo_dial_config.dart';
+export 'src/sub_modules/dial/photo/photo_dial_ui_preset.dart';
+export 'src/sub_modules/dial/photo/photo_dial_constants.dart';
+export 'src/sub_modules/dial/photo/photo_dial_preset_config.dart';
 
 // offline map
 export 'src/sub_modules/offline_map/offline_map_manager.dart';
@@ -72,4 +75,17 @@ export 'src/sub_modules/offline_map/private/om_model.dart';
 
 // measure
 export 'src/sub_modules/measure/measure_manager.dart';
+
+// phone calendar
+export 'src/sub_modules/phone_calendar/phone_calendar_manager.dart';
+export 'src/sub_modules/phone_calendar/model/phone_calendar_event.dart';
+export 'src/sub_modules/phone_calendar/model/phone_calendar_crop_strategy.dart';
+export 'src/sub_modules/phone_calendar/model/phone_calendar_sync_result.dart';
+export 'src/sub_modules/phone_calendar/model/phone_calendar_update_time.dart';
+
+// commands
+export 'src/sub_modules/commands/commands_manager.dart';
+export 'src/sub_modules/commands/model/ido_notice_status_model.dart';
+export 'src/sub_modules/commands/model/ido_command_result.dart';
+
 

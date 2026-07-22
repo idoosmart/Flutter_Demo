@@ -6,60 +6,60 @@ part of 'photo_dial_preset_config.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-PhotoDialPresetConfig _$PhotoDialPresetConfigFromJson(
+IDOPhotoDialPresetConfig _$PhotoDialPresetConfigFromJson(
         Map<String, dynamic> json) =>
-    PhotoDialPresetConfig(
+    IDOPhotoDialPresetConfig(
       json['app'] == null
           ? null
-          : DialJsonApp.fromJson(json['app'] as Map<String, dynamic>),
+          : IDODialJsonApp.fromJson(json['app'] as Map<String, dynamic>),
       (json['zipName'] as num?)?.toInt(),
       json['dialZipName'] as String?,
       (json['backgrounds'] as List<dynamic>?)
-          ?.map((e) => DialJsonBackgrounds.fromJson(e as Map<String, dynamic>))
+          ?.map((e) => IDODialJsonBackgrounds.fromJson(e as Map<String, dynamic>))
           .toList(),
       json['imagegroupsize'] == null
           ? null
-          : Imagegroupsize.fromJson(
+          : IDOPhotoDialImageGroupSize.fromJson(
               json['imagegroupsize'] as Map<String, dynamic>),
       json['clock'] == null
           ? null
-          : DialJsonClock.fromJson(json['clock'] as Map<String, dynamic>),
+          : IDODialJsonClock.fromJson(json['clock'] as Map<String, dynamic>),
       json['funcInfo'] == null
           ? null
-          : DialJsonFuncInfo.fromJson(json['funcInfo'] as Map<String, dynamic>),
+          : IDODialJsonFuncInfo.fromJson(json['funcInfo'] as Map<String, dynamic>),
       json['select'] == null
           ? null
-          : DialJsonSelect.fromJson(json['select'] as Map<String, dynamic>),
-      json['colors'] as String?,
+          : IDODialJsonSelect.fromJson(json['select'] as Map<String, dynamic>),
+      (json['colors'] as List<dynamic>?)?.map((e) => e as String).toList(),
       (json['styles'] as List<dynamic>?)
-          ?.map((e) => DialJsonStyles.fromJson(e as Map<String, dynamic>))
+          ?.map((e) => IDODialJsonStyles.fromJson(e as Map<String, dynamic>))
           .toList(),
       (json['palettes'] as List<dynamic>?)
-          ?.map((e) => DialJsonPalettes.fromJson(e as Map<String, dynamic>))
+          ?.map((e) => IDODialJsonPalettes.fromJson(e as Map<String, dynamic>))
           .toList(),
       (json['locations'] as List<dynamic>?)
-          ?.map((e) => DialJsonLocations.fromJson(e as Map<String, dynamic>))
+          ?.map((e) => IDODialJsonLocations.fromJson(e as Map<String, dynamic>))
           .toList(),
       (json['counterTimers'] as List<dynamic>?)
           ?.map(
-              (e) => DialJsonCounterTimers.fromJson(e as Map<String, dynamic>))
+              (e) => IDODialJsonCounterTimers.fromJson(e as Map<String, dynamic>))
           .toList(),
       json['cloudWallpaper'] == null
           ? null
-          : DialJsonCloudWallpaper.fromJson(
+          : IDODialJsonCloudWallpaper.fromJson(
               json['cloudWallpaper'] as Map<String, dynamic>),
     )
       ..functionSupport = (json['function_support'] as num?)?.toInt()
       ..functionSupportNew = (json['function_support_new'] as num?)?.toInt()
       ..functionList = (json['function_list'] as List<dynamic>?)
-          ?.map((e) => FunctionList.fromJson(e as Map<String, dynamic>))
+          ?.map((e) => IDOPhotoDialFunctionList.fromJson(e as Map<String, dynamic>))
           .toList()
       ..timeWidgetList = (json['time_widget_list'] as List<dynamic>?)
-          ?.map((e) => TimeWidgetListItem.fromJson(e as Map<String, dynamic>))
+          ?.map((e) => IDOPhotoDialTimeWidgetListItem.fromJson(e as Map<String, dynamic>))
           .toList();
 
 Map<String, dynamic> _$PhotoDialPresetConfigToJson(
-        PhotoDialPresetConfig instance) =>
+        IDOPhotoDialPresetConfig instance) =>
     <String, dynamic>{
       'app': instance.app,
       'zipName': instance.zipName,
@@ -81,21 +81,21 @@ Map<String, dynamic> _$PhotoDialPresetConfigToJson(
       'time_widget_list': instance.timeWidgetList,
     };
 
-DialJsonApp _$DialJsonAppFromJson(Map<String, dynamic> json) => DialJsonApp(
+IDODialJsonApp _$DialJsonAppFromJson(Map<String, dynamic> json) => IDODialJsonApp(
       json['name'] as String?,
       (json['bpp'] as num?)?.toInt(),
       json['format'] as String?,
     );
 
-Map<String, dynamic> _$DialJsonAppToJson(DialJsonApp instance) =>
+Map<String, dynamic> _$DialJsonAppToJson(IDODialJsonApp instance) =>
     <String, dynamic>{
       'name': instance.name,
       'bpp': instance.bpp,
       'format': instance.format,
     };
 
-DialJsonBackgrounds _$DialJsonBackgroundsFromJson(Map<String, dynamic> json) =>
-    DialJsonBackgrounds(
+IDODialJsonBackgrounds _$DialJsonBackgroundsFromJson(Map<String, dynamic> json) =>
+    IDODialJsonBackgrounds(
       (json['canChangeColor'] as num?)?.toInt(),
       json['backgroundColor'] as String?,
       json['borderColor'] as String?,
@@ -105,7 +105,7 @@ DialJsonBackgrounds _$DialJsonBackgroundsFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$DialJsonBackgroundsToJson(
-        DialJsonBackgrounds instance) =>
+        IDODialJsonBackgrounds instance) =>
     <String, dynamic>{
       'canChangeColor': instance.canChangeColor,
       'backgroundColor': instance.backgroundColor,
@@ -115,20 +115,20 @@ Map<String, dynamic> _$DialJsonBackgroundsToJson(
       'image': instance.image,
     };
 
-Imagegroupsize _$ImagegroupsizeFromJson(Map<String, dynamic> json) =>
-    Imagegroupsize(
+IDOPhotoDialImageGroupSize _$ImagegroupsizeFromJson(Map<String, dynamic> json) =>
+    IDOPhotoDialImageGroupSize(
       (json['height'] as num?)?.toInt(),
       (json['width'] as num?)?.toInt(),
     );
 
-Map<String, dynamic> _$ImagegroupsizeToJson(Imagegroupsize instance) =>
+Map<String, dynamic> _$ImagegroupsizeToJson(IDOPhotoDialImageGroupSize instance) =>
     <String, dynamic>{
       'height': instance.height,
       'width': instance.width,
     };
 
-DialJsonClock _$DialJsonClockFromJson(Map<String, dynamic> json) =>
-    DialJsonClock(
+IDODialJsonClock _$DialJsonClockFromJson(Map<String, dynamic> json) =>
+    IDODialJsonClock(
       (json['canChangeColor'] as num?)?.toInt(),
       json['image'] as String?,
       (json['type'] as num?)?.toInt(),
@@ -136,7 +136,7 @@ DialJsonClock _$DialJsonClockFromJson(Map<String, dynamic> json) =>
       json['cityLocation'] as List<dynamic>?,
     );
 
-Map<String, dynamic> _$DialJsonClockToJson(DialJsonClock instance) =>
+Map<String, dynamic> _$DialJsonClockToJson(IDODialJsonClock instance) =>
     <String, dynamic>{
       'canChangeColor': instance.canChangeColor,
       'image': instance.image,
@@ -145,21 +145,21 @@ Map<String, dynamic> _$DialJsonClockToJson(DialJsonClock instance) =>
       'cityLocation': instance.dialJsonCityLocation,
     };
 
-DialJsonFuncInfo _$DialJsonFuncInfoFromJson(Map<String, dynamic> json) =>
-    DialJsonFuncInfo(
+IDODialJsonFuncInfo _$DialJsonFuncInfoFromJson(Map<String, dynamic> json) =>
+    IDODialJsonFuncInfo(
       json['name'] as String?,
       json['version'] as String?,
       (json['canChangeColor'] as num?)?.toInt(),
       (json['defaultFuncs'] as List<dynamic>?)
-          ?.map((e) => DialJsonDefaultFuncs.fromJson(e as Map<String, dynamic>))
+          ?.map((e) => IDODialJsonDefaultFuncs.fromJson(e as Map<String, dynamic>))
           .toList(),
       (json['list'] as List<dynamic>?)
-          ?.map((e) => DialJsonFuncList.fromJson(e as Map<String, dynamic>))
+          ?.map((e) => IDODialJsonFuncList.fromJson(e as Map<String, dynamic>))
           .toList(),
       (json['isSupportClose'] as num?)?.toInt(),
     );
 
-Map<String, dynamic> _$DialJsonFuncInfoToJson(DialJsonFuncInfo instance) =>
+Map<String, dynamic> _$DialJsonFuncInfoToJson(IDODialJsonFuncInfo instance) =>
     <String, dynamic>{
       'name': instance.name,
       'version': instance.version,
@@ -169,9 +169,9 @@ Map<String, dynamic> _$DialJsonFuncInfoToJson(DialJsonFuncInfo instance) =>
       'isSupportClose': instance.isSupportClose,
     };
 
-DialJsonDefaultFuncs _$DialJsonDefaultFuncsFromJson(
+IDODialJsonDefaultFuncs _$DialJsonDefaultFuncsFromJson(
         Map<String, dynamic> json) =>
-    DialJsonDefaultFuncs(
+    IDODialJsonDefaultFuncs(
       (json['isClose'] as num?)?.toInt(),
       json['funcType'] as String?,
       json['funcIcon'] as String?,
@@ -183,7 +183,7 @@ DialJsonDefaultFuncs _$DialJsonDefaultFuncsFromJson(
     );
 
 Map<String, dynamic> _$DialJsonDefaultFuncsToJson(
-        DialJsonDefaultFuncs instance) =>
+        IDODialJsonDefaultFuncs instance) =>
     <String, dynamic>{
       'isClose': instance.isClose,
       'funcType': instance.funcType,
@@ -193,29 +193,29 @@ Map<String, dynamic> _$DialJsonDefaultFuncsToJson(
       'location': instance.location,
     };
 
-DialJsonFuncList _$DialJsonFuncListFromJson(Map<String, dynamic> json) =>
-    DialJsonFuncList(
+IDODialJsonFuncList _$DialJsonFuncListFromJson(Map<String, dynamic> json) =>
+    IDODialJsonFuncList(
       json['type'] as String?,
       (json['items'] as List<dynamic>?)
-          ?.map((e) => DialJsonFuncItems.fromJson(e as Map<String, dynamic>))
+          ?.map((e) => IDODialJsonFuncItems.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
 
-Map<String, dynamic> _$DialJsonFuncListToJson(DialJsonFuncList instance) =>
+Map<String, dynamic> _$DialJsonFuncListToJson(IDODialJsonFuncList instance) =>
     <String, dynamic>{
       'type': instance.type,
       'items': instance.dialJsonFuncItems,
     };
 
-DialJsonFuncItems _$DialJsonFuncItemsFromJson(Map<String, dynamic> json) =>
-    DialJsonFuncItems(
+IDODialJsonFuncItems _$DialJsonFuncItemsFromJson(Map<String, dynamic> json) =>
+    IDODialJsonFuncItems(
       json['type'] as String?,
       json['icon'] as String?,
       json['contentStr'] as String?,
       (json['widgetType'] as num?)?.toInt(),
     );
 
-Map<String, dynamic> _$DialJsonFuncItemsToJson(DialJsonFuncItems instance) =>
+Map<String, dynamic> _$DialJsonFuncItemsToJson(IDODialJsonFuncItems instance) =>
     <String, dynamic>{
       'type': instance.type,
       'icon': instance.icon,
@@ -223,8 +223,8 @@ Map<String, dynamic> _$DialJsonFuncItemsToJson(DialJsonFuncItems instance) =>
       'widgetType': instance.widgetType,
     };
 
-DialJsonSelect _$DialJsonSelectFromJson(Map<String, dynamic> json) =>
-    DialJsonSelect(
+IDODialJsonSelect _$DialJsonSelectFromJson(Map<String, dynamic> json) =>
+    IDODialJsonSelect(
       (json['styleIndex'] as num?)?.toInt(),
       (json['backgroundIndex'] as num?)?.toInt(),
       (json['color'] as num?)?.toInt(),
@@ -237,7 +237,7 @@ DialJsonSelect _$DialJsonSelectFromJson(Map<String, dynamic> json) =>
       json['worldClock'] as String?,
     );
 
-Map<String, dynamic> _$DialJsonSelectToJson(DialJsonSelect instance) =>
+Map<String, dynamic> _$DialJsonSelectToJson(IDODialJsonSelect instance) =>
     <String, dynamic>{
       'styleIndex': instance.styleIndex,
       'backgroundIndex': instance.backgroundIndex,
@@ -251,8 +251,8 @@ Map<String, dynamic> _$DialJsonSelectToJson(DialJsonSelect instance) =>
       'worldClock': instance.worldClock,
     };
 
-DialJsonStyles _$DialJsonStylesFromJson(Map<String, dynamic> json) =>
-    DialJsonStyles(
+IDODialJsonStyles _$DialJsonStylesFromJson(Map<String, dynamic> json) =>
+    IDODialJsonStyles(
       json['name'] as String?,
       (json['canChangeColor'] as num?)?.toInt(),
       (json['images'] as List<dynamic>?)?.map((e) => e as String).toList(),
@@ -261,7 +261,7 @@ DialJsonStyles _$DialJsonStylesFromJson(Map<String, dynamic> json) =>
       (json['borderWidth'] as num?)?.toDouble(),
     );
 
-Map<String, dynamic> _$DialJsonStylesToJson(DialJsonStyles instance) =>
+Map<String, dynamic> _$DialJsonStylesToJson(IDODialJsonStyles instance) =>
     <String, dynamic>{
       'name': instance.name,
       'canChangeColor': instance.canChangeColor,
@@ -271,22 +271,22 @@ Map<String, dynamic> _$DialJsonStylesToJson(DialJsonStyles instance) =>
       'borderWidth': instance.borderWidth,
     };
 
-DialJsonPalettes _$DialJsonPalettesFromJson(Map<String, dynamic> json) =>
-    DialJsonPalettes(
+IDODialJsonPalettes _$DialJsonPalettesFromJson(Map<String, dynamic> json) =>
+    IDODialJsonPalettes(
       json['num'] as String?,
       json['colors'] as String?,
       (json['index'] as num?)?.toInt(),
     );
 
-Map<String, dynamic> _$DialJsonPalettesToJson(DialJsonPalettes instance) =>
+Map<String, dynamic> _$DialJsonPalettesToJson(IDODialJsonPalettes instance) =>
     <String, dynamic>{
       'num': instance.num,
       'colors': instance.colors,
       'index': instance.index,
     };
 
-DialJsonLocations _$DialJsonLocationsFromJson(Map<String, dynamic> json) =>
-    DialJsonLocations(
+IDODialJsonLocations _$DialJsonLocationsFromJson(Map<String, dynamic> json) =>
+    IDODialJsonLocations(
       (json['type'] as num?)?.toInt(),
       (json['time'] as List<dynamic>?)?.map((e) => (e as num).toInt()).toList(),
       (json['day'] as List<dynamic>?)?.map((e) => (e as num).toInt()).toList(),
@@ -296,10 +296,10 @@ DialJsonLocations _$DialJsonLocationsFromJson(Map<String, dynamic> json) =>
           ?.map((e) => e as Map<String, dynamic>)
           .toList()
       ..functionCoordinate = (json['function_coordinate'] as List<dynamic>?)
-          ?.map((e) => FunctionCoordinate.fromJson(e as Map<String, dynamic>))
+          ?.map((e) => IDOPhotoDialFunctionCoordinate.fromJson(e as Map<String, dynamic>))
           .toList();
 
-Map<String, dynamic> _$DialJsonLocationsToJson(DialJsonLocations instance) =>
+Map<String, dynamic> _$DialJsonLocationsToJson(IDODialJsonLocations instance) =>
     <String, dynamic>{
       'type': instance.type,
       'time': instance.time,
@@ -309,9 +309,9 @@ Map<String, dynamic> _$DialJsonLocationsToJson(DialJsonLocations instance) =>
       'function_coordinate': instance.functionCoordinate,
     };
 
-DialJsonCounterTimers _$DialJsonCounterTimersFromJson(
+IDODialJsonCounterTimers _$DialJsonCounterTimersFromJson(
         Map<String, dynamic> json) =>
-    DialJsonCounterTimers(
+    IDODialJsonCounterTimers(
       (json['location'] as List<dynamic>?)
           ?.map((e) => (e as num).toInt())
           .toList(),
@@ -325,7 +325,7 @@ DialJsonCounterTimers _$DialJsonCounterTimersFromJson(
     );
 
 Map<String, dynamic> _$DialJsonCounterTimersToJson(
-        DialJsonCounterTimers instance) =>
+        IDODialJsonCounterTimers instance) =>
     <String, dynamic>{
       'location': instance.location,
       'defaultIndex': instance.defaultIndex,
@@ -335,40 +335,40 @@ Map<String, dynamic> _$DialJsonCounterTimersToJson(
       'fontSize': instance.fontSize,
     };
 
-DialJsonCloudWallpaper _$DialJsonCloudWallpaperFromJson(
+IDODialJsonCloudWallpaper _$DialJsonCloudWallpaperFromJson(
         Map<String, dynamic> json) =>
-    DialJsonCloudWallpaper(
+    IDODialJsonCloudWallpaper(
       (json['function_support'] as num?)?.toInt(),
       (json['no_support_location'] as num?)?.toInt(),
       (json['no_support_colors'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$DialJsonCloudWallpaperToJson(
-        DialJsonCloudWallpaper instance) =>
+        IDODialJsonCloudWallpaper instance) =>
     <String, dynamic>{
       'function_support': instance.functionSupport,
       'no_support_location': instance.noSupportLocation,
       'no_support_colors': instance.noSupportColors,
     };
 
-FunctionCoordinate _$FunctionCoordinateFromJson(Map<String, dynamic> json) =>
-    FunctionCoordinate(
+IDOPhotoDialFunctionCoordinate _$FunctionCoordinateFromJson(Map<String, dynamic> json) =>
+    IDOPhotoDialFunctionCoordinate(
       (json['function'] as num).toInt(),
       (json['item'] as List<dynamic>)
           .map(
-              (e) => FunctionCoordinateItem.fromJson(e as Map<String, dynamic>))
+              (e) => IDOPhotoDialFunctionCoordinateItem.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
 
-Map<String, dynamic> _$FunctionCoordinateToJson(FunctionCoordinate instance) =>
+Map<String, dynamic> _$FunctionCoordinateToJson(IDOPhotoDialFunctionCoordinate instance) =>
     <String, dynamic>{
       'function': instance.function,
       'item': instance.item,
     };
 
-FunctionCoordinateItem _$FunctionCoordinateItemFromJson(
+IDOPhotoDialFunctionCoordinateItem _$FunctionCoordinateItemFromJson(
         Map<String, dynamic> json) =>
-    FunctionCoordinateItem(
+    IDOPhotoDialFunctionCoordinateItem(
       json['widget'] as String,
       json['type'] as String,
       (json['coordinate'] as List<dynamic>)
@@ -377,14 +377,14 @@ FunctionCoordinateItem _$FunctionCoordinateItemFromJson(
     );
 
 Map<String, dynamic> _$FunctionCoordinateItemToJson(
-        FunctionCoordinateItem instance) =>
+        IDOPhotoDialFunctionCoordinateItem instance) =>
     <String, dynamic>{
       'widget': instance.widget,
       'type': instance.type,
       'coordinate': instance.coordinate,
     };
 
-FunctionList _$FunctionListFromJson(Map<String, dynamic> json) => FunctionList(
+IDOPhotoDialFunctionList _$FunctionListFromJson(Map<String, dynamic> json) => IDOPhotoDialFunctionList(
       (json['function'] as num).toInt(),
       json['name'] as String,
       (json['item'] as List<dynamic>)
@@ -392,20 +392,20 @@ FunctionList _$FunctionListFromJson(Map<String, dynamic> json) => FunctionList(
           .toList(),
     );
 
-Map<String, dynamic> _$FunctionListToJson(FunctionList instance) =>
+Map<String, dynamic> _$FunctionListToJson(IDOPhotoDialFunctionList instance) =>
     <String, dynamic>{
       'function': instance.function,
       'name': instance.name,
       'item': instance.item,
     };
 
-TimeWidgetListItem _$TimeWidgetListItemFromJson(Map<String, dynamic> json) =>
-    TimeWidgetListItem(
+IDOPhotoDialTimeWidgetListItem _$TimeWidgetListItemFromJson(Map<String, dynamic> json) =>
+    IDOPhotoDialTimeWidgetListItem(
       json['widget'] as String,
       json['type'] as String,
     );
 
-Map<String, dynamic> _$TimeWidgetListItemToJson(TimeWidgetListItem instance) =>
+Map<String, dynamic> _$TimeWidgetListItemToJson(IDOPhotoDialTimeWidgetListItem instance) =>
     <String, dynamic>{
       'widget': instance.widget,
       'type': instance.type,

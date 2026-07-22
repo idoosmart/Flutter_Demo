@@ -50,6 +50,10 @@ final _cmdMap = {
   CmdEvtType.getAppSleepMode: {"desc": "获取睡眠模式", "cmd": "02 4C"},
   CmdEvtType.getPetInfo: {"desc": "获取宠物信息", "cmd": "02 0A"},
   CmdEvtType.getFindPhoneSwitch: {"desc": "获取寻找手机开关状态", "cmd": "02 26"},
+  CmdEvtType.getFirmwareDisplayVersion: {
+    "desc": "获取固件显示版本号",
+    "cmd": "02 4B"
+  },
   CmdEvtType.getFirmwareBtVersion: {"desc": "获得固件三级版本和bt的3级版本", "cmd": "02 00"},
   CmdEvtType.getStressVal: {"desc": "获取压力值", "cmd": "02 00"},
   CmdEvtType.getHeartRateMode: {"desc": "获取心率监测模式", "cmd": "02 00"},
