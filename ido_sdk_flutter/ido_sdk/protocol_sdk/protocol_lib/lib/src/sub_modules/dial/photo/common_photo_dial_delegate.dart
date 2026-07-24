@@ -191,15 +191,17 @@ abstract class _CommonPhotoDialDelegate {
     _transferSub?.cancel();
     _transferSub = libManager.transFile
         .transferSingle(
-          fileItem: fileItem,
-          funcStatus: (s) => saveDialLog('transfer status: ${s.name}'),
-          funcProgress: (p) => onProgress?.call((p * 100).round()),
-          funError: (index, errorCode, errorCodeFromDevice, finishingTime) {
-            if (_interceptFailedCallback) return;
-            onFailed?.call(errorCode, '文件传输失败');
-          },
-          cancelPrevTranTask: true,
-        )
+      fileItem: fileItem,
+      funcStatus: (s) => saveDialLog('transfer status: ${s.name}'),
+      funcProgress: (p) => onProgress?.call((p * 100).round()),
+      funError: (index, errorCode, errorCodeFromDevice, finishingTime) {
+        if (_interceptFailedCallback) return;
+        if (errorCode != 0) {
+          onFailed?.call(errorCode, '文件传输失败');
+        }
+      },
+      cancelPrevTranTask: true,
+    )
         .listen((ok) async {
       if (ok) {
         await _copyAndReplaceOldCwd(onSuccess: onSuccess, onFailed: onFailed);

@@ -52,6 +52,7 @@ dependencies:
   path_provider: ^2.0.2
   path: ^1.8.2
   file_picker: ^8.0.7
+  share_plus: ^11.1.0
 
   # SDK
   protocol_lib:

@@ -13,6 +13,7 @@ import '../../generated/l10n.dart';
 import 'package:flutter_bluetooth/ido_bluetooth.dart';
 import 'package:protocol_lib/protocol_lib.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:share_plus/share_plus.dart';
 import '../detail/photo_dial/photo_dial_test_page.dart';
 
 typedef _Fn = void Function();
@@ -54,6 +55,7 @@ class _FunctionContentState extends State<FunctionContent> {
     S.current.syncfunction,
     S.current.alexa,
     '照片表盘',
+    '分享 SDK 日志',
   ];
 
   final typeMap = {
@@ -350,6 +352,41 @@ class _FunctionContentState extends State<FunctionContent> {
     });
   }
 
+  /// 导出协议库 + 蓝牙库日志并分享到第三方应用
+  shareSDKLog() async {
+    EasyLoading.show(status: '导出日志…');
+    try {
+      final path = await libManager.cache.exportLog();
+      final bleLogPath = await bluetoothManager.logPath();
+      EasyLoading.dismiss();
+
+      final files = <XFile>[];
+      if (path != null && path.isNotEmpty) {
+        files.add(XFile(path));
+      }
+      if (bleLogPath != null && bleLogPath.isNotEmpty) {
+        files.add(XFile(bleLogPath));
+      }
+      if (files.isEmpty) {
+        EasyLoading.showError('导出日志失败');
+        return;
+      }
+
+      final params = ShareParams(
+        text: '分享 SDK / 蓝牙日志',
+        files: files,
+      );
+      final result = await SharePlus.instance.share(params);
+      if (result.status == ShareResultStatus.success) {
+        debugPrint('shareSDKLog success protocol=$path ble=$bleLogPath');
+      }
+    } catch (e) {
+      EasyLoading.dismiss();
+      EasyLoading.showError('分享日志失败: $e');
+      debugPrint('shareSDKLog error: $e');
+    }
+  }
+
   _Fn? jumpFuntionViewCon(BuildContext context, String title) {
     //print('jumpFuntionViewCon==$title');
 
@@ -397,6 +434,10 @@ class _FunctionContentState extends State<FunctionContent> {
           context,
           MaterialPageRoute(builder: (context) => const PhotoDialTestPage()),
         );
+      } : null;
+    } else if (title == '分享 SDK 日志') {
+      return isConnected && isBinded ? () {
+        shareSDKLog();
       } : null;
     }
 

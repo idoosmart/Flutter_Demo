@@ -32,4 +32,9 @@ class IDOPhotoDialConfig {
     required this.position,
     this.showFunction = IDOPhotoDialWidgetFunction.weekDate,
   });
+
+  @override
+  String toString() {
+    return 'IDOPhotoDialConfig{dialName: $dialName, bgPicPath: $bgPicPath, previewPicPath: $previewPicPath, timeColor: $timeColor, functionColor: $functionColor, position: $position, showFunction: $showFunction}';
+  }
 }
