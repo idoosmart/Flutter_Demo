@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:demo/UI/function/control/function_sync.dart';
 import 'package:demo/utility/bind_state_storage.dart';
+import 'package:demo/utility/connection_status_controller.dart';
 import 'package:flutter/material.dart';
 import '../alexa/home_page.dart';
 import '../common/Toast.dart';
@@ -19,26 +20,30 @@ import '../detail/photo_dial/photo_dial_test_page.dart';
 typedef _Fn = void Function();
 
 class FunctionIndex extends StatelessWidget {
-  IDOBluetoothDeviceModel device;
-  // DeviceDetailPage(this.device, {Key? key}) : super(key: key);
+  final IDOBluetoothDeviceModel device;
 
   FunctionIndex(this.device, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    //print( '${S.current.setup}');
-
     return Scaffold(
       appBar: AppBar(
         title: Text(S.current.functionlist),
       ),
-      body: FunctionContent(),
+      body: Column(
+        children: [
+          const ConnectionStatusBanner(showBindChip: true),
+          Expanded(child: FunctionContent(device: device)),
+        ],
+      ),
     );
   }
 }
 
 class FunctionContent extends StatefulWidget {
-  FunctionContent({super.key});
+  final IDOBluetoothDeviceModel device;
+
+  const FunctionContent({super.key, required this.device});
 
   @override
   State<StatefulWidget> createState() => _FunctionContentState();
@@ -126,144 +131,214 @@ class _FunctionContentState extends State<FunctionContent> {
     ],
   };
 
-  String deviceConnectState =
-      IDOBluetoothDeviceStateType.disconnected.toString();
-
   bool isBinded = false;
   bool isConnected = false;
   StreamSubscription? _streamSubscriptionBleState;
   StreamSubscription? _streamSubscriptionLibStatus;
+  bool _autoConnectStarted = false;
+
+  IDOBluetoothDeviceModel get device => widget.device;
 
   @override
   void dispose() {
-    debugPrint("page disponse");
+    debugPrint("FunctionIndex page dispose (keep connection)");
     _streamSubscriptionBleState?.cancel();
     _streamSubscriptionLibStatus?.cancel();
-    bluetoothManager.cancelConnect();
+    // 不在离开页面时断连，断连仅由用户显式触发
+    EasyLoading.dismiss();
     super.dispose();
   }
 
   @override
   void initState() {
-    // TODO: implement initState
-
     super.initState();
 
-    _streamSubscriptionBleState = bluetoothManager.deviceState().listen((event) async {
+    bluetoothManager.setBindStateAsyncDelegate(
+        (macAddress) async => BindStateStorage.load(macAddress));
+
+    bluetoothManager.setAutoConnectInterceptor((macAddress) async {
+      final isInOta = await libManager.checkSiceOtaDoing();
+      debugPrint("checkSiceOtaDoing  $isInOta");
+      return isInOta;
+    });
+
+    _initBindStateAndMaybeAutoConnect();
+
+    _streamSubscriptionBleState =
+        bluetoothManager.deviceState().listen((event) async {
       print('ble deviceState:${event.state.toString()}');
 
       if (event.errorState == IDOBluetoothDeviceConnectErrorType.pairFail) {
-        //  配对异常提示去忽略设备
-        if(Platform.isIOS) {
-          libManager.cache.writeLog("配对异常，需要手动忽略设备（设置-蓝牙-找到设备-\"!\")-忽略此设备");
-          Toast.toast(context, msg: "配对异常，需要手动忽略设备（设置-蓝牙-找到设备-\"!\")-忽略此设备", showTime: 3*1000);
+        if (Platform.isIOS) {
+          libManager.cache.writeLog(
+              "配对异常，需要手动忽略设备（设置-蓝牙-找到设备-\"!\")-忽略此设备");
+          Toast.toast(context,
+              msg: "配对异常，需要手动忽略设备（设置-蓝牙-找到设备-\"!\")-忽略此设备",
+              showTime: 3 * 1000);
         }
       }
 
       if ((event.state == IDOBluetoothDeviceStateType.connected &&
           event.macAddress != null &&
           event.macAddress!.isNotEmpty)) {
-        final device = bluetoothManager.currentDevice!;
-        //debugPrint('begin markConnectedDevice');
+        final current = bluetoothManager.currentDevice!;
         var uniqueId = event.macAddress!;
-        // 获取设备uuid(只有ios)
         if (Platform.isIOS && bluetoothManager.currentDevice?.uuid != null) {
           uniqueId = bluetoothManager.currentDevice!.uuid!;
         }
-        final otaType = device.isTlwOta
+        final otaType = current.isTlwOta
             ? IDOOtaType.telink
-            : device.isOta
+            : current.isOta
                 ? IDOOtaType.nordic
                 : IDOOtaType.none;
-        final isBinded = await BindStateStorage.load(event.macAddress!);
-        this.isBinded = isBinded;
-        await libManager.markConnectedDeviceSafe(
-            uniqueId: uniqueId,
-            otaType: otaType,
-            isBinded: isBinded);
-        isConnected = libManager.isConnected;
+        final binded = await BindStateStorage.load(event.macAddress!);
+        isBinded = binded;
+        ConnectionStatusController.instance.setBindedHint(binded);
+        // 先关掉「正在连接」；markConnected 内部若已绑定会同步发出
+        // fastSyncStarting 并弹出「快速配置中」，此处不可在 await 后再 dismiss，否则会冲掉弹窗
         EasyLoading.dismiss();
-        // debugPrint('end markConnectedDevice');
+        await libManager.markConnectedDeviceSafe(
+            uniqueId: uniqueId, otaType: otaType, isBinded: binded);
+        isConnected = libManager.isConnected;
       } else if (event.state == IDOBluetoothDeviceStateType.disconnected) {
-        // debugPrint('begin markDisconnectedDevice');
         await libManager.markDisconnectedDevice();
         isConnected = libManager.isConnected;
         EasyLoading.dismiss();
-        // debugPrint('end markDisconnectedDevice');
       }
 
       print(event.toJson());
-      deviceConnectState = event.state.toString();
-      if(event.errorState == IDOBluetoothDeviceConnectErrorType.deviceAlreadyBindAndNotSupportRebind ||
-          event.errorState == IDOBluetoothDeviceConnectErrorType.deviceHasBeenReset) {
-        final msg = event.errorState==IDOBluetoothDeviceConnectErrorType.deviceHasBeenReset? "设备已重置，可以删除设备" : "设备已绑定，不支持重复绑定";
+      if (event.errorState ==
+              IDOBluetoothDeviceConnectErrorType
+                  .deviceAlreadyBindAndNotSupportRebind ||
+          event.errorState ==
+              IDOBluetoothDeviceConnectErrorType.deviceHasBeenReset) {
+        final msg = event.errorState ==
+                IDOBluetoothDeviceConnectErrorType.deviceHasBeenReset
+            ? "设备已重置，可以删除设备"
+            : "设备已绑定，不支持重复绑定";
         debugPrint(msg);
-        deviceConnectState="${event.state}，$msg";
+        Toast.toast(context, msg: msg, showTime: 2500);
       }
 
       _updateInformation();
     });
 
-    _streamSubscriptionLibStatus = libManager.listenStatusNotification((status) async {
+    _streamSubscriptionLibStatus =
+        libManager.listenStatusNotification((status) async {
       print("sdk状态变更：$status ");
       if (status == IDOStatusNotification.fastSyncStarting) {
-        // 快速配置开始，sdk内部会屏蔽指令调用
-        EasyLoading.show(status: "执行快速配置中...", maskType: EasyLoadingMaskType.black);
-      }else if (status == IDOStatusNotification.fastSyncCompleted) {
-        // 快速配置完成， 可执行其它指令调用
+        EasyLoading.show(
+            status: "执行快速配置中...", maskType: EasyLoadingMaskType.black);
+      } else if (status == IDOStatusNotification.fastSyncCompleted) {
         EasyLoading.showSuccess("快速配置完成");
-      }else if (status == IDOStatusNotification.unbindOnBindStateError) {
-        // 绑定状态错误，出现该情况，一般是设备重置了
-        // 绑定状态异常，需要APP解绑 (APP记录的绑定状态和设备信息里的绑定状态不一致时触发)
-        // app在调用libManager.markConnectedDeviceSafe(...),其中isBinded传入true时触发，需要app重置这个状态
-        EasyLoading.showError("绑定状态错误", dismissOnTap: true, maskType: EasyLoadingMaskType.black);
-        if (bluetoothManager.currentDevice?.macAddress != null) {
-          debugPrint('绑定状态不匹配 需解绑');
-          await BindStateStorage.clear(bluetoothManager.currentDevice!.macAddress!);
-          isBinded = false;
-          _updateInformation();
-          libManager.deviceBind.unbind(macAddress: bluetoothManager.currentDevice!.macAddress!, isForceRemove: true);
+        // 快速配置完成后补齐设备快照（名称等可能已更新）
+        final current = bluetoothManager.currentDevice;
+        if (isBinded && current?.macAddress != null) {
+          await BindStateStorage.upsert(current!, isBinded: true);
         }
-
+      } else if(status == IDOStatusNotification.fastSyncFailed) {
+        EasyLoading.showError("快速配置失败");
+      } else if (status == IDOStatusNotification.unbindOnBindStateError) {
+        await _handleBindStateMismatch(
+          title: '绑定状态错误',
+          message: '本地绑定状态与设备不一致（设备可能已重置），将清除本地绑定记录。',
+        );
+      } else if (status == IDOStatusNotification.unbindOnAuthCodeError) {
+        await _handleBindStateMismatch(
+          title: '绑定授权码异常',
+          message: '该设备已重置并被别处绑定，需清除本地绑定状态。',
+        );
       }
     });
+  }
+
+  /// 绑定态异常：先模态提示，点「确定」后再清除本地绑定并强制解绑
+  Future<void> _handleBindStateMismatch({
+    required String title,
+    required String message,
+  }) async {
+    EasyLoading.dismiss();
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('确定'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    final mac = bluetoothManager.currentDevice?.macAddress ?? device.macAddress;
+    if (mac != null && mac.isNotEmpty) {
+      debugPrint('绑定状态异常需解绑: $title mac=$mac');
+      await BindStateStorage.remove(mac);
+      isBinded = false;
+      ConnectionStatusController.instance.setBindedHint(false);
+      _updateInformation();
+      libManager.deviceBind.unbind(macAddress: mac, isForceRemove: true);
+    }
+  }
+
+  Future<void> _initBindStateAndMaybeAutoConnect() async {
+    final mac = device.macAddress;
+    if (mac != null && mac.isNotEmpty) {
+      isBinded = await BindStateStorage.load(mac);
+    }
+    ConnectionStatusController.instance.setBindedHint(isBinded);
+    isConnected = libManager.isConnected &&
+        (bluetoothManager.currentDevice?.macAddress == device.macAddress);
+    if (mounted) setState(() {});
+
+    // 已绑定且未连接：进入功能页自动回连
+    if (isBinded && !isConnected && !_autoConnectStarted) {
+      _autoConnectStarted = true;
+      EasyLoading.show(status: '正在连接…');
+      bluetoothManager.autoConnect(device: device);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
       itemBuilder: (BuildContext ctx, int index) {
-        if (index == 0) {
-          return SizedBox(height: 55,
-              child: Text(
-            deviceConnectState,
-            style: const TextStyle(
-                color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
-          ));
-        } else {
-          final fName = listNames[index - 1];
-          return ElevatedButton(
-              onPressed: jumpFuntionViewCon(context, fName),
-              child: Column(
-                children: [
-                  Text(
-                    fName,
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  const SizedBox(
-                    height: 5,
-                  ),
-                ],
-              ));
-        }
+        final fName = listNames[index];
+        return ElevatedButton(
+            onPressed: jumpFuntionViewCon(context, fName),
+            child: Column(
+              children: [
+                Text(
+                  fName,
+                  style: const TextStyle(fontSize: 18),
+                ),
+                const SizedBox(
+                  height: 5,
+                ),
+              ],
+            ));
       },
-      itemCount: listNames.length + 1,
-      // itemExtent: 70,
+      itemCount: listNames.length,
     );
   }
 
   void _updateInformation() {
-    setState(() { });
+    ConnectionStatusController.instance.setBindedHint(isBinded);
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _persistBoundDevice() async {
+    final current = bluetoothManager.currentDevice ?? device;
+    // 优先用当前连接设备的字段，名称可回退到入口 device
+    if ((current.name == null || current.name!.isEmpty) &&
+        (device.name?.isNotEmpty ?? false)) {
+      current.name = device.name;
+    }
+    await BindStateStorage.upsert(current, isBinded: true);
   }
 
   bind() {
@@ -271,11 +346,9 @@ class _FunctionContentState extends State<FunctionContent> {
     libManager.deviceBind
         .startBind(
             osVersion: 15,
-            deviceInfo: (d) {
-              //debugPrint('设备信息：$d');
-            },
+            deviceInfo: (d) {},
             functionTable: (f) {})
-        .listen((event) {
+        .listen((event) async {
       EasyLoading.dismiss();
       switch (event) {
         case BindStatus.failed:
@@ -286,17 +359,13 @@ class _FunctionContentState extends State<FunctionContent> {
         case BindStatus.successful:
           debugPrint('绑定成功');
           isBinded = true;
-          if (libManager.macAddress.isNotEmpty) {
-            BindStateStorage.save(libManager.macAddressFull!, true);
-          }
+          await _persistBoundDevice();
           EasyLoading.showSuccess(S.current.bindsuccess);
           break;
         case BindStatus.binded:
           debugPrint('该设备已绑定');
           isBinded = true;
-          if (libManager.macAddress.isNotEmpty) {
-            BindStateStorage.save(libManager.macAddressFull!, true);
-          }
+          await _persistBoundDevice();
           break;
         case BindStatus.needAuth:
           debugPrint('需要配对码绑定');
@@ -320,17 +389,12 @@ class _FunctionContentState extends State<FunctionContent> {
           debugPrint('BindStatus.failedOnGetDeviceInfo');
           break;
         case BindStatus.timeout:
-          // TODO: Handle this case.
         case BindStatus.agreeDeleteDeviceData:
-          // TODO: Handle this case.
         case BindStatus.denyDeleteDeviceData:
-          // TODO: Handle this case.
         case BindStatus.timeoutOnNewAccount:
-          // TODO: Handle this case.
         case BindStatus.needConfirmByApp:
-          // TODO: Handle this case.
         case BindStatus.accountNotMatch:
-          // TODO: Handle this case.
+          break;
       }
       _updateInformation();
     });
@@ -338,14 +402,29 @@ class _FunctionContentState extends State<FunctionContent> {
 
   unbind() {
     EasyLoading.show();
-    libManager.deviceBind.unbind(macAddress: libManager.macAddress).then((res) {
+    final full = libManager.macAddressFull;
+    final short = libManager.macAddress;
+    final deviceMac = device.macAddress;
+    final String mac = (full != null && full.isNotEmpty)
+        ? full
+        : (deviceMac != null && deviceMac.isNotEmpty)
+            ? deviceMac
+            : (short ?? '');
+    libManager.deviceBind.unbind(macAddress: mac).then((res) async {
       debugPrint(res ? '解绑成功' : '解绑失败，请重试');
       EasyLoading.showSuccess(
           res ? S.current.unbindsuccess : S.current.unbindfailed);
       if (res) {
         isBinded = false;
-        if (libManager.macAddress.isNotEmpty) {
-          BindStateStorage.clear(libManager.macAddress);
+        if (mac.isNotEmpty) {
+          await BindStateStorage.remove(mac);
+        }
+        // 兼容历史 key 可能用不同 mac 格式
+        if (deviceMac != null && deviceMac.isNotEmpty && deviceMac != mac) {
+          await BindStateStorage.remove(deviceMac);
+        }
+        if (short != null && short.isNotEmpty && short != mac && short != deviceMac) {
+          await BindStateStorage.remove(short);
         }
         _updateInformation();
       }
@@ -387,71 +466,87 @@ class _FunctionContentState extends State<FunctionContent> {
     }
   }
 
-  _Fn? jumpFuntionViewCon(BuildContext context, String title) {
-    //print('jumpFuntionViewCon==$title');
+  void _connectDevice() {
+    EasyLoading.show(status: '正在连接…');
+    if (isBinded) {
+      bluetoothManager.autoConnect(device: device);
+    } else {
+      bluetoothManager.connect(device);
+    }
+  }
 
-    final device =
-        context.findAncestorWidgetOfExactType<FunctionIndex>()?.device;
+  _Fn? jumpFuntionViewCon(BuildContext context, String title) {
     if (title == S.current.deviceConnect) {
-      // 连接
-      return !isConnected ? () {
-        EasyLoading.show();
-        bluetoothManager.connect(device);
-      } : null;
+      return !isConnected ? _connectDevice : null;
     } else if (title == S.current.deviceDisconnect) {
-      return isConnected ? () {
-        bluetoothManager.cancelConnect();
-      } : null;
+      return isConnected
+          ? () {
+              bluetoothManager.cancelConnect();
+            }
+          : null;
     } else if (title == S.current.deviceBind) {
-      return isConnected && !isBinded ? () {
-        bind();
-      } : null;
+      return isConnected && !isBinded
+          ? () {
+              bind();
+            }
+          : null;
     } else if (title == S.current.deviceunbind) {
-      return isConnected && isBinded ? () {
-        unbind();
-      } : null;
+      return isConnected && isBinded
+          ? () {
+              unbind();
+            }
+          : null;
     } else if (title == S.current.alexa) {
-      // alexa
-      return isConnected && isBinded ? () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) =>
-                const AlexaTestHomePage(title: 'Alexa', did: 1)));
-      } : null;
+      return isConnected && isBinded
+          ? () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          const AlexaTestHomePage(title: 'Alexa', did: 1)));
+            }
+          : null;
     } else if (title == S.current.syncfunction) {
-      // sync data
-      return isConnected && isBinded ? () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) =>
-                FunctionSync(navTitle: S.current.syncfunction)));
-      } : null;
+      return isConnected && isBinded
+          ? () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          FunctionSync(navTitle: S.current.syncfunction)));
+            }
+          : null;
     } else if (title == '照片表盘') {
-      return isConnected && isBinded ? () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const PhotoDialTestPage()),
-        );
-      } : null;
+      return isConnected && isBinded
+          ? () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const PhotoDialTestPage()),
+              );
+            }
+          : null;
     } else if (title == '分享 SDK 日志') {
-      return isConnected && isBinded ? () {
-        shareSDKLog();
-      } : null;
+      return isConnected && isBinded
+          ? () {
+              shareSDKLog();
+            }
+          : null;
     }
 
-    return isConnected && isBinded ? () {
-      List<String>? unbindNames = typeMap[title];
-      if (unbindNames != null) {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => FunctionGeneral(
-                  listNames: unbindNames!,
-                  navTitle: title,
-                )));
-      }
-    } : null;
+    return isConnected && isBinded
+        ? () {
+            List<String>? unbindNames = typeMap[title];
+            if (unbindNames != null) {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => FunctionGeneral(
+                            listNames: unbindNames,
+                            navTitle: title,
+                          )));
+            }
+          }
+        : null;
   }
 }

@@ -1,8 +1,8 @@
 // 通用二级界面
 
+import 'package:demo/utility/connection_status_controller.dart';
 import 'package:flutter/material.dart';
 import '../../generated/l10n.dart';
-import 'package:flutter_bluetooth/ido_bluetooth.dart';
 import 'setting/information_set.dart';
 import 'setting/target_set.dart';
 import 'setting/findPhone_set.dart';
@@ -107,47 +107,51 @@ class _GeneralState extends State<GeneralContent> {
     this.typeName,
   );
 
-  String deviceConnectState =
-      IDOBluetoothDeviceStateType.disconnected.toString();
-
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    obainConnectState();
+    ConnectionStatusController.instance.addListener(_onStatusChanged);
+  }
+
+  @override
+  void dispose() {
+    ConnectionStatusController.instance.removeListener(_onStatusChanged);
+    super.dispose();
+  }
+
+  void _onStatusChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemBuilder: (BuildContext ctx, int index) {
-        if (index == 0) {
-          return Text(
-            deviceConnectState,
-            style: const TextStyle(
-                color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
-          );
-        } else {
-          final fName = listNames![index - 1];
-          return ElevatedButton(
-              child: Column(
-                children: [
-                  Text(
-                    fName,
-                    style: const TextStyle(fontSize: 18),
+    return Column(
+      children: [
+        const ConnectionStatusBanner(),
+        Expanded(
+          child: ListView.builder(
+            itemBuilder: (BuildContext ctx, int index) {
+              final fName = listNames![index];
+              return ElevatedButton(
+                  child: Column(
+                    children: [
+                      Text(
+                        fName,
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                      const SizedBox(
+                        height: 5,
+                      ),
+                    ],
                   ),
-                  const SizedBox(
-                    height: 5,
-                  ),
-                ],
-              ),
-              onPressed: () {
-                jumpDetailCon(typeName!, fName, context);
-              });
-        }
-      },
-      itemCount: listNames!.length + 1,
-      // itemExtent: 70,
+                  onPressed: () {
+                    jumpDetailCon(typeName, fName, context);
+                  });
+            },
+            itemCount: listNames!.length,
+          ),
+        ),
+      ],
     );
   }
 
@@ -328,23 +332,5 @@ class _GeneralState extends State<GeneralContent> {
                 navTitle: conName,
               )));
     }
-  }
-
-  void _updateInformation() {
-    setState(() {
-      //_counter++;
-    });
-  }
-
-  //获取连接状态
-  obainConnectState() {
-    Future<IDOBluetoothDeviceStateType> states =
-        bluetoothManager.getDeviceState();
-    states.then((value) {
-      if (value == IDOBluetoothDeviceStateType.connected) {
-        deviceConnectState = S.current.connected;
-        _updateInformation();
-      }
-    });
   }
 }

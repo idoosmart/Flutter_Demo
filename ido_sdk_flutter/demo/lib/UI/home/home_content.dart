@@ -15,8 +15,8 @@ class _HomeContentState extends State<HomeContent> {
   @override
   void initState() {
     super.initState();
-    // 扫描设备
     bluetoothManager.scanResult().listen((event) {
+      if (!mounted) return;
       setState(() {
         devices = event;
       });
@@ -25,35 +25,40 @@ class _HomeContentState extends State<HomeContent> {
 
   @override
   Widget build(BuildContext context) {
+    if (devices.isEmpty) {
+      return const Center(
+        child: Text('点击右下角刷新开始扫描'),
+      );
+    }
     return ListView.builder(
       itemBuilder: (BuildContext ctx, int index) {
         final device = devices[index];
-        return ElevatedButton(
-          child:  Column(
-            children: [
-              Text(
-                "${device.name}" ,
-                style: const TextStyle(fontSize: 18),
-              ),
-              const SizedBox(
-                height: 5,
-              ),
-              Text(
-                device.macAddress ?? "",
-                style: const TextStyle(color: Colors.red, fontSize: 15),
-              ),
-            ],
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          child: ListTile(
+            title: Text(
+              device.name ?? '',
+              style: const TextStyle(fontSize: 18),
+            ),
+            subtitle: Text(
+              device.macAddress ?? '',
+              style: const TextStyle(color: Colors.red, fontSize: 15),
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => jumpDetail(device),
           ),
-          onPressed: ()=>jumpDetail(device),
         );
       },
       itemCount: devices.length,
-      // itemExtent: 70,
     );
   }
 
-  jumpDetail(IDOBluetoothDeviceModel device){
+  jumpDetail(IDOBluetoothDeviceModel device) {
     print("jumpDetail ${device.name}, ${device.macAddress}");
-    Navigator.push(context, MaterialPageRoute(builder: (context)=>FunctionIndex(device)));
+    bluetoothManager.stopScan();
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => FunctionIndex(device)),
+    );
   }
 }

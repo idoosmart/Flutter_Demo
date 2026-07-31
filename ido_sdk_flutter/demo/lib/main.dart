@@ -8,19 +8,22 @@ import 'package:protocol_lib/protocol_lib.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
-import 'UI/home/home_page.dart';
+import 'UI/home/bound_devices_page.dart';
 import 'generated/l10n.dart';
+import 'utility/connection_status_controller.dart';
 
 const clientId =
-    'amzn1.application-oa2-client.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+    'amzn1.application-oa2-client.254148759f7e40d3aa1c92ebaf9e215d';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 
   await registerProtocolSDK();
   await registerBluetoothSDK();
   await registerProtocolAlexa();
   await bridgeConnect();
+  await ConnectionStatusController.instance.start();
 }
 
 class MyApp extends StatelessWidget {
@@ -37,7 +40,7 @@ class MyApp extends StatelessWidget {
       ],
       supportedLocales: S.delegate.supportedLocales,
       title: "Demo",
-      home: const HomePage(),
+      home: const BoundDevicesPage(),
       builder: EasyLoading.init(),
     );
   }
