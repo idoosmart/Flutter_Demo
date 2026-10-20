@@ -38,10 +38,10 @@ class IDOEncryptedAuthData {
     'auth_length': authLength,
   };
 
-  /// 转换为 C 库兼容 JSON（内部使用，保留 autu_data 字段名）
-  /// Convert to C-lib compatible JSON (internal use, keeps legacy `autu_data` key)
+  /// 转换为 C 库 JSON（主键 auth_data；读侧仍兼容历史 autu_data）
+  /// Convert to C-lib JSON (primary key `auth_data`; readers still accept legacy `autu_data`)
   Map<String, dynamic> toCLibJson() => {
-    'autu_data': authData,
+    'auth_data': authData,
     'encrypted_version': encryptedVersion,
     'auth_length': authLength,
   };

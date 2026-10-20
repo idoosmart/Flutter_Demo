@@ -531,9 +531,11 @@ class _IDOBluetoothManager
       return IDOBluetoothWriteType.error;
     }
 
-    if (device.platform == 98 && device.isOta) {
-      addLog("device.platform == 98 & ota, ignore cmd", method: 'writeData');
-        return IDOBluetoothWriteType.withoutResponse;
+    if (device.isOta && (device.platform == 98 || device.platform == 91)) {
+      addLog(
+          "device.platform == ${device.platform} & ota, ignore cmd",
+          method: 'writeData');
+      return IDOBluetoothWriteType.withoutResponse;
     }
     // addLog("heng xuan device.platform ${device.platform}, deviceId: ${device.deviceId}  platform: $platform data.length : ${data.length}", method: "writeData");
     if (device.deviceId == 7828 && platform == 0) {

@@ -111,9 +111,15 @@ class _FileManager {
     file.copy(toPath);
   }
 
-  ///文件压缩
-  static Future<bool> zipDirectory(
-      {required String zipFilePath, List<Directory>? directoryList, List<File>? fileList}) async {
+  /// 文件压缩。
+  /// [includeDirName] 为 false 时，zip 内条目相对目录根（对齐 Android ZipUtils.zip），
+  /// 避免照片表盘二次安装解压出 `temp/temp/...` 错层。
+  static Future<bool> zipDirectory({
+    required String zipFilePath,
+    List<Directory>? directoryList,
+    List<File>? fileList,
+    bool includeDirName = false,
+  }) async {
     directoryList ??= [];
     fileList ??= [];
     var encoder = ZipFileEncoder();
@@ -123,7 +129,7 @@ class _FileManager {
     }
     encoder.create(zipFilePath);
     for (var itemDirectory in directoryList) {
-      await encoder.addDirectory(itemDirectory);
+      await encoder.addDirectory(itemDirectory, includeDirName: includeDirName);
     }
     for (var itemFile in fileList) {
       await encoder.addFile(itemFile);

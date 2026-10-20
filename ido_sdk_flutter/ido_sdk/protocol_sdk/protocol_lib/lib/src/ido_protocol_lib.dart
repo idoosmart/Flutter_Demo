@@ -72,7 +72,7 @@ abstract class IDOProtocolLibManager {
   /// platform 设备平台 0:nordic, 10:realtek 8762x, 20:cypress psoc6,
   ///          30:Apollo3, 40:汇顶, 50:nordic+泰凌微,
   ///          60:泰凌微+5340+no nand flash, 70:汇顶+富瑞坤,
-  ///          80:5340, 90: 炬芯, 97: 恒玄, 98: 思澈1,
+  ///          80:5340, 90: 炬芯, 91: Actions, 97: 恒玄, 98: 思澈1,
   ///          99: 思澈2 （注意：目前只支持98、99）
   /// deviceId 设备id
   /// ```
@@ -222,6 +222,16 @@ abstract class IDOProtocolLibManager {
   /// ss.cancel(); 注：不使用时，需要取消监听
   /// ```
   StreamSubscription listenDeviceRawDataReport(void Function(int dataType,String jsonStr) func);
+
+  /// 监听设备名称变更 (Find My设备专用, 内部会根据功能判断，支持并获取成功后上报)
+  /// ```dart
+  /// final ss = libManager.listenDeviceNameChanged((deviceName) {
+  ///    ...
+  /// });
+  /// ss.cancel(); 注：不使用时，需要取消监听
+  /// ```
+  /// deviceName 设备名称
+  StreamSubscription listenDeviceNameChanged(void Function(String deviceName) func);
 
   /// 设置persimwear ota升级中（内部使用）
   void setPersimwearOtaUpgrading(bool upgrading);

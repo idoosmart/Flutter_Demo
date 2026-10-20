@@ -249,6 +249,11 @@ enum CmdEvtType {
       evtBase: _VBusEvtBase.base_app_get,
       evtType: _VBusEvtType.app_get_app_sleep_mode),
 
+  /// 获取药盒状态（GET:0x02/0x4D）
+  getPillboxState(
+      evtBase: _VBusEvtBase.base_app_get,
+      evtType: _VBusEvtType.app_get_pillbox_state),
+
   /// 获得固件三级版本和bt的3级版本
   getFirmwareBtVersion(
       evtBase: _VBusEvtBase.base_app_get,
@@ -648,6 +653,7 @@ enum CmdEvtType {
       evtType: _VBusEvtType.app_set_ble_sharking_grade),
 
   /// 设置久坐
+  @Deprecated('已废弃，请使用 CmdEvtType.setWalkRemind / getWalkRemind')
   setLongSit(
       evtBase: _VBusEvtBase.base_app_set,
       evtType: _VBusEvtType.app_set_long_sit),
@@ -932,6 +938,11 @@ enum CmdEvtType {
       evtBase: _VBusEvtBase.base_app_set,
       evtType: _VBusEvtType.app_set_notice_missed_call),
 
+  /// 通话中挂断
+  setNoticeHangUpInCall(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.app_set_notice_hang_up_in_call),
+
   /// 来电接通完成后下发通话时间给固件
   setNoticeCallTime(
       evtBase: _VBusEvtBase.base_app_set,
@@ -966,6 +977,11 @@ enum CmdEvtType {
   setAppSleepMode(
       evtBase: _VBusEvtBase.base_app_set,
       evtType: _VBusEvtType.app_set_app_sleep_mode),
+
+  /// 药盒控制（CONTROL:0x06/0x0A，解锁/亮灯/灭灯）
+  controlPillbox(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.app_ble_control_pillbox),
 
   /// 位置信息通知（SET:0x05/0x07）
   setLocationInfoNotify(
@@ -1504,6 +1520,16 @@ enum CmdEvtType {
       evtBase: _VBusEvtBase.base_app_set,
       evtType: _VBusEvtType.app_get_sport_types_requiring_wrist_side_setting),
 
+  /// 获取 Find My 设备名称（V3 15.113，0x33/0x9B）
+  getFindMyDeviceName(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.app_get_find_my_device_name),
+
+  /// 查询运动自动暂停/结束支持的运动类型（V3 15.111，0x33/0x99）
+  getSportAutoPauseEndTypes(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.app_get_sport_auto_pause_end_types),
+
   /// 设备振动与铃声查询/设置（V3 15.106，0x33/0x94）
   deviceVibrationRingtone(
       evtBase: _VBusEvtBase.base_app_set,
@@ -1569,6 +1595,11 @@ enum CmdEvtType {
   phoneCalendarReminder(
       evtBase: _VBusEvtBase.base_app_set,
       evtType: _VBusEvtType.func_v3_phone_calendar_reminder),
+
+  /// 任务清单（V3 15.114，0x33/0x9C）
+  taskList(
+      evtBase: _VBusEvtBase.base_app_set,
+      evtType: _VBusEvtType.func_v3_task_list),
 
   /// 固件定位信息（V3 15.93，0x33/0x89；含查询/确认 operate）
   getFirmwarePositionInfo(
@@ -1854,6 +1885,9 @@ abstract class _VBusEvtType {
 
   /// 睡眠模式设置（03 4C）
   static const int app_set_app_sleep_mode = 212;
+
+  /// 药盒控制（06 0A）
+  static const int app_ble_control_pillbox = 213;
 
   /// 宠物信息设置（03 0A）
   static const int app_set_pet_info = 197;
@@ -2155,6 +2189,15 @@ abstract class _VBusEvtType {
   /// 获取固件显示版本号（02 4B）
   static const int app_get_firmware_display_version = 368;
 
+  /// 获取药盒状态（02 4D）
+  static const int app_get_pillbox_state = 369;
+
+  /// 获取 Find My 设备名称（V3 15.113，33 9B）
+  static const int app_get_find_my_device_name = 370;
+
+  /// 查询运动自动暂停/结束支持的运动类型（V3 15.111，33 99）
+  static const int app_get_sport_auto_pause_end_types = 371;
+
   /// 进入升级模式	; struct protocol_ota_reply 里面包含电量标志
   static const int app_ota_start = 400;
 
@@ -2200,6 +2243,9 @@ abstract class _VBusEvtType {
 
   /// 来电接通完成后下发通话时间给固件
   static const int app_set_notice_call_time = 415;
+
+  /// 通话中挂断（05 02 status=0x03）
+  static const int app_set_notice_hang_up_in_call = 416;
 
   /// 未接来电
   static const int app_set_notice_missed_call = 420;
@@ -2549,6 +2595,9 @@ abstract class _VBusEvtType {
 
   /// V3 多运动运动中全量快照（15.103，33 1E）
   static const int func_v3_activity_exchange_full_snapshot = 5114;
+
+  /// 任务清单（15.114 cmd=0x33 cmd_id=0x9C）
+  static const int func_v3_task_list = 5115;
 
   /// v3 多运动数据数据交换中获取1分钟的心率数据  protocol_v3_base， struct sync_activity_exchange_hr_data_reply
   static const int func_v3_get_activity_exchange_heart_rate_data = 5023;

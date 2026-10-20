@@ -118,7 +118,8 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
       int forceStart,
       int vo2Max,
       int recoverTime,
-      int avgWeekActivityTime) {
+      int avgWeekActivityTime,
+      [double swimPoolDistance = 0]) {
     this.day = day;
     this.hour = hour;
     this.minute = minute;
@@ -130,6 +131,7 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
     this.vo2Max = vo2Max;
     this.recoverTime = recoverTime;
     this.avgWeekActivityTime = avgWeekActivityTime;
+    this.swimPoolDistance = swimPoolDistance;
   }
 
   /// app 操作 ble回复
@@ -227,7 +229,15 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
       int actionType,
       int countHour,
       int countMinute,
-      int countSecond) {
+      int countSecond,
+      int totalSwingsNum,
+      int totalSitUpCount,
+      int totalRopeCount,
+      int cumulativeClimb,
+      int cumulativeDecline,
+      int gpsStatus,
+      int avgSpeed,
+      int trips) {
     this.version = version;
     this.curHr = heartRate;
     this.distance = distance;
@@ -245,6 +255,14 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
     this.countHour = countHour;
     this.countMinute = countMinute;
     this.countSecond = countSecond;
+    this.totalSwingsNum = totalSwingsNum;
+    this.totalSitUpCount = totalSitUpCount;
+    this.totalRopeCount = totalRopeCount;
+    this.cumulativeClimb = cumulativeClimb;
+    this.cumulativeDecline = cumulativeDecline;
+    this.gpsStatus = gpsStatus;
+    this.avgSpeed = avgSpeed;
+    this.trips = trips;
   }
 
   /// app 运动计划操作
@@ -494,9 +512,10 @@ extension IDOV3ExchangeDataExtension on IDOV3ExchangeModel {
     this.second = second;
     this.sportType = sportType;
     this.version = version;
-    this.intervalSecond = version;
+    this.intervalSecond = intervalSecond;
     this.gpsCount = (this.gpsCount ?? 0) + gpsCount;
-    this.gpsData?.addAll(gpsData);
+    this.gpsData = List<Map<String, dynamic>>.from(this.gpsData ?? [])
+      ..addAll(gpsData);
   }
 
   /// ble 开始 app 回复

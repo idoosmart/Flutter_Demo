@@ -185,6 +185,14 @@ static IDOUpdateSFManager *_mgr = nil;
         }else if ([file hasSuffix:@"ota_manager.bin"]){
             SFNorImageFileInfo *info = [[SFNorImageFileInfo alloc]initWithPath:url imageID:NorImageIDOTA_MANAGER];
             [imagefiles addObject:info];
+        }else if ([file hasSuffix:@"outdyn.bin"]){
+            // idb05 芯片兼容（与主线 IDOUpdateFirmwareManager platform 98 一致）
+            SFNorImageFileInfo *info = [[SFNorImageFileInfo alloc]initWithPath:url imageID:12];
+            [imagefiles addObject:info];
+        }else if ([file hasSuffix:@"outdial.bin"]){
+            // idb05 芯片兼容（与主线一致）
+            SFNorImageFileInfo *info = [[SFNorImageFileInfo alloc]initWithPath:url imageID:13];
+            [imagefiles addObject:info];
         }else if ([file hasSuffix:@"outmusic.bin"]){
 //            SFNorImageFileInfo *info = [[SFNorImageFileInfo alloc]initWithPath:url imageID:NorImageIDFONT_OR_MAX];
 //            [imagefiles addObject:info];

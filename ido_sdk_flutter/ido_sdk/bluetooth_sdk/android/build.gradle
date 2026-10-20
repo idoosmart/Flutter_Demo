@@ -28,6 +28,11 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
+// Flutter path / 日常开发：implementation；Native AAR 打包：compileOnly（build_sdk 传 idoSdkPackaging）
+def idoSdkPackaging = (findProperty('idoSdkPackaging') ?: 'false').toString().toBoolean()
+def nordicDfuDep = 'no.nordicsemi.android:dfu:2.5.0'
+logger.lifecycle("[bluetooth_sdk] idoSdkPackaging=${idoSdkPackaging} → ${idoSdkPackaging ? 'compileOnly' : 'implementation'} ${nordicDfuDep}")
+
 android {
     if (project.android.hasProperty("namespace")) {
         namespace 'com.idosmart.bluetooth'
@@ -67,5 +72,10 @@ dependencies {
     api fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.google.code.gson:gson:2.9.1'
-    implementation 'no.nordicsemi.android:dfu:2.5.0'
+    // Nordic Legacy/Secure DFU：见文件顶部 idoSdkPackaging；R8 规则见 consumer-rules.pro
+    if (idoSdkPackaging) {
+        compileOnly nordicDfuDep
+    } else {
+        implementation nordicDfuDep
+    }
 }

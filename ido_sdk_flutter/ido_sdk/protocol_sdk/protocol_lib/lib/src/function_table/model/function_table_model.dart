@@ -829,6 +829,8 @@ class FunctionTableModel {
   final bool? supportAppNotDisplaySportTypeSetting;
   @JsonKey(name: 'support_app_send_phone_system_info')
   final bool? supportAppSendPhoneSystemInfo;
+  @JsonKey(name: 'support_app_menstrual_only')
+  final bool? supportAppMenstrualOnly;
   @JsonKey(name: 'support_app_metronome')
   final bool? supportAppMetronome;
   @JsonKey(name: 'support_app_sleep_mode')
@@ -857,6 +859,12 @@ class FunctionTableModel {
   final bool? supportPetDevice;
   @JsonKey(name: 'support_get_find_phone_switch')
   final bool? supportGetFindPhoneSwitch;
+  @JsonKey(name: 'support_get_find_my_device_name')
+  final bool? supportGetFindMyDeviceName;
+  @JsonKey(name: 'not_support_armband_wear_mode')
+  final bool? notSupportArmbandWearMode;
+  @JsonKey(name: 'support_task_list')
+  final bool? supportTaskList;
   @JsonKey(name: 'support_sync_health_data_use_utc_time')
   final bool? supportSyncHealthDataUseUtcTime;
   @JsonKey(name: 'support_sync_health_data_with_time_zone')
@@ -923,6 +931,8 @@ class FunctionTableModel {
   final bool? supportCorreios;
   @JsonKey(name: 'support_cricket_not_display_step_count_33_04_04')
   final bool? supportCricketNotDisplayStepCount330404;
+  @JsonKey(name: 'support_custom_watch_face_style')
+  final bool? supportCustomWatchFaceStyle;
   @JsonKey(name: 'support_data_tran_request_data_type_use_new_code')
   final bool? supportDataTranRequestDataTypeUseNewCode;
   @JsonKey(name: 'support_dev_return_measuring_value')
@@ -953,6 +963,8 @@ class FunctionTableModel {
   final bool? supportEleme;
   @JsonKey(name: 'support_emergency_info')
   final bool? supportEmergencyInfo;
+  @JsonKey(name: 'support_emergency_info_version1')
+  final bool? supportEmergencyInfoVersion1;
   @JsonKey(name: 'support_emotion_health')
   final bool? supportEmotionHealth;
   @JsonKey(name: 'support_encrypted_code_resend_04_05')
@@ -1021,6 +1033,8 @@ class FunctionTableModel {
   final bool? supportGetSnInfo;
   @JsonKey(name: 'support_get_spo2_switch_info')
   final bool? supportGetSpo2SwitchInfo;
+  @JsonKey(name: 'support_get_sport_auto_pause_end_types')
+  final bool? supportGetSportAutoPauseEndTypes;
   @JsonKey(name: 'support_get_sport_types_requiring_wrist_side_setting')
   final bool? supportGetSportTypesRequiringWristSideSetting;
   @JsonKey(name: 'support_get_unit')
@@ -1244,6 +1258,8 @@ class FunctionTableModel {
   final bool? supportSleepPlan;
   @JsonKey(name: 'support_smart_competitor')
   final bool? supportSmartCompetitor;
+  @JsonKey(name: 'support_smart_pillbox')
+  final bool? supportSmartPillbox;
   @JsonKey(name: 'support_smart_window')
   final bool? supportSmartWindow;
   @JsonKey(name: 'support_sport_average_speed_not_display33_04_04')
@@ -1284,6 +1300,8 @@ class FunctionTableModel {
   final bool? supportSyncEmotionHealth;
   @JsonKey(name: 'support_sync_pet_sleep')
   final bool? supportSyncPetSleep;
+  @JsonKey(name: 'support_sync_activity_amount')
+  final bool? supportSyncActivityAmount;
   @JsonKey(name: 'support_sync_health_hr_use_version_compatible')
   final bool? supportSyncHealthHrUseVersionCompatible;
   @JsonKey(name: 'support_sync_spo2_use_version_compatible')
@@ -1373,10 +1391,14 @@ class FunctionTableModel {
   final bool? syncV3HealthSleepDataTypeNotLimit;
   @JsonKey(name: 'sync_v3_health_sleep_stage_average_value')
   final bool? syncV3HealthSleepStageAverageValue;
+  @JsonKey(name: 'sync_v3_health_sleep_stage_avg_hrv')
+  final bool? syncV3HealthSleepStageAvgHrv;
   final bool? timeLine;
   final bool? tipInfoContact;
   final bool? tipInfoContent;
   final bool? tipInfoNum;
+  @JsonKey(name: 'total_sleep_duration_needs_subtract_wake_duration')
+  final bool? totalSleepDurationNeedsSubtractWakeDuration;
   @JsonKey(name: 'trail_running')
   final bool? trailRunning;
   @JsonKey(name: 'ui_controll_sports')
@@ -1401,6 +1423,8 @@ class FunctionTableModel {
   final bool? v2SetBleVoice;
   @JsonKey(name: 'v2_set_notice_missed_call')
   final bool? v2SetNoticeMissedCall;
+  @JsonKey(name: 'v2_set_notice_hang_up_in_call')
+  final bool? v2SetNoticeHangUpInCall;
   @JsonKey(name: 'v2_set_notification_status')
   final bool? v2SetNotificationStatus;
   @JsonKey(name: 'v2_set_stress_calibration')
@@ -2002,6 +2026,7 @@ class FunctionTableModel {
     this.supportAppNotDisplayAlarmName,
     this.supportAppNotDisplaySportTypeSetting,
     this.supportAppSendPhoneSystemInfo,
+    this.supportAppMenstrualOnly,
     this.supportAppMetronome,
     this.supportAppSleepMode,
     this.supportAppleCalendar,
@@ -2016,6 +2041,9 @@ class FunctionTableModel {
     this.supportPetInfo,
     this.supportPetDevice,
     this.supportGetFindPhoneSwitch,
+    this.supportGetFindMyDeviceName,
+    this.notSupportArmbandWearMode,
+    this.supportTaskList,
     this.supportSyncHealthDataUseUtcTime,
     this.supportSyncHealthDataWithTimeZone,
     this.supportBatteryLevelDependFirmware,
@@ -2049,6 +2077,7 @@ class FunctionTableModel {
     this.supportControlMiniProgramVersion30,
     this.supportCorreios,
     this.supportCricketNotDisplayStepCount330404,
+    this.supportCustomWatchFaceStyle,
     this.supportDataTranRequestDataTypeUseNewCode,
     this.supportDevReturnMeasuringValue,
     this.supportDeviceNotEnterMotion,
@@ -2064,6 +2093,7 @@ class FunctionTableModel {
     this.supportECardOperate,
     this.supportEleme,
     this.supportEmergencyInfo,
+    this.supportEmergencyInfoVersion1,
     this.supportEmotionHealth,
     this.supportEncryptedCodeResend0405,
     this.supportExchangeActivityGetAltitudeRiseLoss,
@@ -2098,6 +2128,7 @@ class FunctionTableModel {
     this.supportGetSmartHeartRate,
     this.supportGetSnInfo,
     this.supportGetSpo2SwitchInfo,
+    this.supportGetSportAutoPauseEndTypes,
     this.supportGetSportTypesRequiringWristSideSetting,
     this.supportGetUnit,
     this.supportGetUserInfo,
@@ -2209,6 +2240,7 @@ class FunctionTableModel {
     this.supportSixAxisSensor,
     this.supportSleepPlan,
     this.supportSmartCompetitor,
+    this.supportSmartPillbox,
     this.supportSmartWindow,
     this.supportSportAverageSpeedNotDisplay330404,
     this.supportSportGetAutoPauseEnd,
@@ -2229,6 +2261,7 @@ class FunctionTableModel {
     this.supportSyncEcg,
     this.supportSyncEmotionHealth,
     this.supportSyncPetSleep,
+    this.supportSyncActivityAmount,
     this.supportSyncHealthHrUseVersionCompatible,
     this.supportSyncSpo2UseVersionCompatible,
     this.supportSyncPressureUseVersionCompatible,
@@ -2274,10 +2307,12 @@ class FunctionTableModel {
     this.surpportNewRetainData,
     this.syncV3HealthSleepDataTypeNotLimit,
     this.syncV3HealthSleepStageAverageValue,
+    this.syncV3HealthSleepStageAvgHrv,
     this.timeLine,
     this.tipInfoContact,
     this.tipInfoContent,
     this.tipInfoNum,
+    this.totalSleepDurationNeedsSubtractWakeDuration,
     this.trailRunning,
     this.uiControllSports,
     this.unitSet,
@@ -2291,6 +2326,7 @@ class FunctionTableModel {
     this.v2SetAlexaOperation100brightness,
     this.v2SetBleVoice,
     this.v2SetNoticeMissedCall,
+    this.v2SetNoticeHangUpInCall,
     this.v2SetNotificationStatus,
     this.v2SetStressCalibration,
     this.v2SetUnreadAppReminder03Ea,

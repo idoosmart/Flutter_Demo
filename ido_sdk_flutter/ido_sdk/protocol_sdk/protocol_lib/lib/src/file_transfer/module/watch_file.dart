@@ -73,10 +73,13 @@ extension _WatchFileExt on WatchFile {
     final json = await _getWatchDialInfoIfNeed();
     int format = json['format'] as int;
     int blockSize = json['block_size'] as int;
+    int compressionMethod = (json['compression_method'] as int?) ?? 0;
+    int tileW = (json['tile_wild'] as int?) ?? 0;
+    int tileH = (json['tile_high'] as int?) ?? 0;
 
     // 制作.iwf.lz文件
-    final originalSize = await _makeIwfLzIfNeed(
-        newUnzipDir, 'dial.iwf', format, blockSize, iwfLzFilePath);
+    final originalSize = await _makeIwfLzIfNeed(newUnzipDir, 'dial.iwf', format,
+        blockSize, iwfLzFilePath, compressionMethod, tileW, tileH);
 
     newItem.originalFileSize = originalSize;
     // 保存文件大小
@@ -197,11 +200,11 @@ extension _WatchFileExt on WatchFile {
 }
 
 extension _WatchFileIwfLz on WatchFile {
-  /// 获取表盘信息
+  /// 获取表盘信息（内部使用；含可选 compression_method / tile_wild / tile_high）
   /// ```dart
   /// {
-  ///     "blockSize": 1024,
-  ///     "familyName": "ID205G",
+  ///     "block_size": 1024,
+  ///     "family_name": "ID205G",
   ///     "format": 133,
   ///     "height": 240,
   ///     "sizex100": 0,
@@ -226,15 +229,27 @@ extension _WatchFileIwfLz on WatchFile {
   }
 
   /// 创建.iwf.lz文件
-  Future<int> _makeIwfLzIfNeed(String iwfFilePath, String fileName, int format,
-      int blockSize, String iwfLzFilePath) async {
+  Future<int> _makeIwfLzIfNeed(
+      String iwfFilePath,
+      String fileName,
+      int format,
+      int blockSize,
+      String iwfLzFilePath,
+      int compressionMethod,
+      int tileW,
+      int tileH) async {
     final iwfLzFile = File(iwfLzFilePath);
-    // 制作表盘压缩文件(iwf.lz) 压缩文件会自动添加.lz后缀
-    int rs = coreMgr.makeWatchDialFileCompression(
+    // 统一走 WithMethod：compression_method=0 时 C 库行为等同旧接口
+    logger?.d(
+        'make iwf.lz compression_method=$compressionMethod tile_w=$tileW tile_h=$tileH');
+    int rs = coreMgr.makeWatchDialFileCompressionWithMethod(
         filePath: iwfFilePath,
         saveFileName: fileName,
         format: format,
-        blockSize: blockSize);
+        blockSize: blockSize,
+        compressionMethod: compressionMethod,
+        tileW: tileW,
+        tileH: tileH);
     final iwfFile = File('$iwfFilePath$fileName');
     if (rs != 0 || !await iwfFile.exists()) {
       logger?.d('failed to create .iwf file rs: $rs');

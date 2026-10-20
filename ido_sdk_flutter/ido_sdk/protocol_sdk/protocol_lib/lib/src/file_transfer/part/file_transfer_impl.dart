@@ -6,7 +6,7 @@ class _IDOFileTransfer implements IDOFileTransfer {
   _IDOFileTransfer._internal() {
     IDOProtocolLibManager().listenConnectStatusChanged((isConnected) {
       if (!isConnected) {
-        if ([98,99].contains(_libMgr.lastDevicePlatform) &&
+        if ([98,99,91].contains(_libMgr.lastDevicePlatform) &&
             libManager.transFile.transFileType == FileTransType.fw) {
           logger?.d("keep transFile on disconnected");
         }else {

@@ -117,6 +117,12 @@ extension IDOProtocolAPIExtSyncOthers on IDOProtocolAPI {
     return bindings.ProtocolV2MissedCallEvt();
   }
 
+  /// v2发送来电提醒状态为通话中挂断, 告诉设备停止提醒用户(部分设备实现)
+  /// 需功能表 v2_set_notice_hang_up_in_call 为 true
+  int hangUpV2InCallEvt() {
+    return bindings.ProtocolV2HangUpInCallEvt();
+  }
+
   // ------------------------------ 同步配置 ------------------------------
 
   /// 获取同步配置状态

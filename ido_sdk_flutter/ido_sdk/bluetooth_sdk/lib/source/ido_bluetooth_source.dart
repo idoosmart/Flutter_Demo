@@ -31,6 +31,9 @@ const idoMainServiceUUID = "00000af0-0000-1000-8000-00805f9b34fb";
 //思澈设备主服务
 const siceMainService = "00000000-0000-0000-6473-5f696c666973";
 
+// 炬芯 Actions OTA 服务（platform 91）
+const actionsOtaServiceUUID = "e49a25f8-f69a-11e8-8eb2-f2801f1b9fd1";
+
 final servicesUUID = {
   "UUID": [
     "00001530-1212-EFDE-1523-785FEABCD123",

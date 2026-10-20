@@ -530,9 +530,9 @@ extension BluetoothManager : CBPeripheralDelegate{
                 setCharacteristics(peripheral, service)
                 if isBind
                 {
+                    self.setNotifyValueSuccess = true
                     if peripheral.services?.count == serviceIndex
                     {
-                        self.setNotifyValueSuccess = true
                         channel?.invokeMethod(MethodChannel.deviceState.rawValue, arguments: deviceStateData(peripheral,.none,platform))
                         writeLog("didDiscoverCharacteristicsFor - connectSucceed", method: "didDiscoverCharacteristicsFor", className: nil)
                     }
@@ -542,12 +542,11 @@ extension BluetoothManager : CBPeripheralDelegate{
                 }
             }else
             {
-                self.setNotifyValueSuccess = false
                 // 此处才算正在连接设备成功，要不然前面连接成功设备，特征服务未发现无法操作数据
                 setCharacteristics(peripheral, service)
+                 self.setNotifyValueSuccess = true
                 if peripheral.services?.count == serviceIndex
                 {
-                    self.setNotifyValueSuccess = true
                     channel?.invokeMethod(MethodChannel.deviceState.rawValue, arguments: deviceStateData(peripheral,.none,platform))
                     writeLog("didDiscoverCharacteristicsFor - connectSucceed", method: "didDiscoverCharacteristicsFor", className: nil)
                 }
@@ -572,15 +571,14 @@ extension BluetoothManager : CBPeripheralDelegate{
             
         }else
         {
-            self.setNotifyValueSuccess = false
             // 此处才算正在连接设备成功，要不然前面连接成功设备，特征服务未发现无法操作数据
             if let services = peripheral.services {
                 for service in services{
                     self.setCharacteristics(peripheral, service)
                 }
             }
+             self.setNotifyValueSuccess = true
             if peripheral.services?.count == self.serviceIndex {
-                self.setNotifyValueSuccess = true
                 self.channel?.invokeMethod(MethodChannel.deviceState.rawValue, arguments: deviceStateData(peripheral,.none,self.platform))
                 self.writeLog("didDiscoverCharacteristicsFor - connectSucceed", method: "didDiscoverCharacteristicsFor", className: nil)
             }

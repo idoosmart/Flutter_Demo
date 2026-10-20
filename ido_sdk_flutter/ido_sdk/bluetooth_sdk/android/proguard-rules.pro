@@ -101,3 +101,6 @@
 -keep class com.idosmart.bluetooth.**{*;}
 
 -keep class no.nordicsemi.android.dfu.**{ *; }
+# compileOnly：库自身 minify 时抑制缺类告警（运行时由 App 提供依赖）
+-dontwarn no.nordicsemi.android.dfu.**
+-dontwarn no.nordicsemi.android.error.**

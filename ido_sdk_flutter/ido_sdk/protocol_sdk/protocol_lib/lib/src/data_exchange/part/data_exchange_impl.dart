@@ -20,6 +20,7 @@ class _IDOExchangeData implements IDOExchangeData {
   IDOV2ExchangeModel? _v2Model;
   IDOV3ExchangeModel? _v3Model;
   ExchangeStatus? _status;
+  String? _lastActivityExchangeFullSnapshotJson;
 
   set setStatus(ExchangeStatus value) {
     _status = value;
@@ -84,6 +85,7 @@ class _IDOExchangeData implements IDOExchangeData {
     final response =
         await _libMgr.send(evt: CmdEvtType.getActivityExchangeFullSnapshot, json: '{}').first;
     if (_isSuccessCallback(response)) {
+      _lastActivityExchangeFullSnapshotJson = response.json;
       return response.json;
     }
     return null;
@@ -241,6 +243,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
             final year = date.year;
             final month = date.month;
             _v3Model = IDOV3ExchangeModel(year: year, month: month);
+            logger?.d('appStartExchangeModel _v3Model init success');
             _v3Model?.hrValues = [];
             _v3Model?.kmSpeeds = [];
             _v3Model?.mileSpeeds = [];
@@ -371,6 +374,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
             final year = date.year;
             final month = date.month;
             _v3Model = IDOV3ExchangeModel(year: year, month: month);
+            logger?.d('appStartPlanExchangeModel _v3Model init success');
             _v3Model?.hrValues = [];
             _v3Model?.kmSpeeds = [];
             _v3Model?.mileSpeeds = [];
@@ -407,7 +411,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
           }
           data.model = model;
           _v3Model?.blePlan2AppData(
-              model.day ?? 0,
+              model.trainingDay ?? 0,
               model.hour ?? 0,
               model.minute ?? 0,
               model.second ?? 0,
@@ -603,6 +607,67 @@ extension _IDOExchangeExt on _IDOExchangeData {
           if (reply.anaerobicTrainingEffect != null) {
             _v3Model!.anaerobicTrainingEffect = reply.anaerobicTrainingEffect;
           }
+          _v3Model!.trainingOffset = reply.trainingOffset ?? 0;
+          _v3Model!.load = reply.load;
+          _v3Model?.bodyAge = reply.bodyAge;
+          _v3Model!.distance3d = reply.distance3d ?? 0;
+          _v3Model!.avg3dSpeed = reply.avg3dSpeed ?? 0;
+          _v3Model!.avgVerticalSpeed = reply.avgVerticalSpeed ?? 0;
+          _v3Model!.avgSlope = reply.avgSlope ?? 0;
+          _v3Model!.gpsStatus = reply.gpsStatus ?? 0;
+          _v3Model!.runningEconomy = reply.runningEconomy ?? 0;
+          _v3Model!.maxRunningPower = reply.maxRunningPower ?? 0;
+          _v3Model!.minRunningPower = reply.minRunningPower ?? 0;
+          _v3Model!.avgRunningPower = reply.avgRunningPower ?? 0;
+          _v3Model!.runningPowerCount = reply.runningPowerCount ?? 0;
+          _v3Model!.rtpeCount = reply.rtpeCount ?? 0;
+          _v3Model!.maxRtoc = reply.maxRtoc ?? 0;
+          _v3Model!.minRtoc = reply.minRtoc ?? 0;
+          _v3Model!.avgRtoc = reply.avgRtoc ?? 0;
+          _v3Model!.rtocCount = reply.rtocCount ?? 0;
+          _v3Model!.maxRopeFrequency = reply.maxRopeFrequency ?? 0;
+          _v3Model!.minRopeFrequency = reply.minRopeFrequency ?? 0;
+          _v3Model!.avgRopeFrequency = reply.avgRopeFrequency ?? 0;
+          _v3Model!.maxRopeSkipCount = reply.maxRopeSkipCount ?? 0;
+          _v3Model!.ropeTripCount = reply.ropeTripCount ?? 0;
+          _v3Model!.totalRopeCount = reply.totalRopeCount ?? 0;
+          _v3Model!.ropeItemCount = reply.ropeItemCount ?? 0;
+          _v3Model!.kmPace = reply.kmPace ?? 0;
+          _v3Model!.fastKmPace = reply.fastKmPace ?? 0;
+          _v3Model!.kmPaceCount = reply.kmPaceCount ?? 0;
+          _v3Model!.miPaceCount = reply.miPaceCount ?? 0;
+          _v3Model!.paceRealTimeCount = reply.paceRealTimeCount ?? 0;
+          _v3Model!.aerobicPowerInterval = reply.aerobicPowerInterval ?? 0;
+          _v3Model!.mixedOxygenPowerInterval = reply.mixedOxygenPowerInterval ?? 0;
+          _v3Model!.thresholdRunningPowerInterval = reply.thresholdRunningPowerInterval ?? 0;
+          _v3Model!.intermittentRunPowerInterval = reply.intermittentRunPowerInterval ?? 0;
+          _v3Model!.sprintRunPowerInterval = reply.sprintRunPowerInterval ?? 0;
+          _v3Model!.strideCount = reply.strideCount ?? 0;
+          _v3Model!.strideItems = reply.strideItems ?? [];
+          _v3Model!.itemRunningPower = reply.itemRunningPower ?? [];
+          _v3Model!.itemRtpe = reply.itemRtpe ?? [];
+          _v3Model!.itemRtoc = reply.itemRtoc ?? [];
+          _v3Model!.itemRopeInfo = reply.itemRopeInfo ?? [];
+          _v3Model!.smartCompetitor = reply.smartCompetitor ?? 0;
+          _v3Model!.aiImageId = reply.aiImageId ?? 0;
+          _v3Model!.userImageId = reply.userImageId ?? 0;
+          _v3Model!.bgImageId = reply.bgImageId ?? 0;
+          _v3Model!.smartCompetitorPace = reply.smartCompetitorPace ?? 0;
+          _v3Model!.tennisServeCount = reply.tennisServeCount ?? reply.serveCount ?? 0;
+          _v3Model!.tennisForeheadCount = reply.tennisForeheadCount ?? reply.forehandCount ?? 0;
+          _v3Model!.tennisBackhandCount = reply.tennisBackhandCount ?? reply.backhandCount ?? 0;
+          _v3Model!.serveCount = reply.serveCount ?? reply.tennisServeCount ?? 0;
+          _v3Model!.forehandCount = reply.forehandCount ?? reply.tennisForeheadCount ?? 0;
+          _v3Model!.backhandCount = reply.backhandCount ?? reply.tennisBackhandCount ?? 0;
+          _v3Model!.trips = reply.trips ?? 0;
+          _v3Model!.averageSwolf = reply.averageSwolf ?? 0;
+          _v3Model!.totalStrokesNumber = reply.totalStrokesNumber ?? 0;
+          _v3Model!.swimmingPosture = reply.swimmingPosture ?? 0;
+          _v3Model!.swimmingAvgPace = reply.swimmingAvgPace ?? 0;
+          _v3Model!.avgFrequency = reply.avgFrequency ?? 0;
+          _v3Model!.swimmingPoolDistance = reply.swimmingPoolDistance ?? 0;
+          _v3Model!.swimmingItemCount = reply.swimmingItemCount ?? 0;
+          _v3Model!.swimmingItems = reply.swimmingItems ?? [];
         }
 
         _streamV3Exchange.sink.add(_v3Model ?? IDOV3ExchangeModel());
@@ -684,6 +749,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
         final year = date.year;
         final month = date.month;
         _v3Model = IDOV3ExchangeModel(year: year, month: month);
+        logger?.d('appStartExchangeModel _v3Model init success');
         _v3Model?.hrValues = [];
         _v3Model?.kmSpeeds = [];
         _v3Model?.mileSpeeds = [];
@@ -704,7 +770,8 @@ extension _IDOExchangeExt on _IDOExchangeData {
             model.forceStart ?? 0,
             model.vo2max ?? 0,
             model.recoverTime ?? 0,
-            model.avgWeekActivityTime ?? 0);
+            model.avgWeekActivityTime ?? 0,
+            model.swimPoolDistance ?? 0);
         _streamV3Exchange.sink.add(_v3Model ?? IDOV3ExchangeModel());
       } else {
         _v2Model = IDOV2ExchangeModel();
@@ -837,6 +904,28 @@ extension _IDOExchangeExt on _IDOExchangeData {
         _streamResponse.sink.add(data);
       });
     } else if (model is IDOAppRestoreExchangeModel) {
+      if(_v3Model == null) {
+        logger?.d('appRestoreExchangeModel _v3Model is null \nsupportV3ActivityExchange: $supportV3ActivityExchange');
+      }
+      if (this.supportV3ActivityExchange && _v3Model == null) {
+        final snapshotJson = _lastActivityExchangeFullSnapshotJson;
+        if (snapshotJson != null && snapshotJson.isNotEmpty) {
+          _fillV3ModelFromFullSnapshotJson(snapshotJson);
+        } else {
+          final date = DateTime.now();
+          _v3Model = IDOV3ExchangeModel(year: date.year, month: date.month);
+          logger?.d('appRestoreExchangeModel _v3Model init success');
+          _v3Model?.hrValues = [];
+          _v3Model?.kmSpeeds = [];
+          _v3Model?.mileSpeeds = [];
+          _v3Model?.stepsFrequencys = [];
+          _v3Model?.actionData = [];
+          _v3Model?.paceSpeeds = [];
+          _v3Model?.realSpeeds = [];
+          _v3Model?.gpsData = [];
+          _v3Model?.segmentItems = [];
+        }
+      }
       if (this.supportV3ActivityExchange) {
         _v3Model?.appRestore2BleData(model.day ?? 0, model.hour ?? 0,
             model.minute ?? 0, model.second ?? 0, model.sportType ?? 0);
@@ -986,8 +1075,8 @@ extension _IDOExchangeExt on _IDOExchangeData {
           model.duration ?? 0,
           model.calories ?? 0,
           model.distance ?? 0,
-          model.version ?? 0,
           model.speed ?? 0,
+          model.version ?? 0,
           model.signal ?? 0);
       _streamV3Exchange.sink.add(_v3Model ?? IDOV3ExchangeModel());
       //app发起 v3运动交换过程
@@ -1032,7 +1121,15 @@ extension _IDOExchangeExt on _IDOExchangeData {
               reply.actionType ?? 0,
               reply.countHour ?? 0,
               reply.countMinute ?? 0,
-              reply.countSecond ?? 0);
+              reply.countSecond ?? 0,
+              reply.totalSwingsNum ?? 0,
+              reply.totalSitUpCount ?? 0,
+              reply.totalRopeCount ?? 0,
+              reply.cumulativeClimb ?? 0,
+              reply.cumulativeDecline ?? 0,
+              reply.gpsStatus ?? 0,
+              reply.avgSpeed ?? 0,
+              reply.trips ?? 0);
           _streamV3Exchange.sink.add(_v3Model ?? IDOV3ExchangeModel());
         }
         _streamResponse.sink.add(data);
@@ -1057,6 +1154,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
         final year = date.year;
         final month = date.month;
         _v3Model = IDOV3ExchangeModel(year: year, month: month);
+        logger?.d('appStartPlanExchangeModel _v3Model init success');
         _v3Model?.hrValues = [];
         _v3Model?.kmSpeeds = [];
         _v3Model?.mileSpeeds = [];
@@ -1233,7 +1331,7 @@ extension _IDOExchangeExt on _IDOExchangeData {
       final jsonStr = jsonEncode((model).toJson());
       logger?.d('exchange ble to app plan reply == ${jsonStr}');
       _libMgr.send(evt: CmdEvtType.exchangeAppBlePlan, json: jsonStr);
-      _v3Model?.blePlan2AppReplyData(model.errorCode ?? 0, model.operate ?? 0,
+      _v3Model?.blePlan2AppReplyData(model.operate ?? 0, model.errorCode ?? 0,
           model.planType ?? 0, model.actionType ?? 0);
       _streamV3Exchange.sink.add(_v3Model ?? IDOV3ExchangeModel());
       if (model.operate == 4) {
@@ -1281,4 +1379,238 @@ extension _IDOExchangeExt on _IDOExchangeData {
       }
     }
   }
+  /// 15.103 全量快照 JSON → `_v3Model`（key 与 15.20 不完全一致，先 remap）
+  void _fillV3ModelFromFullSnapshotJson(String snapshotJson) {
+    logger?.d('fillV3ModelFromFullSnapshotJson length: ${snapshotJson.length}');
+    final decoded = jsonDecode(snapshotJson);
+    if (decoded is! Map) {
+      return;
+    }
+    final map = Map<String, dynamic>.from(decoded);
+
+    void moveKey(String from, String to) {
+      if (map.containsKey(from) && !map.containsKey(to)) {
+        map[to] = map[from];
+      }
+    }
+
+    moveKey('type', 'sport_type');
+    moveKey('item_km_pace_s', 'km_speed_s');
+    moveKey('item_steps_frequency', 'steps_frequency');
+    moveKey('item_mi_pace', 'items_mi_speed');
+    moveKey('item_pace_real_time', 'pace_speed_items');
+    moveKey('item_altitude', 'altitude_item');
+    moveKey('item_action_data', 'items');
+    moveKey('item_stride', 'stride_items');
+    if (map['km_speed_count'] == null && map['km_pace_count'] != null) {
+      map['km_speed_count'] = map['km_pace_count'];
+    }
+    if (map['mi_speed_count'] == null && map['mi_pace_count'] != null) {
+      map['mi_speed_count'] = map['mi_pace_count'];
+    }
+
+    final now = DateTime.now();
+    final year = (map['year'] as num?)?.toInt() ?? now.year;
+    final month = (map['month'] as num?)?.toInt() ?? now.month;
+    _v3Model = IDOV3ExchangeModel(year: year, month: month);
+    _v3Model?.hrValues = [];
+    _v3Model?.kmSpeeds = [];
+    _v3Model?.mileSpeeds = [];
+    _v3Model?.stepsFrequencys = [];
+    _v3Model?.actionData = [];
+    _v3Model?.paceSpeeds = [];
+    _v3Model?.realSpeeds = [];
+    _v3Model?.gpsData = [];
+    _v3Model?.segmentItems = [];
+
+    if (_baseModel == null) {
+      _baseModel = IDOAppStartExchangeModel();
+      _baseModel?.day = (map['day'] as num?)?.toInt();
+      _baseModel?.hour = (map['hour'] as num?)?.toInt();
+      _baseModel?.minute = (map['minute'] as num?)?.toInt();
+      _baseModel?.second = (map['second'] as num?)?.toInt();
+      _baseModel?.sportType = (map['sport_type'] as num?)?.toInt();
+    }
+
+    final reply = IDOAppActivityDataV3ExchangeModel.fromJson(map);
+    reply.day = reply.day ?? _baseModel?.day ?? (map['day'] as num?)?.toInt();
+    reply.hour =
+        reply.hour ?? _baseModel?.hour ?? (map['hour'] as num?)?.toInt();
+    reply.minute =
+        reply.minute ?? _baseModel?.minute ?? (map['minute'] as num?)?.toInt();
+    reply.second =
+        reply.second ?? _baseModel?.second ?? (map['second'] as num?)?.toInt();
+    reply.sportType = reply.sportType ??
+        _baseModel?.sportType ??
+        (map['sport_type'] as num?)?.toInt();
+
+    _v3Model!.getActivityData(
+        reply.day ?? 0,
+        reply.hour ?? 0,
+        reply.minute ?? 0,
+        reply.second ?? 0,
+        reply.sportType ?? 0,
+        reply.year ?? 0,
+        reply.month ?? 0,
+        reply.version ?? 0,
+        reply.hrInterval ?? 0,
+        reply.step ?? 0,
+        reply.durations ?? 0,
+        reply.calories ?? 0,
+        reply.distance ?? 0,
+        reply.burnFatMins ?? 0,
+        reply.aerobicMins ?? 0,
+        reply.limitMins ?? 0,
+        reply.warmUp ?? 0,
+        reply.fatBurning ?? 0,
+        reply.aerobicExercise ?? 0,
+        reply.anaerobicExercise ?? 0,
+        reply.extremeExercise ?? 0,
+        reply.warmUpTime ?? 0,
+        reply.fatBurningTime ?? 0,
+        reply.aerobicExerciseTime ?? 0,
+        reply.anaerobicExerciseTime ?? 0,
+        reply.extremeExerciseTime ?? 0,
+        reply.avgSpeed ?? 0,
+        reply.avgStepStride ?? 0,
+        reply.maxStepStride ?? 0,
+        reply.kmSpeed ?? 0,
+        reply.maxSpeed ?? 0,
+        reply.fastKmSpeed ?? 0,
+        reply.avgStepFrequency ?? 0,
+        reply.maxStepFrequency ?? 0,
+        reply.avgHrValue ?? 0,
+        reply.maxHrValue ?? 0,
+        reply.kmSpeedCount ?? 0,
+        reply.actionDataCount ?? 0,
+        reply.stepsFrequencyCount ?? 0,
+        reply.miSpeedCount ?? 0,
+        reply.recoverTime ?? 0,
+        reply.vo2max ?? 0,
+        reply.trainingEffect ?? 0,
+        reply.grade ?? 0,
+        reply.realSpeedCount ?? 0,
+        reply.paceSpeedCount ?? 0,
+        reply.inClassCalories ?? 0,
+        reply.completionRate ?? 0,
+        reply.hrCompletionRate ?? 0,
+        reply.kmSpeeds ?? [],
+        reply.stepsFrequency ?? [],
+        reply.itemsMiSpeed ?? [],
+        reply.itemRealSpeed ?? [],
+        reply.paceSpeedItems ?? [],
+        reply.actionData ?? [],
+        reply.segmentItemNum ?? 0,
+        reply.segmentTotalTime ?? 0,
+        reply.segmentTotalDistance ?? 0,
+        reply.segmentTotalPace ?? 0,
+        reply.segmentTotalAvgHr ?? 0,
+        reply.segmentTotalAvgStepFrequency ?? 0,
+        reply.paceHiit ?? 0,
+        reply.paceAnaerobic ?? 0,
+        reply.paceLacticAcidThreshold ?? 0,
+        reply.paceMarathon ?? 0,
+        reply.paceEasyRun ?? 0,
+        reply.segmentItems ?? [],
+        reply.cumulativeClimb ?? 0,
+        reply.cumulativeDecline ?? 0,
+        reply.minStepStride ?? 0,
+        reply.minStepFrequency ?? 0,
+        reply.slowestKmPace ?? 0,
+        reply.heartRateZonesMode ?? 0,
+        reply.minSpeed ?? 0,
+        reply.easyZoneTime ?? 0,
+        reply.marathonZoneTime ?? 0,
+        reply.thresholdZoneTime ?? 0,
+        reply.anaerobicZoneTime ?? 0,
+        reply.intervalZoneTime ?? 0);
+
+    _v3Model!.actType = reply.actType;
+    _v3Model!.altitudeItems = reply.altitudeItem ?? [];
+    _v3Model!.altitudeCount =
+        reply.altitudeCount ?? reply.altitudeItem?.length ?? 0;
+    _v3Model!.minAltitude = reply.minAltitude ?? 0;
+    _v3Model!.maxAltitude = reply.maxAltitude ?? 0;
+    _v3Model!.avgAltitude = reply.avgAltitude ?? 0;
+    if (reply.anaerobicTrainingEffect != null) {
+      _v3Model!.anaerobicTrainingEffect = reply.anaerobicTrainingEffect;
+    }
+    _v3Model!.trainingOffset = reply.trainingOffset ?? 0;
+    _v3Model!.load = reply.load;
+    _v3Model?.bodyAge = reply.bodyAge;
+    _v3Model!.distance3d = reply.distance3d ?? 0;
+    _v3Model!.avg3dSpeed = reply.avg3dSpeed ?? 0;
+    _v3Model!.avgVerticalSpeed = reply.avgVerticalSpeed ?? 0;
+    _v3Model!.avgSlope = reply.avgSlope ?? 0;
+    _v3Model!.gpsStatus = reply.gpsStatus ?? 0;
+    _v3Model!.runningEconomy = reply.runningEconomy ?? 0;
+    _v3Model!.maxRunningPower = reply.maxRunningPower ?? 0;
+    _v3Model!.minRunningPower = reply.minRunningPower ?? 0;
+    _v3Model!.avgRunningPower = reply.avgRunningPower ?? 0;
+    _v3Model!.runningPowerCount = reply.runningPowerCount ?? 0;
+    _v3Model!.rtpeCount = reply.rtpeCount ?? 0;
+    _v3Model!.maxRtoc = reply.maxRtoc ?? 0;
+    _v3Model!.minRtoc = reply.minRtoc ?? 0;
+    _v3Model!.avgRtoc = reply.avgRtoc ?? 0;
+    _v3Model!.rtocCount = reply.rtocCount ?? 0;
+    _v3Model!.maxRopeFrequency = reply.maxRopeFrequency ?? 0;
+    _v3Model!.minRopeFrequency = reply.minRopeFrequency ?? 0;
+    _v3Model!.avgRopeFrequency = reply.avgRopeFrequency ?? 0;
+    _v3Model!.maxRopeSkipCount = reply.maxRopeSkipCount ?? 0;
+    _v3Model!.ropeTripCount = reply.ropeTripCount ?? 0;
+    _v3Model!.totalRopeCount = reply.totalRopeCount ?? 0;
+    _v3Model!.ropeItemCount = reply.ropeItemCount ?? 0;
+    _v3Model!.kmPace = reply.kmPace ?? 0;
+    _v3Model!.fastKmPace = reply.fastKmPace ?? 0;
+    _v3Model!.kmPaceCount = reply.kmPaceCount ?? 0;
+    _v3Model!.miPaceCount = reply.miPaceCount ?? 0;
+    _v3Model!.paceRealTimeCount = reply.paceRealTimeCount ?? 0;
+    _v3Model!.aerobicPowerInterval = reply.aerobicPowerInterval ?? 0;
+    _v3Model!.mixedOxygenPowerInterval = reply.mixedOxygenPowerInterval ?? 0;
+    _v3Model!.thresholdRunningPowerInterval =
+        reply.thresholdRunningPowerInterval ?? 0;
+    _v3Model!.intermittentRunPowerInterval =
+        reply.intermittentRunPowerInterval ?? 0;
+    _v3Model!.sprintRunPowerInterval = reply.sprintRunPowerInterval ?? 0;
+    _v3Model!.strideCount = reply.strideCount ?? 0;
+    _v3Model!.strideItems = reply.strideItems ?? [];
+    _v3Model!.itemRunningPower = reply.itemRunningPower ?? [];
+    _v3Model!.itemRtpe = reply.itemRtpe ?? [];
+    _v3Model!.itemRtoc = reply.itemRtoc ?? [];
+    _v3Model!.itemRopeInfo = reply.itemRopeInfo ?? [];
+    _v3Model!.smartCompetitor = reply.smartCompetitor ?? 0;
+    _v3Model!.aiImageId = reply.aiImageId ?? 0;
+    _v3Model!.userImageId = reply.userImageId ?? 0;
+    _v3Model!.bgImageId = reply.bgImageId ?? 0;
+    _v3Model!.smartCompetitorPace = reply.smartCompetitorPace ?? 0;
+    _v3Model!.tennisServeCount = reply.tennisServeCount ?? reply.serveCount ?? 0;
+    _v3Model!.tennisForeheadCount = reply.tennisForeheadCount ?? reply.forehandCount ?? 0;
+    _v3Model!.tennisBackhandCount = reply.tennisBackhandCount ?? reply.backhandCount ?? 0;
+    _v3Model!.serveCount = reply.serveCount ?? reply.tennisServeCount ?? 0;
+    _v3Model!.forehandCount = reply.forehandCount ?? reply.tennisForeheadCount ?? 0;
+    _v3Model!.backhandCount = reply.backhandCount ?? reply.tennisBackhandCount ?? 0;
+    _v3Model!.trips = reply.trips ?? 0;
+    _v3Model!.averageSwolf = reply.averageSwolf ?? 0;
+    _v3Model!.totalStrokesNumber = reply.totalStrokesNumber ?? 0;
+    _v3Model!.swimmingPosture = reply.swimmingPosture ?? 0;
+    _v3Model!.swimmingAvgPace = reply.swimmingAvgPace ?? 0;
+    _v3Model!.avgFrequency = reply.avgFrequency ?? 0;
+    _v3Model!.swimmingPoolDistance = reply.swimmingPoolDistance ?? 0;
+    _v3Model!.swimmingItemCount = reply.swimmingItemCount ?? 0;
+    _v3Model!.swimmingItems = reply.swimmingItems ?? [];
+
+    final hrHistory = map['item_heart_rate_history'];
+    if (hrHistory is List) {
+      final values =
+          hrHistory.map((e) => (e as num).toInt()).toList(growable: true);
+      _v3Model!.hrValues = values;
+      _v3Model!.hrCount = values.length;
+    }
+    if (map['total_sit_up_count'] != null) {
+      _v3Model!.totalSitUpCount = (map['total_sit_up_count'] as num).toInt();
+    }
+    logger?.d('fillV3ModelFromFullSnapshotJson _v3Model: ${_v3Model?.toJson()}');
+    logger?.d('fillV3ModelFromFullSnapshotJson end');
+  }
+
 }

@@ -469,6 +469,9 @@ extension IDODeviceInfoExt on IDODeviceInfo {
         IDOProtocolCoreManager().initSifliChannel();
       } else if (platform == 1) {
         IDOProtocolCoreManager().initNordicChannel();
+      } else if (platform == 91) {
+        logger?.d("deviceInfo platform: $platform");
+        IDOProtocolCoreManager().initActionsChannel();
       }
     }
   }
@@ -500,11 +503,11 @@ extension IDODeviceInfoExt on IDODeviceInfo {
   /// 芯与物 icoe gps平台
   bool isIcoeGpsPlatform() => gpsPlatform == 3;
 
-  /// 获取表盘信息
+  /// 获取屏幕信息
   /// ```dart
   /// {
-  ///     "blockSize": 1024,
-  ///     "familyName": "ID205G",
+  ///     "block_size": 1024,
+  ///     "family_name": "ID205G",
   ///     "format": 133,
   ///     "height": 240,
   ///     "sizex100": 0,
@@ -523,7 +526,7 @@ extension IDODeviceInfoExt on IDODeviceInfo {
       final json = jsonDecode(res.json!);
       // 缓存表盘信息
       await storage?.setString(key: keyDialInfo, value: res.json!);
-      return WatchDailInfo.fromJson(jsonDecode(json));
+      return WatchDailInfo.fromJson(json);
     } else {
       logger?.e('getWatchDialInfo failed');
       throw UnsupportedError('getWatchDialInfo failed');

@@ -52,13 +52,18 @@ class IDOAppStartExchangeModel extends IDOBaseExchangeModel {
   @JsonKey(name: 'avg_week_activity_time')
   int? avgWeekActivityTime;
 
+  /// 泳池长度，单位米，支持小数
+  @JsonKey(name: 'swim_pool_distance')
+  double? swimPoolDistance;
+
   IDOAppStartExchangeModel(
       {this.targetValue,
       this.targetType,
       this.forceStart,
       this.vo2max,
       this.recoverTime,
-      this.avgWeekActivityTime});
+      this.avgWeekActivityTime,
+      this.swimPoolDistance});
 
   Map<String, dynamic> toJson() => _$IDOAppStartExchangeModelToJson(this);
 
@@ -458,6 +463,38 @@ class IDOAppIngV3ReplyExchangeModel extends IDOBaseExchangeModel {
   @JsonKey(name: 'count_second')
   int? countSecond;
 
+  /// 总挥拍次数（version=0x21）
+  @JsonKey(name: 'total_swings_num')
+  int? totalSwingsNum;
+
+  /// 总仰卧起坐次数（version=0x21）
+  @JsonKey(name: 'total_sit_up_count')
+  int? totalSitUpCount;
+
+  /// 总跳绳次数（version=0x21）
+  @JsonKey(name: 'total_rope_count')
+  int? totalRopeCount;
+
+  /// 累计爬升（米，version=0x21）
+  @JsonKey(name: 'cumulative_altitude_rise')
+  int? cumulativeClimb;
+
+  /// 累计下降（米，version=0x21）
+  @JsonKey(name: 'cumulative_altitude_loss')
+  int? cumulativeDecline;
+
+  /// GPS 状态（version=0x21）
+  @JsonKey(name: 'gps_status')
+  int? gpsStatus;
+
+  /// 平均速度，km/h ×100（version=0x21）
+  @JsonKey(name: 'avg_speed')
+  int? avgSpeed;
+
+  /// 游泳趟数（version=0x21）
+  @JsonKey(name: 'trips')
+  int? trips;
+
   IDOAppIngV3ReplyExchangeModel({
     this.version,
     this.heartRate,
@@ -476,6 +513,14 @@ class IDOAppIngV3ReplyExchangeModel extends IDOBaseExchangeModel {
     this.countHour,
     this.countMinute,
     this.countSecond,
+    this.totalSwingsNum,
+    this.totalSitUpCount,
+    this.totalRopeCount,
+    this.cumulativeClimb,
+    this.cumulativeDecline,
+    this.gpsStatus,
+    this.avgSpeed,
+    this.trips,
   });
 
   Map<String, dynamic> toJson() {
@@ -523,6 +568,9 @@ class IDOActivitySwimmingLapItem {
   @JsonKey(name: 'difference_time')
   int? differenceTime;
 
+  @JsonKey(name: 'avg_hr')
+  int? avgHr;
+
   IDOActivitySwimmingLapItem({
     this.swolf,
     this.swimmingPosture,
@@ -533,6 +581,7 @@ class IDOActivitySwimmingLapItem {
     this.pace,
     this.stopTime,
     this.differenceTime,
+    this.avgHr,
   });
 
   factory IDOActivitySwimmingLapItem.fromJson(Map<String, dynamic> json) =>
@@ -1035,6 +1084,18 @@ class IDOAppActivityDataV3ExchangeModel extends IDOBaseExchangeModel {
   @JsonKey(name: 'tennis_backhand_count')
   int? tennisBackhandCount;
 
+  /// 与 tennis_serve_count 同值（C JSON 双写，兼容旧 APP）
+  @JsonKey(name: 'serve_count')
+  int? serveCount;
+
+  /// 与 tennis_forehead_count 同值（C JSON 双写，兼容旧 APP）
+  @JsonKey(name: 'forehand_count')
+  int? forehandCount;
+
+  /// 与 tennis_backhand_count 同值（C JSON 双写，兼容旧 APP）
+  @JsonKey(name: 'backhand_count')
+  int? backhandCount;
+
   int? trips;
 
   @JsonKey(name: 'average_swolf')
@@ -1195,6 +1256,9 @@ class IDOAppActivityDataV3ExchangeModel extends IDOBaseExchangeModel {
       this.tennisServeCount,
       this.tennisForeheadCount,
       this.tennisBackhandCount,
+      this.serveCount,
+      this.forehandCount,
+      this.backhandCount,
       this.trips,
       this.averageSwolf,
       this.totalStrokesNumber,

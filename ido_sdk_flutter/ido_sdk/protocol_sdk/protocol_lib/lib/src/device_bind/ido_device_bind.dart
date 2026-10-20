@@ -77,4 +77,10 @@ abstract class IDODeviceBind {
   ///
   /// 注意：需要在libManager.markConnectedDeviceSafe(...)调用前执行， 且isBinded=true有效
   Future<bool> setEncryptedAuthData(String macAddress, IDOEncryptedAuthData data);
+
+  /// 获取已缓存的加密授权数据（仅限支持设备有效）
+  /// Get cached encrypted authorization data (valid only for supported devices)
+  ///
+  /// 无缓存或不存在时返回 null
+  Future<IDOEncryptedAuthData?> getEncryptedAuthData(String macAddress);
 }

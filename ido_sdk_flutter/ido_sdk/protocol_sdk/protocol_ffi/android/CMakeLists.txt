@@ -22,5 +22,7 @@ target_link_libraries( # Specifies the target library.
         # included in the NDK.
         ${log-lib} )
 
+# 16 KB 页面对齐：NDK r28 起对 arm64-v8a / x86_64 已是默认行为，
+# 此处显式保留，确保用 r27 及更低版本 NDK 构建时仍然合规。
 target_link_options(protocol_ffi PRIVATE "-Wl,-z,max-page-size=16384")
 target_link_options(protocol_ffi PRIVATE "-Wl,-z,common-page-size=16384")

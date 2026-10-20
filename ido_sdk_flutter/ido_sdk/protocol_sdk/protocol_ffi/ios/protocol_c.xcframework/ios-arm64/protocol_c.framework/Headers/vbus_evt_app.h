@@ -151,6 +151,7 @@ typedef enum
     VBUS_EVT_APP_SET_FALL_MONITORING_SWITCH          = 210,    //跌倒监测开关设置 03 58 struct protocol_set_fall_monitoring_switch / protocol_set_fall_monitoring_switch_reply
     VBUS_EVT_APP_SET_SWITCH_MODE                     = 211,    //定位开关模式设置 03 59 struct protocol_set_switch_mode / protocol_set_switch_mode_reply
     VBUS_EVT_APP_SET_APP_SLEEP_MODE                  = 212,    //睡眠模式设置 03 4C struct protocol_set_app_sleep_mode / protocol_set_app_sleep_mode_reply
+    VBUS_EVT_APP_BLE_CONTROL_PILLBOX                 = 213,    //药盒控制 06 0A struct protocol_pillbox_control / protocol_pillbox_control_reply（解锁/亮灯/灭灯）
     
 	VBUS_EVT_APP_APP_GET_MAC                         = 300,	   //获得mac struct protocol_device_mac
 	VBUS_EVT_APP_GET_DEVICE_INFO                     = 301,	   //获得设备信息 struct protocol_device_info
@@ -227,6 +228,9 @@ typedef enum
     VBUS_EVT_APP_GET_SWITCH_MODE                     = 366,    //定位开关模式获取 02 5A struct protocol_head / protocol_get_switch_mode_reply（协议库为357，此处366因357已被占用）
     VBUS_EVT_APP_GET_APP_SLEEP_MODE                  = 367,    //获取睡眠模式 02 4C struct protocol_head / protocol_get_app_sleep_mode_reply
     VBUS_EVT_APP_GET_FIRMWARE_DISPLAY_VERSION        = 368,    //获取固件显示版本号 02 4B struct protocol_head / protocol_get_firmware_display_version_reply
+    VBUS_EVT_APP_GET_PILLBOX_STATE                   = 369,    //获取药盒状态 02 4D struct protocol_head / protocol_get_pillbox_state_reply
+    VBUS_EVT_APP_GET_FIND_MY_DEVICE_NAME             = 370,    //V3 33 9B：获取 Find My 设备名称（15.113）
+    VBUS_EVT_APP_GET_SPORT_AUTO_PAUSE_END_TYPES      = 371,    //V3 33 99：查询运动自动暂停/结束支持的运动类型（15.111）
 
     VBUS_EVT_APP_OTA_START                           = 400,	   //进入升级模式	struct protocol_ota_reply 里面包含电量标志
 	VBUS_EVT_APP_OTA_DIRECT_START                    = 401,	   //直接进入升级模式(忽略电量)
@@ -245,6 +249,7 @@ typedef enum
     VBUS_EVT_APP_SET_NOTICE_CALL_PROCESSING          = 413,    //处理中,内部事件
     VBUS_EVT_APP_SET_NOTICE_MSG_PROCESSING           = 414,
 	VBUS_EVT_APP_SET_NOTICE_CALL_TIME                = 415,    //来电接通完成后下发通话时间给固件
+	VBUS_EVT_APP_SET_NOTICE_HANG_UP_IN_CALL          = 416,    //通话中挂断（05 02 status=0x03）
 
 	VBUS_EVT_APP_SET_NOTICE_MISSED_CALL              = 420,	   //未接来电
     VBUS_EVT_APP_GET_HEART_RATE_MODE                 = 421,	   //获取心率监测模式
@@ -459,6 +464,7 @@ typedef enum
     VBUS_EVT_FUNC_V3_APP_DOWNLOAD_STATUS_INFO             = 5112,  //APP设置下载状态（15.92 cmd=0x33 key=0x88）
     VBUS_EVT_FUNC_V3_PHONE_CALENDAR_REMINDER               = 5113,  //手机日历提醒（15.110 cmd=0x33 cmd_id=0x98）
     VBUS_EVT_FUNC_V3_ACTIVITY_EXCHANGE_FULL_SNAPSHOT       = 5114,  //15.103 V3 多运动运动中全量快照（cmd=0x33,cmd_id=0x1E，按字节分包）
+    VBUS_EVT_FUNC_V3_TASK_LIST                             = 5115,  //任务清单（15.114 cmd=0x33 cmd_id=0x9C）
 
 
 
@@ -519,6 +525,7 @@ typedef enum
 	VBUS_EVT_TRAN_JSON_V3_BODY_POWER 		               = 7013,  //身体电量数据回调
 	VBUS_EVT_TRAN_JSON_V3_HRV 				               = 7014,  //HRV数据回调
     VBUS_EVT_TRAN_JSON_V3_PET_SLEEP                      = 7015,  //宠物睡眠数据回调
+    VBUS_EVT_TRAN_JSON_V3_ACTIVITY_AMOUNT                = 7016,  //活动量数据回调（15.4.23，data_type=0x17）
     VBUS_EVT_TRAN_JSON_V3_EMOTION_HEALTH                   = 7018,    //情绪健康数据回调
     VBUS_EVT_TRAN_JSON_V3_MULTI_ACTIVITY_NEW               = 7019,//同步多运动/游泳/跑步课程/跑步计划/跑后拉伸数据回调
 	VBUS_EVT_TRAN_JSON_V3_TEST_SYNC_PLAN_SPORT             = 7113,	//计划多运动模拟测试接口

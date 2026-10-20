@@ -21,8 +21,16 @@ import com.idosmart.bluetooth.utils.Constants
  */
 abstract class AbsIDOBleDevice(val deviceAddress: String) : BytesDataConnect(deviceAddress), IDfu {
 
-    //目前只处理nordic平台
-    private var dfu: NodicDFUManager = NodicDFUManager()
+    companion object {
+        /** Nordic DFU 库代表性类；compileOnly 下须在创建 NodicDFUManager 前探测。 */
+        private const val NORDIC_DFU_STARTER_CLASS =
+            "no.nordicsemi.android.dfu.DfuServiceInitiator"
+    }
+
+    /**
+     * Nordic 传统 DFU。懒加载：避免普通连设备时加载 nordicsemi 类（App 可能未声明 dfu 依赖）。
+     */
+    private var dfu: NodicDFUManager? = null
 
     /**
      * 自定义指令回调
@@ -53,16 +61,44 @@ abstract class AbsIDOBleDevice(val deviceAddress: String) : BytesDataConnect(dev
         }
     }
 
+    private fun isNordicDfuLibAvailable(): Boolean {
+        return try {
+            Class.forName(NORDIC_DFU_STARTER_CLASS)
+            true
+        } catch (_: ClassNotFoundException) {
+            false
+        } catch (_: NoClassDefFoundError) {
+            false
+        }
+    }
+
+    private fun ensureDfuManager(): NodicDFUManager? {
+        dfu?.let { return it }
+        if (!isNordicDfuLibAvailable()) {
+            return null
+        }
+        return NodicDFUManager().also { dfu = it }
+    }
+
     override fun startDFU(config: BleDFUConfig, listener: BleDFUState.IListener): Boolean {
-        return dfu.start(config, listener)
+        val manager = ensureDfuManager()
+        if (manager == null) {
+            p(
+                "Nordic DFU lib missing: add implementation " +
+                    "'no.nordicsemi.android:dfu:2.5.0' to the app build.gradle"
+            )
+            listener.onDfuFailed(BleDFUState.FailReason.OTHER, config.macAddress ?: deviceAddress)
+            return false
+        }
+        return manager.start(config, listener)
     }
 
     override fun cancelDFU() {
-        dfu.cancel()
+        dfu?.cancel()
     }
 
     override fun isInDFU(): Boolean {
-        return dfu.isDoing
+        return dfu?.isDoing == true
     }
 
     fun toConnectDevice(isDueToPhoneBluetoothSwitch: Boolean) {

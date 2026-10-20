@@ -10,6 +10,8 @@
 
 #import "Sifli.g.h"
 #import "Nordic.g.h"
+#import "Actions.g.h"
 #import "IDOUpdateSFManager.h"
+#import "IDOActionsOTAManager.h"
 
 #endif /* native_channel_h */

@@ -31,6 +31,8 @@ abstract class IDOProtocolCoreManager {
 
   NordicChannelImpl? get nordicChannel;
 
+  ActionsChannelImpl? get actionsChannel;
+
   late int mtu;
 
   /// c库是否写入流数据（日志会比较大）
@@ -233,4 +235,7 @@ abstract class IDOProtocolCoreManager {
 
   /// 初始化 Nordic DFU 文件传输通道
   void initNordicChannel();
+
+  /// 初始化 Actions OTA 文件传输通道
+  void initActionsChannel();
 }

@@ -1211,6 +1211,15 @@ class BaseFunctionTable {
   /// 支持获取寻找手机开关状态（GET:02 26）
   bool get supportGetFindPhoneSwitch => ft?.supportGetFindPhoneSwitch ?? false;
 
+  /// 支持获取 Find My 设备名称
+  bool get supportGetFindMyDeviceName => ft?.supportGetFindMyDeviceName ?? false;
+
+  /// 功能表开启后：APP 佩戴方式不展示臂带选项
+  bool get notSupportArmbandWearMode => ft?.notSupportArmbandWearMode ?? false;
+
+  /// 支持任务清单（15.114）
+  bool get supportTaskList => ft?.supportTaskList ?? false;
+
   /// 健康数据同步使用 UTC 时间
   bool get supportSyncHealthDataUseUtcTime =>
       ft?.supportSyncHealthDataUseUtcTime ?? false;
@@ -1255,6 +1264,9 @@ class BaseFunctionTable {
   /// 支持来电已拒
   bool get setNoticeMissedCallV2 => ft?.v2SetNoticeMissedCall ?? false;
 
+  /// 支持通话中挂断
+  bool get setNoticeHangUpInCallV2 => ft?.v2SetNoticeHangUpInCall ?? false;
+
   /// 结束查找手机
   bool get setOverFindPhone => ft?.supportOverFindPhone ?? false;
 
@@ -1263,6 +1275,7 @@ class BaseFunctionTable {
       ft?.v3SupportGetHealthSwitchState ?? false;
 
   /// 久坐提醒
+  @Deprecated('已废弃，请使用 setWalkReminder')
   bool get setSedentariness => ft?.sedentariness ?? false;
 
   /// 设置屏幕亮度
@@ -1543,6 +1556,9 @@ class BaseFunctionTable {
 
   /// v3 宠物睡眠
   bool get syncV3PetSleep => ft?.supportSyncPetSleep ?? false;
+
+  /// v3 活动量（15.4.23）
+  bool get syncV3ActivityAmount => ft?.supportSyncActivityAmount ?? false;
 
   /// v3 步数
   bool get syncV3Sports => ft?.exTableMain9V3Sports ?? false;
@@ -1905,11 +1921,34 @@ class BaseFunctionTable {
   /// 睡眠模式设置获取（SET:03 4C / GET:02 4C，table70 BIT_7）
   bool get supportAppSleepMode => ft?.supportAppSleepMode ?? false;
 
+  /// 智能药盒（GET:02 4D / CONTROL:06 0A，table72 BIT_7）
+  bool get supportSmartPillbox => ft?.supportSmartPillbox ?? false;
+
+  /// 睡眠支持平均 HRV
+  bool get syncV3HealthSleepStageAvgHrv => ft?.syncV3HealthSleepStageAvgHrv ?? false;
+
+  /// 急救信息支持更多字段（如其他信息）
+  bool get supportEmergencyInfoVersion1 => ft?.supportEmergencyInfoVersion1 ?? false;
+
+  /// 支持设置/获取自定义表盘样式
+  bool get supportCustomWatchFaceStyle => ft?.supportCustomWatchFaceStyle ?? false;
+
+  /// 总睡眠时长需扣除清醒时长
+  bool get totalSleepDurationNeedsSubtractWakeDuration =>
+      ft?.totalSleepDurationNeedsSubtractWakeDuration ?? false;
+
   /// 多运动同步 body_age（table69 BIT_0）
   bool get supportSyncActivityDataBodyAge => ft?.supportSyncActivityDataBodyAge ?? false;
 
   /// idb05 步数目标协议时间戳用本地时间（table69 BIT_1）
   bool get supportIdb05UseLocaltimeForStepGoalCmd => ft?.supportIdb05UseLocaltimeForStepGoalCmd ?? false;
+
+  /// 只支持 APP 经期单机功能，设备不支持经期功能
+  bool get supportAppMenstrualOnly => ft?.supportAppMenstrualOnly ?? false;
+
+  /// 查询运动自动暂停/结束支持的运动类型
+  bool get supportGetSportAutoPauseEndTypes =>
+      ft?.supportGetSportAutoPauseEndTypes ?? false;
 
   /// 查询需设置佩戴手的运动类型（33 93，table69 BIT_2）
   bool get supportGetSportTypesRequiringWristSideSetting => ft?.supportGetSportTypesRequiringWristSideSetting ?? false;

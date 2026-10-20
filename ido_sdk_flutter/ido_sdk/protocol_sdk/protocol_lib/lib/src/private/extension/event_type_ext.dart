@@ -48,8 +48,12 @@ final _cmdMap = {
   CmdEvtType.getActivitySwitch: {"desc": "运动模式自动识别开关获取", "cmd": "02 00"},
   CmdEvtType.getBatteryReminderSwitch: {"desc": "设备电量提醒开关获取", "cmd": "02 4A"},
   CmdEvtType.getAppSleepMode: {"desc": "获取睡眠模式", "cmd": "02 4C"},
+  CmdEvtType.getPillboxState: {"desc": "获取药盒状态", "cmd": "02 4D"},
   CmdEvtType.getPetInfo: {"desc": "获取宠物信息", "cmd": "02 0A"},
   CmdEvtType.getFindPhoneSwitch: {"desc": "获取寻找手机开关状态", "cmd": "02 26"},
+  CmdEvtType.getFindMyDeviceName: {"desc": "获取 Find My 设备名称", "cmd": "33 9B"},
+  CmdEvtType.taskList: {"desc": "任务清单", "cmd": "33 9C"},
+  CmdEvtType.getSportAutoPauseEndTypes: {"desc": "查询运动自动暂停/结束支持的运动类型", "cmd": "33 99"},
   CmdEvtType.getFirmwareDisplayVersion: {
     "desc": "获取固件显示版本号",
     "cmd": "02 4B"
@@ -194,6 +198,7 @@ final _cmdMap = {
   CmdEvtType.setStressSwitch: {"desc": "设置压力开关", "cmd": "03 00"},
   CmdEvtType.setNoticeStopCall: {"desc": "结束来电", "cmd": "03 00"},
   CmdEvtType.setNoticeMissedCall: {"desc": "未接来电", "cmd": "03 00"},
+  CmdEvtType.setNoticeHangUpInCall: {"desc": "通话中挂断", "cmd": "05 02"},
   CmdEvtType.setNoticeCallTime: {"desc": "来电接通完成后下发通话时间给固件", "cmd": "03 00"},
   CmdEvtType.setSportModeSort: {"desc": "设置运动模式排序", "cmd": "03 00"},
   CmdEvtType.setWalkRemind: {"desc": "设置走动提醒", "cmd": "03 00"},
@@ -201,6 +206,7 @@ final _cmdMap = {
   CmdEvtType.setActivitySwitch: {"desc": "运动开关设置", "cmd": "03 00"},
   CmdEvtType.setBatteryReminderSwitch: {"desc": "设备电量提醒开关设置", "cmd": "03 4A"},
   CmdEvtType.setAppSleepMode: {"desc": "睡眠模式设置", "cmd": "03 4C"},
+  CmdEvtType.controlPillbox: {"desc": "药盒控制", "cmd": "06 0A"},
   CmdEvtType.setPetInfo: {"desc": "设置宠物信息", "cmd": "03 0A"},
   CmdEvtType.setDrinkWaterRemind: {"desc": "设置喝水提醒", "cmd": "03 00"},
   CmdEvtType.setRequestCheckUpdate: {"desc": "手环请求版本检查", "cmd": "03 00"},

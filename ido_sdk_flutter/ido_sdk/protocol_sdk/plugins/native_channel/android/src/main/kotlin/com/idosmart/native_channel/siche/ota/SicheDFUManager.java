@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.os.Build;
 
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -153,7 +154,7 @@ public class SicheDFUManager {
                 }else if(filePath.contains("ctrl_packet.bin")){
                     id = Protocol.IMAGE_ID_CTRL;
                 }
-                else if(filePath.contains("outER_IROM1.bin")){
+                else if(filePath.contains("outER_IROM1.bin") || filePath.contains("ER_IROM1.bin")){
                     id = Protocol.IMAGE_ID_HCPU;
                 }
                 else if(filePath.contains("outlcpu_flash.bin")){
@@ -200,6 +201,12 @@ public class SicheDFUManager {
                     id = Protocol.IMAGE_ID_FONT;
                 }else  if(filePath.contains("outmusic.bin")) {
                     id = Protocol.IMAGE_ID_MUSIC;
+                } else if(filePath.contains("outdyn.bin")){
+                    // idb05 芯片兼容（与主线 SicheDFUManager.findNorSicheBinFiles 一致，Protocol 无对应常量）
+                    id = 12;
+                } else if (filePath.contains("outdial.bin")) {
+                    // idb05 芯片兼容（与主线一致，Protocol 无对应常量）
+                    id = 13;
                 }
                 printLog("image type: "+id);
                 if(id != -999){ //防止里面有不需要的文件
@@ -249,26 +256,40 @@ public class SicheDFUManager {
             DFUImagePath p = paths.get(i);
             printLog("paths : "+i+"---type:"+p.getImageType());
         }
+
+        int prn = 0;
+        if (isNeedSlowDownOtaPhone()) {
+            prn = 20;
+            printLog("is need slow trans device , set prn " + prn);
+        }
+
         if(platForm == PLATFORM_SICHE){
             if (isIndfu){
                 printLog("update is indfu");
-                sifliDFUService.startActionDFUNand(getContext(),update_mac,paths,1,0);
+                sifliDFUService.startActionDFUNand(getContext(),update_mac,paths,1,prn);
             }else {
                 printLog("update is normal");
-                sifliDFUService.startActionDFUNand(getContext(),update_mac,paths,1,0);
+                sifliDFUService.startActionDFUNand(getContext(),update_mac,paths,1,prn);
             }
         }else if(platForm == PLATFORM_SICHE_NOR){
             if (isIndfu){
                 printLog("update nor is indfu");
-                sifliDFUService.startActionDFUNorExt(getContext(),update_mac,paths,1,0);
+                sifliDFUService.startActionDFUNorExt(getContext(),update_mac,paths,1,prn);
             }else {
                 printLog("update nor is normal");
-                sifliDFUService.startActionDFUNorExt(getContext(),update_mac,paths,1,0);
+                sifliDFUService.startActionDFUNorExt(getContext(),update_mac,paths,1,prn);
             }
 
         }
 
 
+    }
+
+    //思澈升级易断连失败的纯血鸿蒙手机Pure HarmonyOS，思澈分析结论是建议降速升级，应答频率设置为20
+    //LMR-AL00(销售cyj手机）、ALN-AL10（mate60）
+    private boolean isNeedSlowDownOtaPhone() {
+        String model = Build.MODEL;
+        return "LMR-AL00".equalsIgnoreCase(model) || "ALN-AL10".equalsIgnoreCase(model);
     }
 
     /**

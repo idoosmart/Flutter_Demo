@@ -5,9 +5,9 @@ class _IDOProtocolLibManager
   static const _pathStorageC = 'c_files';
   static const _pathStorageLib = 'protocol_lib';
   static const _pathStorageLog = 'logs';
-  // 最后修改时间: 2026-07-24 15:20:31
-  static const _sdkVersion = '4.2.8';
-  static const _sdkBuildNum = '6A63123F';
+  // 最后修改时间: 2026-10-20 09:10:39
+  static const _sdkVersion = '4.2.13';
+  static const _sdkBuildNum = '6AD6BF8F';
 
   static bool _outputToConsoleClib = false;
   static bool _isReleaseClib = true;
@@ -22,6 +22,8 @@ class _IDOProtocolLibManager
   AlexaDelegate? _alexaDelegate;
   // 广义不可见字符
   late final _controlChars = RegExp(r'[\p{C}]', unicode: true);
+
+  final _needKeepTransFileTaskPlatform = [1, 91, 98, 99]; // 保留传输任务，不受断连影响
 
   int _mtu = 181;
   bool _isInitClib = false;
@@ -62,6 +64,8 @@ class _IDOProtocolLibManager
   bool _isSicheDfuMode = false;
   int _lastDevicePlatform = -1;
   bool _isPreviewingCamera = false; // 是否处于摄像头预览中
+
+  final _deviceNameChanged = StreamController<String>.broadcast();
 
   _IDOProtocolLibManager._internal() {
     storage = LocalStorage.config(config: this);
@@ -115,8 +119,8 @@ class _IDOProtocolLibManager
     required String iosUUID,
     required int platform,
     required int deviceId}) async {
-    if (![98, 99 ,1].contains(platform)) {
-      logger?.e("markSiceOtaMode platform:$platform, 98, 99 only");
+    if (![98, 99, 91, 1].contains(platform)) {
+      logger?.e("markSiceOtaMode platform:$platform, 98, 99, 91, 1 only");
       return false;
     }
 
@@ -232,11 +236,12 @@ class _IDOProtocolLibManager
     _lastDevicePlatform = deviceInfo.platform;
     _stopTimerFastSync();
     // !!!: 98平台ota比较特殊，会先断开蓝牙，再重连（走思澈sdk)，此处需要保留文件传输任务
-    final needKeepTransFileTask = libManager.deviceInfo.platform == 98
+    final needKeepTransFileTask =
+        _needKeepTransFileTaskPlatform.contains(libManager.deviceInfo.platform)
         && libManager.transFile.isTransmitting
         && libManager.transFile.transFileType == FileTransType.fw;
     if (needKeepTransFileTask) {
-      logger?.d("platform 98 needKeepTransFileTask:$needKeepTransFileTask");
+      logger?.d("platform $_needKeepTransFileTaskPlatform needKeepTransFileTask:$needKeepTransFileTask");
     }
     _coreMgr.dispose(needKeepTransFileTask: needKeepTransFileTask);
     deviceLog.cancel();
@@ -444,6 +449,11 @@ class _IDOProtocolLibManager
     return deviceRawDataReportStream.listen((report) {
       func(report.dataType, report.data);
     });
+  }
+
+  @override
+  StreamSubscription listenDeviceNameChanged(void Function(String deviceName) func) {
+    return _deviceNameChanged.stream.listen(func);
   }
 
   @override
@@ -778,6 +788,9 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
       statusSdkNotification.add(rs
           ? IDOStatusNotification.fastSyncCompleted
           : IDOStatusNotification.fastSyncFailed);
+
+      // Find My 补充设备名称刷新
+      _findMyGetDeviceNameIfNeed();
     });
   }
 
@@ -799,7 +812,7 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
     deviceBind.listenUpdateSetModeNotification((mode) {
       _setBindMode(mode);
       if (mode == 1) {
-        // 清除v3健康缓存数据
+        // 绑定：只清当日拼接 count。可靠缓存仅解绑清（见 deviceBind.unbind）。
         final rs = _coreMgr.unBindClearV3HealthData();
         logger?.d("clear v3 health data rs: $rs");
       }
@@ -860,12 +873,29 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
         final notifyType = map['notify_type'] as int?;
         final msgID = map['msg_ID'] as int?;
         final msgNotice = map['msg_notice'] as int?;
+        final taskId = map['task_id'] as int?;
+        final taskCompletStatus = map['task_complet_status'] as int?;
+        final walkReminderStatus = map['walk_reminder_status'] as int?;
+        final walkReminderGoalValue = map['walk_reminder_goal_value'] as int?;
+        final walkReminderAchievedValue =
+            map['walk_reminder_achieved_value'] as int?;
         final errorIndex = map['error_index'] as int?;
+        int? parameter;
+        final parameterRaw = map['parameter'];
+        if (parameterRaw is num) {
+          parameter = parameterRaw.toInt();
+        }
         final model = IDODeviceNotificationModel(
             dataType: dataType,
             notifyType: notifyType,
             msgId: msgID,
             msgNotice: msgNotice,
+            taskId: taskId,
+            taskCompletStatus: taskCompletStatus,
+            walkReminderStatus: walkReminderStatus,
+            walkReminderGoalValue: walkReminderGoalValue,
+            walkReminderAchievedValue: walkReminderAchievedValue,
+            parameter: parameter,
             errorIndex: errorIndex);
         if (model.dataType == 55) {
           // 固件快速模式切换慢速模式
@@ -952,7 +982,12 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
     final jsonStr = await storage?.loadBindEncryptedDataByDisk();
     logger?.d('load EncryptedData: $jsonStr');
     if (jsonStr == null || jsonStr.isEmpty) {
-      return Future(() => false);
+      stopSyncConfig(); // 停止同步
+      dispose(); // 清除队列
+      logger?.d('check EncryptedData err:本地授权码为空~');
+      storage?.cleanBindEncryptedData(); // 清除缓存数据
+      statusSdkNotification.add(IDOStatusNotification.unbindOnAuthCodeError);
+      return false;
     }
     return send(evt: CmdEvtType.setEncryptedAuth, json: jsonStr).map((event) {
       if (event.code == 0 && event.json != null) {
@@ -1106,6 +1141,29 @@ extension _IDOProtocolLibManagerExt on _IDOProtocolLibManager {
     //logger?.v('call _stopTimerFastSync');
     _timerFastSync?.cancel();
     _timerFastSync = null;
+  }
+
+  /// Find My 补充设备名称刷新
+  void _findMyGetDeviceNameIfNeed() {
+    if (!libManager.funTable.supportGetFindMyDeviceName) {
+      return;
+    }
+
+    libManager.send(evt: CmdEvtType.getFindMyDeviceName).listen((e){
+      if(e.isOK && e.json != null && e.json!.isNotEmpty) {
+        final jsonMap = jsonDecode(e.json!);
+        final errorCode = jsonMap['error_code'];
+        final deviceName = jsonMap['device_name'];
+        if (errorCode == 0 && deviceName != null && deviceName.isNotEmpty) {
+          _deviceNameChanged.add(deviceName);
+          logger?.d('findMyGetDeviceNameIfNeed success: $deviceName');
+        } else {
+          logger?.e('findMyGetDeviceNameIfNeed failed: $errorCode $deviceName');
+        }
+      } else {
+        logger?.e('findMyGetDeviceNameIfNeed failed');
+      }
+    });
   }
 }
 

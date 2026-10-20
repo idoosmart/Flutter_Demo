@@ -13,7 +13,7 @@ import 'generated/l10n.dart';
 import 'utility/connection_status_controller.dart';
 
 const clientId =
-    'amzn1.application-oa2-client.254148759f7e40d3aa1c92ebaf9e215d';
+    'amzn1.application-oa2-client.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

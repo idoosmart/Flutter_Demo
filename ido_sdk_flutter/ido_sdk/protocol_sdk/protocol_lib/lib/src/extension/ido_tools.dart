@@ -531,6 +531,14 @@ class IDOCallNotice {
     return _coreMgr.missedV2MissedCallEvt();
   }
 
+  /// v2发送来电提醒状态为通话中挂断, 告诉设备停止提醒用户(部分设备实现)
+  ///
+  /// 需功能表 setNoticeHangUpInCallV2 为 true
+  /// 返回 0 成功
+  int hangUpV2InCallEvt() {
+    return _coreMgr.hangUpV2InCallEvt();
+  }
+
 
 }
 
@@ -587,7 +595,7 @@ class IDOCache {
   /// 导出日志 返回压缩后日志zip文件绝对路径
   Future<String?> exportLog() async {
     final pathSDK = await LocalStorage.pathSDKStatic();
-    final info = _ExportInfo("$pathSDK", "$pathSDK/protocol_logs.zip");
+    final info = _ExportInfo("$pathSDK/logs", "$pathSDK/protocol_logs.zip");
 
     /// 打包zip文件
     Future<String?> execute(dynamic obj) async {

@@ -107,7 +107,7 @@ class IDOBluetoothDeviceModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 设备类型 0: 无效 1: 手表 2: 手环
+  // 设备类型，取广播原值：0 无效，1 手表，2 手环，3 戒指，4 宠物臂带，5 无屏手环
   int? _deviceType;
 
   /// 获取设备类型
@@ -304,7 +304,8 @@ class IDOBluetoothDeviceModel extends ChangeNotifier {
         .map((uuid) =>
             uuid.toLowerCase() == RX_UPDATE_UUID.toLowerCase() ||
             uuid.toLowerCase() == RX_UPDATE_UUID_0XFE59_ANDROID.toLowerCase() ||
-            uuid.toLowerCase() == RX_UPDATE_UUID_0XFE59_IOS.toLowerCase())
+            uuid.toLowerCase() == RX_UPDATE_UUID_0XFE59_IOS.toLowerCase() ||
+            uuid.toLowerCase() == actionsOtaServiceUUID.toLowerCase())
         .firstWhere((is_uuid_ota) => is_uuid_ota, orElse: () => false);
     isTlwOta = uuids.map((uuid) => uuid.toLowerCase() == RX_UPDATE_UUID_0X0203.toLowerCase()).firstWhere(
         (is_uuid_ota) => is_uuid_ota,
@@ -332,8 +333,7 @@ class IDOBluetoothDeviceModel extends ChangeNotifier {
     }
     deviceId = data[0] | (data[1] << 8);
     bltVersion = length > 8 ? data[8] : 0;
-    final type = length > 9 ? data[9] : 0;
-    deviceType = type > 2 ? 0 : type;
+    deviceType = length > 9 ? data[9] : 0;
     if (Platform.isAndroid) {
       return;
     }

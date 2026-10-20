@@ -224,6 +224,20 @@ extern int GetMode(void);
 extern int setFilePath(char *filePath);
 
 /**
+ * @brief 开关数据同步可靠缓存（默认关闭）
+ * @param enable 1 开启：落盘门闩 + 同步时 replay 未 consume 的缓存；0 关闭（现网默认，行为与旧版一致）
+ * @return SUCCESS(0)
+ * @note 开启后 App 须在业务落库成功后调用 consumeReliableCacheRecord；建议在 setFunctionTableFilePath（设备目录）之后、开始同步前调用。
+ */
+extern int setReliableCacheEnable(int enable);
+
+/**
+ * @brief 查询数据同步可靠缓存是否开启
+ * @return 1 已开启；0 关闭
+ */
+extern int isReliableCacheEnabled(void);
+
+/**
  * @brief 设置持久化路径, 用于保存功能表数据, 初始化时调用即可，无顺序要求，最后不要加斜杠 /
  * @param filePath 持久化目录路径
  * @return SUCCESS(0) 成功
@@ -774,6 +788,15 @@ extern int makeSportFileCompression(char *fileName, char *endName, int format, i
 extern int mkWatchDialFile(char *file_path,char *save_file_name,int format);
 
 /**
+ * @brief 制作(IWF)文件，按固件返回的压缩方式编码像素
+ * @param compression_method 0x00 默认 0x01 分块 0x04 INDEX8
+ * @param tile_w 分块宽度（0x01 时有效）
+ * @param tile_h 分块高度（0x01 时有效）
+ */
+extern int mkWatchDialFileWithMethod(char *file_path,char *save_file_name,int format,
+                                     uint8_t compression_method, uint8_t tile_w, uint8_t tile_h);
+
+/**
  * @brief:制作表盘压缩文件(iwf.lz) 压缩文件会自动添加文件名.lz后缀
  * @param file_path 素材路径
  * @param save_file_name 文件名
@@ -813,6 +836,13 @@ extern int mkWatchDialFile(char *file_path,char *save_file_name,int format);
  * @return:SUCCESS(0)成功,ERROR_NULL(14)文件路径打开失败
  * */
 extern int mkWatchDialFileCompression(char *file_path,char *save_file_name,uint8_t format,uint16_t block_size);
+
+/**
+ * @brief 制作表盘压缩文件(iwf.lz)，按固件返回的压缩方式编码像素
+ * @param compression_method 0x00 默认 0x01 分块 0x04 INDEX8
+ */
+extern int mkWatchDialFileCompressionWithMethod(char *file_path,char *save_file_name,uint8_t format,uint16_t block_size,
+                                                uint8_t compression_method, uint8_t tile_w, uint8_t tile_h);
 
 /**
  * @brief 制作(EPO.DAT/.pgl)文件
@@ -874,7 +904,7 @@ extern char *mkPhoneCalendarCalFile(const char * jsondata);
 
 /**
  * @brief 手机日历全量同步：策略裁剪 + 组包 phone_calendar.cal
- * @return JSON：{ err_code, path, packed_item_count }
+ * @return JSON：{ err_code, path, packed_item_count }；省略 items / null / [] 表示清空设备日历
  */
 extern char *syncPhoneCalendarCal(const char * jsondata);
 
@@ -1119,6 +1149,13 @@ extern int ProtocolV2StopCallEvt(void);
  * */
 extern int ProtocolV2MissedCallEvt(void);
 
+/**
+ * @brief v2发送来电提醒状态为通话中挂断, 告诉设备停止提醒用户(部分设备实现)
+ * @note 需功能表 v2_set_notice_hang_up_in_call 为 true
+ * @return SUCCESS(0)成功
+ * */
+extern int ProtocolV2HangUpInCallEvt(void);
+
 /******************************** 日志接口 ********************************/
 
 /**
@@ -1352,6 +1389,39 @@ extern uint32_t SyncV3HealthDataOneNoticeCompleteCbReg(protocol_sync_v3_health_c
  * )
  * */
 extern uint32_t SyncV3HealthDataCustomResource(int data_type);
+
+/**
+ * @brief 消费一条已成功接收的可靠缓存记录（删除本地副本，后续同步不再 replay）
+ * @param data_type 同步类型（与 PROTOCOL_V3_HEALTH_DATA_TYPE 一致）
+ * @param year 事件年；按天类型为数据日的年
+ * @param month 月
+ * @param day 日
+ * @param hour 时（按天类型传 0）
+ * @param minute 分（按天类型传 0）
+ * @param second 秒（按天类型传 0）
+ * @return SUCCESS(0)；其它为失败
+ * @note 仅当 setReliableCacheEnable(1) 后有效；未开启时为 no-op。可在 JSON 回调内立即调用（文件尚未落盘时记 pending，随后 save 会跳过写盘）。未 consume 时缓存最多约保留 7 天（TTL）。落盘失败不阻断健康同步主流程。
+ */
+extern int consumeReliableCacheRecord(int data_type,
+                                     int year,
+                                     int month,
+                                     int day,
+                                     int hour,
+                                     int minute,
+                                     int second);
+
+/**
+ * @brief 清理超过 TTL 的可靠缓存
+ * @return SUCCESS(0)
+ */
+extern int purgeExpiredReliableCacheRecords(void);
+
+/**
+ * @brief 清理全部可靠缓存（不依赖开关）
+ * @note 仅删除当前设备可靠缓存目录下的记录文件；不影响 sync offset、按天拼接缓冲、其它设备。
+ * @return SUCCESS(0)
+ */
+extern int clearReliableCacheRecords(void);
 
 /**
  * @brief:查找输入的数据同步类型支不支持

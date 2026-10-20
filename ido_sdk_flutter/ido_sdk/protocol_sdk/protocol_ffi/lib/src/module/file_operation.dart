@@ -168,6 +168,28 @@ extension IDOProtocolAPIExtFileOperation on IDOProtocolAPI {
         filePathUtf8.cast(), saveFileNameUtf8.cast(), format, blockSize);
   }
 
+  /// 制作表盘压缩文件(iwf.lz)，按固件 compression_method 编码像素
+  /// compressionMethod: 0x00 默认 0x01 分块 0x04 INDEX8
+  int makeWatchDialFileCompressionWithMethod(
+      {required String filePath,
+      required String saveFileName,
+      required int format,
+      required int blockSize,
+      required int compressionMethod,
+      required int tileW,
+      required int tileH}) {
+    final filePathUtf8 = filePath.toNativeUtf8();
+    final saveFileNameUtf8 = saveFileName.toNativeUtf8();
+    return bindings.mkWatchDialFileCompressionWithMethod(
+        filePathUtf8.cast(),
+        saveFileNameUtf8.cast(),
+        format,
+        blockSize,
+        compressionMethod,
+        tileW,
+        tileH);
+  }
+
   /// 制作(IWF)文件,根据表盘包获取到IWF文件接口
   /// ```dart
   /// filePath 素材路径

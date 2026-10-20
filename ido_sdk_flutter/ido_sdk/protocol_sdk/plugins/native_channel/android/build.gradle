@@ -30,8 +30,13 @@ allprojects {
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
+// Flutter path / 日常开发：implementation；Native AAR 打包：compileOnly（build_sdk 传 idoSdkPackaging）
+def idoSdkPackaging = (findProperty('idoSdkPackaging') ?: 'false').toString().toBoolean()
+def mcumgrBleDep = 'no.nordicsemi.android:mcumgr-ble:1.5.2'
+logger.lifecycle("[native_channel] idoSdkPackaging=${idoSdkPackaging} → ${idoSdkPackaging ? 'compileOnly' : 'implementation'} ${mcumgrBleDep}")
+
 android {
-    compileSdkVersion 31
+    compileSdkVersion 33
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -55,6 +60,8 @@ android {
 
     defaultConfig {
         minSdkVersion 16
+        // 下发给接入方：打包 AAR 时 mcumgr 为 compileOnly，需 keep + dontwarn（见 consumer-rules.pro）
+        consumerProguardFiles "consumer-rules.pro"
     }
 
     // 以下资源仅用于内部标准化项目（不要修改此处代码）
@@ -74,9 +81,15 @@ android {
         implementation 'commons-fileupload:commons-fileupload:1.3.1'
         implementation group: 'commons-io', name: 'commons-io', version: '2.5'
         implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
+        implementation 'androidx.core:core:1.12.0'
         implementation 'com.squareup.okhttp3:okhttp:3.14.9'
         implementation 'com.squareup.okio:okio:1.17.2'
-        implementation 'no.nordicsemi.android:mcumgr-ble:1.5.2'
+        // Zephyr / MCUmgr：见文件顶部 idoSdkPackaging；R8 规则见 consumer-rules.pro
+        if (idoSdkPackaging) {
+            compileOnly mcumgrBleDep
+        } else {
+            implementation mcumgrBleDep
+        }
         implementation 'com.google.code.gson:gson:2.8.0'
     }
 
@@ -91,5 +104,5 @@ android {
             }
         }
     }
-    buildToolsVersion '31.0.0'
+    buildToolsVersion '33.0.0'
 }

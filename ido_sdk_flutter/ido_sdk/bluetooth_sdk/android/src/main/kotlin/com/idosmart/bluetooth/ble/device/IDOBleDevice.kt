@@ -1,10 +1,6 @@
 package com.idosmart.bluetooth.ble.device
 
 import com.idosmart.bluetooth.ble.reconnect.AutoConnectBleDevice
-import com.idosmart.bluetooth.dfu.BleDFUConfig
-import com.idosmart.bluetooth.dfu.BleDFUState
-import com.idosmart.bluetooth.dfu.IDfu
-import com.idosmart.bluetooth.dfu.nodic.NodicDFUManager
 
 /**
  * @author tianwei

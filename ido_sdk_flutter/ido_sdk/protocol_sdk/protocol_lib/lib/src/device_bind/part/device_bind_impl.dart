@@ -207,6 +207,7 @@ class _IDODeviceBind implements IDODeviceBind {
       // 解绑非当前设备
       await storage?.cleanAuthMode(macAddr);
       await storage?.cleanBindStatus(macAddress: macAddr);
+      _clearReliableCacheIfCurrentDevice(macAddr);
       await storage?.removeCLibFuncTableCache(macAddr);
       // final cacheDir = await storage?.getCLibFuncTableCachePath(macAddr);
       // if (cacheDir != null) {
@@ -234,6 +235,7 @@ class _IDODeviceBind implements IDODeviceBind {
         await _cleanAuthData();
         await storage?.cleanAuthMode(macAddr);
         await storage?.cleanBindStatus(macAddress: macAddr);
+        _clearReliableCacheIfCurrentDevice(macAddr);
         await storage?.removeCLibFuncTableCache(macAddr);
         // final cacheDir = await storage?.getCLibFuncTableCachePath(macAddr);
         // if (cacheDir != null) {
@@ -289,6 +291,41 @@ class _IDODeviceBind implements IDODeviceBind {
       logger?.e('setEncryptedAuthData error: $e');
       return false;
     }
+  }
+
+  @override
+  Future<IDOEncryptedAuthData?> getEncryptedAuthData(String macAddress) async {
+    if (macAddress.isEmpty) {
+      logger?.e('getEncryptedAuthData - empty macAddress');
+      return null;
+    }
+    try {
+      final keyMacAddress = macAddress.replaceAll(':', '').toUpperCase();
+      final jsonStr = await storage?.loadBindEncryptedDataByDisk(keyMacAddress);
+      if (jsonStr == null || jsonStr.isEmpty) {
+        logger?.d('getEncryptedAuthData - no cache, mac:$keyMacAddress');
+        return null;
+      }
+      final model = IDOEncryptedAuthData.fromJson(
+          Map<String, dynamic>.from(jsonDecode(jsonStr)));
+      logger?.d(
+          'getEncryptedAuthData ok, mac:$keyMacAddress, authLength:${model.authLength}');
+      return model;
+    } catch (e) {
+      logger?.e('getEncryptedAuthData error: $e');
+      return null;
+    }
+  }
+
+  /// 解绑当前 C 库正在使用的设备时，先清可靠缓存（pending + hc_*.bin），再删 c_files。
+  /// 不解绑其它设备目录：C 层 clear 只作用于当前 functionTablePath。
+  void _clearReliableCacheIfCurrentDevice(String macAddr) {
+    final current = _libMgr.macAddress.replaceAll(':', '').toUpperCase();
+    if (macAddr != current) {
+      return;
+    }
+    final rs = _coreMgr.clearReliableCacheRecords();
+    logger?.d('unbind clear reliable cache rs: $rs mac:$macAddr');
   }
 }
 
@@ -558,7 +595,7 @@ extension _IDODeviceBindExt on _IDODeviceBind {
     final encryptedVersion = map['encrypted_version'] as int;
     final encryptedData = map['encrypted_data'];
     final jsonData = {
-      'autu_data': encryptedData,
+      'auth_data': encryptedData,
       'encrypted_version': encryptedVersion,
       'auth_length': encryptedData.length
     };

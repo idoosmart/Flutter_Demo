@@ -75,6 +75,8 @@ enum SyncDataType {
   activityMerge,
   /// 宠物睡眠数据 (v3)
   petSleep,
+  /// 活动量数据 (v3，15.4.23)
+  activityAmount,
 }
 
 /// 同步整体进度 0-100
@@ -186,6 +188,36 @@ abstract class IDOSyncData {
   /// 获取支持的同步数据类型
   List<SyncDataType> getSupportSyncDataTypeList();
 
+  /// 确认一条已成功接收的可靠缓存记录（删除本地副本，后续同步不再重复上抛）
+  ///
+  /// [dataType] 与 [startSync] / 数据回调中的 [SyncDataType] 一致。
+  /// 按次数据：传完整年月日时分秒；按日数据：时分秒传 0。
+  /// 返回 0 成功；5 未找到；7 类型无法映射。
+  /// 可在 JSON 数据回调内立即调用。仅当 [setReliableCacheEnable] 开启后有效。
+  int consumeReliableCacheRecord({
+    required SyncDataType dataType,
+    required int year,
+    required int month,
+    required int day,
+    int hour = 0,
+    int minute = 0,
+    int second = 0,
+  });
+
+  /// 清理当前设备全部可靠缓存（不依赖开关）
+  ///
+  /// 不影响其它设备、同步进度与当日数据续传。
+  int clearReliableCacheRecords();
+
+  /// 开关数据同步可靠缓存（默认关闭）
+  ///
+  /// 开启后：历史数据会保留本地副本；未 [consumeReliableCacheRecord] 时，下次同步会再次上抛。
+  /// 建议在设备绑定 / 重连完成后、首次同步前调用一次。
+  int setReliableCacheEnable(bool enable);
+
+  /// 可靠缓存是否已开启
+  bool isReliableCacheEnabled();
+
 }
 
 /// SyncDataType映射到单项数据同步类型
@@ -260,6 +292,9 @@ extension SyncDataTypeExt on List<SyncDataType> {
           break;
         case SyncDataType.petSleep:
           list.add(22); // 22 宠物睡眠数据
+          break;
+        case SyncDataType.activityAmount:
+          list.add(23); // 23 同步活动量数据
           break;
         case SyncDataType.v2StepCount:
           break;
@@ -352,9 +387,23 @@ extension IntToSyncDataTypeExt on List<int> {
         case 22:
           list.add(SyncDataType.petSleep); // 22 宠物睡眠数据
           break;
+        case 23:
+          list.add(SyncDataType.activityAmount); // 23 同步活动量数据
+          break;
       }
     }
     return list;
+  }
+}
+
+/// 单个 [SyncDataType] → C 层 PROTOCOL_V3_HEALTH_DATA_TYPE；无法映射时为 null（如 V2 类型）
+extension SyncDataTypeToCHealthExt on SyncDataType {
+  int? get cHealthDataType {
+    final mapped = <SyncDataType>[this].mappingValues;
+    if (mapped.isEmpty) {
+      return null;
+    }
+    return mapped.first;
   }
 }
 

@@ -4,7 +4,9 @@ part 'watch_dail_info.g.dart';
 
 @JsonSerializable()
 class WatchDailInfo {
+  @JsonKey(name: 'block_size')
   final int? blockSize;
+  @JsonKey(name: 'family_name')
   final String? familyName;
   final int? format;
   final int? height;

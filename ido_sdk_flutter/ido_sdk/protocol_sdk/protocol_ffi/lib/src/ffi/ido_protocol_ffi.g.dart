@@ -273,6 +273,34 @@ class ProtocolFfiBindings {
   late final _setFilePath =
       _setFilePathPtr.asFunction<int Function(ffi.Pointer<ffi.Char>)>();
 
+  /// 开关 V3 健康同步可靠缓存（默认关闭）
+  ///
+  /// enable: 1 开启落盘+同步 replay；0 关闭（现网默认）
+  int setReliableCacheEnable(
+    int enable,
+  ) {
+    return _setReliableCacheEnable(
+      enable,
+    );
+  }
+
+  late final _setReliableCacheEnablePtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int)>>(
+          'setReliableCacheEnable');
+  late final _setReliableCacheEnable =
+      _setReliableCacheEnablePtr.asFunction<int Function(int)>();
+
+  /// 查询 V3 健康同步可靠缓存是否开启（1 开 / 0 关）
+  int isReliableCacheEnabled() {
+    return _isReliableCacheEnabled();
+  }
+
+  late final _isReliableCacheEnabledPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function()>>(
+          'isReliableCacheEnabled');
+  late final _isReliableCacheEnabled =
+      _isReliableCacheEnabledPtr.asFunction<int Function()>();
+
   /// @brief 设置持久化路径, 用于保存功能表数据, 初始化时调用即可，无顺序要求，最后不要加斜杠 /
   /// @param filePath 持久化目录路径
   /// @return SUCCESS(0) 成功
@@ -530,6 +558,61 @@ class ProtocolFfiBindings {
       _lookup<ffi.NativeFunction<ffi.Int Function()>>('stopSyncV3HealthData');
   late final _stopSyncV3HealthData =
       _stopSyncV3HealthDataPtr.asFunction<int Function()>();
+
+  /// 确认一条已落库的 V3 健康同步缓存（删除 C 库本地可靠副本）
+  ///
+  /// [data_type] 与 PROTOCOL_V3_HEALTH_DATA_TYPE 一致
+  /// 按天类型：hour/minute/second 传 0
+  /// 返回 SUCCESS(0)；ERROR_NOT_FIND(5) 未找到；ERROR_HEALTH_PERSIST_FAIL(28) 见同步完成回调
+  int consumeReliableCacheRecord(
+    int data_type,
+    int year,
+    int month,
+    int day,
+    int hour,
+    int minute,
+    int second,
+  ) {
+    return _consumeReliableCacheRecord(
+      data_type,
+      year,
+      month,
+      day,
+      hour,
+      minute,
+      second,
+    );
+  }
+
+  late final _consumeReliableCacheRecordPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int Function(ffi.Int, ffi.Int, ffi.Int, ffi.Int, ffi.Int, ffi.Int,
+              ffi.Int)>>('consumeReliableCacheRecord');
+  late final _consumeReliableCacheRecord =
+      _consumeReliableCacheRecordPtr.asFunction<
+          int Function(int, int, int, int, int, int, int)>();
+
+  /// 清理超过 TTL 的 V3 健康同步本地缓存
+  int purgeExpiredReliableCacheRecords() {
+    return _purgeExpiredReliableCacheRecords();
+  }
+
+  late final _purgeExpiredReliableCacheRecordsPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function()>>(
+          'purgeExpiredReliableCacheRecords');
+  late final _purgeExpiredReliableCacheRecords =
+      _purgeExpiredReliableCacheRecordsPtr.asFunction<int Function()>();
+
+  /// 清理全部可靠缓存
+  int clearReliableCacheRecords() {
+    return _clearReliableCacheRecords();
+  }
+
+  late final _clearReliableCacheRecordsPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function()>>(
+          'clearReliableCacheRecords');
+  late final _clearReliableCacheRecords =
+      _clearReliableCacheRecordsPtr.asFunction<int Function()>();
 
   /// @brief:手动停止快速同步配置
   /// @return int SUCCESS(0)成功
@@ -1346,6 +1429,40 @@ class ProtocolFfiBindings {
   late final _mkWatchDialFile = _mkWatchDialFilePtr.asFunction<
       int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, int)>();
 
+  /// @brief 制作(IWF)文件，按固件返回的压缩方式编码像素
+  /// @param compression_method 0x00 默认 0x01 分块 0x04 INDEX8
+  int mkWatchDialFileWithMethod(
+    ffi.Pointer<ffi.Char> file_path,
+    ffi.Pointer<ffi.Char> save_file_name,
+    int format,
+    int compression_method,
+    int tile_w,
+    int tile_h,
+  ) {
+    return _mkWatchDialFileWithMethod(
+      file_path,
+      save_file_name,
+      format,
+      compression_method,
+      tile_w,
+      tile_h,
+    );
+  }
+
+  late final _mkWatchDialFileWithMethodPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int Function(
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Int,
+              ffi.Uint8,
+              ffi.Uint8,
+              ffi.Uint8)>>('mkWatchDialFileWithMethod');
+  late final _mkWatchDialFileWithMethod =
+      _mkWatchDialFileWithMethodPtr.asFunction<
+          int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, int, int,
+              int, int)>();
+
   /// @brief:制作表盘压缩文件(iwf.lz) 压缩文件会自动添加文件名.lz后缀
   /// @param file_path 素材路径
   /// @param save_file_name 文件名
@@ -1405,6 +1522,43 @@ class ProtocolFfiBindings {
       _mkWatchDialFileCompressionPtr.asFunction<
           int Function(
               ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, int, int)>();
+
+  /// @brief 制作表盘压缩文件(iwf.lz)，按固件返回的压缩方式编码像素
+  /// @param compression_method 0x00 默认 0x01 分块 0x04 INDEX8
+  int mkWatchDialFileCompressionWithMethod(
+    ffi.Pointer<ffi.Char> file_path,
+    ffi.Pointer<ffi.Char> save_file_name,
+    int format,
+    int block_size,
+    int compression_method,
+    int tile_w,
+    int tile_h,
+  ) {
+    return _mkWatchDialFileCompressionWithMethod(
+      file_path,
+      save_file_name,
+      format,
+      block_size,
+      compression_method,
+      tile_w,
+      tile_h,
+    );
+  }
+
+  late final _mkWatchDialFileCompressionWithMethodPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int Function(
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Uint8,
+              ffi.Uint16,
+              ffi.Uint8,
+              ffi.Uint8,
+              ffi.Uint8)>>('mkWatchDialFileCompressionWithMethod');
+  late final _mkWatchDialFileCompressionWithMethod =
+      _mkWatchDialFileCompressionWithMethodPtr.asFunction<
+          int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, int, int,
+              int, int, int)>();
 
   /// @brief 制作(EPO.DAT/.pgl)文件
   /// @param file_path 素材路径
@@ -2032,6 +2186,19 @@ class ProtocolFfiBindings {
           'ProtocolV2MissedCallEvt');
   late final _ProtocolV2MissedCallEvt =
       _ProtocolV2MissedCallEvtPtr.asFunction<int Function()>();
+
+  /// @brief v2发送来电提醒状态为通话中挂断, 告诉设备停止提醒用户(部分设备实现)
+  /// @note 需功能表 v2_set_notice_hang_up_in_call 为 true
+  /// @return SUCCESS(0)成功
+  int ProtocolV2HangUpInCallEvt() {
+    return _ProtocolV2HangUpInCallEvt();
+  }
+
+  late final _ProtocolV2HangUpInCallEvtPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function()>>(
+          'ProtocolV2HangUpInCallEvt');
+  late final _ProtocolV2HangUpInCallEvt =
+      _ProtocolV2HangUpInCallEvtPtr.asFunction<int Function()>();
 
   /// @brief 获取flash日志开始
   /// @param type 日志类型

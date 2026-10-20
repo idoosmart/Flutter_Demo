@@ -248,11 +248,41 @@ class _WallpaperDialManager {
       if (namedDir.existsSync() && !temp.existsSync()) {
         namedDir.renameSync(tempDir);
       }
+      // 兼容历史错误包（zip 内带 temp/ 前缀）解压后的错层目录
+      await _flattenNestedTempDirIfNeeded(tempDir);
       return true;
     } catch (e) {
       logger?.e('unpackTempCwdPackage error: $e');
       return false;
     }
+  }
+
+  /// 若 iwf.json 落在 temp/temp/ 下而非 temp/，将内层文件提升到 tempCwdDir
+  static Future<void> _flattenNestedTempDirIfNeeded(String tempDir) async {
+    final iwfAtRoot = File(path.join(tempDir, _cwdDeviceJson));
+    if (iwfAtRoot.existsSync()) return;
+    final nestedDir = Directory(path.join(tempDir, _tempName));
+    final nestedIwf = File(path.join(nestedDir.path, _cwdDeviceJson));
+    if (!nestedDir.existsSync() || !nestedIwf.existsSync()) return;
+    await for (final entity in nestedDir.list(recursive: false)) {
+      final name = path.basename(entity.path);
+      final dest = path.join(tempDir, name);
+      if (entity is Directory) {
+        final destDir = Directory(dest);
+        if (destDir.existsSync()) {
+          destDir.deleteSync(recursive: true);
+        }
+        entity.renameSync(dest);
+      } else if (entity is File) {
+        final destFile = File(dest);
+        if (destFile.existsSync()) destFile.deleteSync();
+        entity.renameSync(dest);
+      }
+    }
+    if (nestedDir.existsSync()) {
+      nestedDir.deleteSync(recursive: true);
+    }
+    logger?.i('flatten nested temp dir under $tempDir');
   }
 
   static Future<bool> prepareDeviceTempCwdResource(String dialName) async {
@@ -267,9 +297,11 @@ class _WallpaperDialManager {
     try {
       final zipPath = await tempZipPath();
       await _FileManager.createDirToDocument(path.dirname(zipPath));
+      // includeDirName:false 对齐 Android ZipUtils.zip，避免 zip 内多一层 temp/
       return await _FileManager.zipDirectory(
         zipFilePath: zipPath,
         directoryList: [Directory(await tempCwdDir())],
+        includeDirName: false,
       );
     } catch (e) {
       logger?.e('packTempCwdPackage error: $e');

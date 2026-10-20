@@ -256,6 +256,8 @@ extension _SyncTask on SyncTask {
         dataType = SyncJsonType.HRV;
       }else if (type == 7015) {
         dataType = SyncJsonType.petSleep;
+      }else if (type == 7016) {
+        dataType = SyncJsonType.activityAmount;
       }else if (type == 7004) {
         dataType = SyncJsonType.activity;
       }else if (type == 7005) {

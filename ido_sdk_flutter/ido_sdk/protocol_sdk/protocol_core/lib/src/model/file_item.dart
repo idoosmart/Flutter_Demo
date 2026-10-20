@@ -87,7 +87,8 @@ class FileTranItem {
   String? macAddress;
 
   /// 设备平台 0:nordic, 10:realtek 8762x, 20:cypress psoc6, 30:Apollo3, 40:汇顶, 50:nordic+泰凌微,
-  /// 60:泰凌微+5340+no nand flash, 70:汇顶+富瑞坤, 80:5340, 90: 炬芯, 97: 恒玄, 98: 思澈1, 99: 思澈2
+  /// 60:泰凌微+5340+no nand flash, 70:汇顶+富瑞坤, 80:5340, 90: 炬芯, 91: 炬芯 Actions OTA,
+  /// 97: 恒玄, 98: 思澈1, 99: 思澈2
   int? platform;
 
   FileTranItem({

@@ -8,7 +8,7 @@ import '../../private/logger/logger.dart';
 
 part 'private/phone_calendar_manager_impl.dart';
 
-/// 手机日历全量 .cal 同步管理
+/// 手机日历全量同步管理
 abstract class IDOPhoneCalendarManager {
   factory IDOPhoneCalendarManager() => _IDOPhoneCalendarManager();
 
@@ -18,16 +18,16 @@ abstract class IDOPhoneCalendarManager {
   /// 是否正在同步/传输
   bool get isSyncing;
 
-  /// 全量 .cal 同步：operate=1（内部，仅取 max_file_size）→ C 裁剪组包 → 文件传输
-  ///
-  /// [updateTime] 写入 `.cal` 文件头，由 App 传入（参考通讯录 `v2_conta.ml` 头时间）。
+  /// 全量同步日程到设备（可指定裁剪策略）。
+  /// [events] 为 `null` 或空列表时清空设备日历（组包 JSON 分别为 `items: null` / `items: []`）。
+  /// Full sync. Null or empty [events] clears device calendar (`items: null` / `items: []`).
   Future<PhoneCalendarSyncResult> syncPhoneCalendar({
-    required List<PhoneCalendarEvent> events,
+    List<PhoneCalendarEvent>? events,
     PhoneCalendarCropStrategy? strategy,
     void Function(double progress)? onTransferProgress,
     void Function(FileTransStatus status)? onTransferStatus,
   });
 
-  /// 终止进行中的 .cal 传输
+  /// 终止进行中的同步传输
   void stopSync();
 }

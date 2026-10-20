@@ -1,101 +1,32 @@
-# Add project specific ProGuard rules here.
-# By default, the flags in this file are appended to flags specified
-# in E:\tools\sdk/tools/proguard/proguard-android.txt
-# You can edit the include path and order by changing the proguardFiles
-# directive in build.gradle.
+# ============================================================
+# IDO Bluetooth SDK（flutter_bluetooth）—— 下发给接入方 App 的 ProGuard / R8 规则
 #
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# 本文件由 build.gradle 的 consumerProguardFiles 声明，会被 AGP 打进 AAR 的
+# proguard.txt，并自动合并进接入方 App 的 R8 配置。因此这里只允许出现 SDK
+# 自身运行所必需的规则：
+#   - 不得出现作用于整个 App 的全局 keep（四大组件、公共库整包等）
+#   - 不得出现 -optimizations / -optimizationpasses 等会改变接入方构建行为
+#     的开关
+# 违反上述约束会拉低 Google Play「DEX 代码优化」的
+# shrinking / optimization / obfuscation 覆盖率（要求不低于 25%）。
+#
+# SDK 自身构建时的混淆配置请改 proguard-rules.pro，那份不会下发给接入方，
+# 两个文件用途不同，勿相互复制。
+# ============================================================
 
-# Add any project specific keep options here:
+# ---------- SDK 对外 API 与 GsonUtil 反射解析的数据类 ----------
+-keep class com.idosmart.bluetooth.** { *; }
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# ---------- Nordic DFU（Flutter 默认随库传递；Native AAR 打包时为 compileOnly）----------
+# 打包态（idoSdkPackaging=true）下 App 须按需 implementation dfu:2.5.0；
+# 已集成时 keep Service/回调相关类；未集成时 -dontwarn 避免 R8 Missing class。
+-keep class no.nordicsemi.android.dfu.** { *; }
+-dontwarn no.nordicsemi.android.dfu.**
+-dontwarn no.nordicsemi.android.error.**
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
-
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
-
--optimizationpasses 5
--dontusemixedcaseclassnames
--dontskipnonpubliclibraryclasses
--dontpreverify
--verbose
-
--keepattributes Signature #过滤泛型 用到发射，泛型等要添加这个
+# ---------- Gson 反射所需的元数据属性 ----------
+-keepattributes Signature
 -keepattributes *Annotation*
 
--optimizations !code/simplification/arithmetic,!field/*,!class/merging/*
-
-#如果你使用了ProGuard来导入第三方jar这个地方就不用配置了
-#-libraryjars ../meddo/libs/android.jar
-#-libraryjars ../meddo/libs/gson-2.5.jar
-#-libraryjars ../meddo/libs/okhttp-2.5.0.jar
-#-libraryjars ../meddo/libs/okio-1.6.0.jar
-
--keep public class * extends android.app.Activity
--keep public class * extends android.app.Application
--keep public class * extends android.app.Service
--keep public class * extends android.content.BroadcastReceiver
--keep public class * extends android.content.ContentProvider
-#-keep public class com.android.vending.licensing.ILicensingService
-
-#-keepclasseswithmembernames class * {
-#    native <methods>;
-#}
-#
-#-keepclasseswithmembernames class * {
-#    public <init>(android.content.Context, android.util.AttributeSet);
-#}
-#
-#-keepclasseswithmembernames class * {
-#    public <init>(android.content.Context, android.util.AttributeSet, int);
-#}
-
-#-keepclassmembers enum * {
-#    public static **[] values();
-#    public static ** valueOf(java.lang.String);
-#}
-
-#-keep class * implements android.os.Parcelable {
-#  public static final android.os.Parcelable$Creator *;
-#}
-#公开两个方法供使用者调用
-#-keep public class com.hsji.makejar.MeddoInterface{
-# public static void UserLogin(java.util.HashMap, com.hsji.makejar.network.ResultCallback);
-# public static void init(android.content.Context);
-#}
-#解析数据是用的的bean  完全不混淆，不然解析json数据时什么都找不到
-#-keep public class com.hsji.makejar.UserLoginResponse{*;}
-#不要混淆ResultCallback的public方法
-#-keep public class com.hsji.makejar.network.ResultCallback{
-# public <methods>;
-#}
-
-#okhttp
-#-dontwarn com.squareup.okhttp.**
-#
-#-keep class com.squareup.okhttp.** { *;}
-#
-#-dontwarn okio.**
-#
-#-keep class okio.** {*;}
--dontwarn no.nordicsemi.android.dfu.**
-#json
+# ---------- 仅抑制告警，不阻止 R8 优化 ----------
 -dontwarn com.google.gson.**
--keep class com.google.gson.**{*;}
-
--keep class com.realsil.**{*;}
-
-#升级
--keep class com.idosmart.bluetooth.**{*;}
-
--keep class no.nordicsemi.android.dfu.**{ *; }

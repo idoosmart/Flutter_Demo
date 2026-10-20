@@ -148,7 +148,8 @@ abstract class LocalStorage {
   Future<bool> saveFirmwareVersionToDisk(FirmwareVersionModel fwVersion);
 
   // 绑定 授权码
-  Future<String?> loadBindEncryptedDataByDisk();
+  /// [macAddress] 为空时使用当前 config.macAddress
+  Future<String?> loadBindEncryptedDataByDisk([String? macAddress]);
   Future<bool> saveBindEncryptedDataToDisk(String data, [String? macAddress]);
   Future<bool> cleanBindEncryptedData();
 

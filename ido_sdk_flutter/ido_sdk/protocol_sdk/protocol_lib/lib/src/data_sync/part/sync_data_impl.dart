@@ -58,7 +58,7 @@ class _IDOSyncData implements IDOSyncData {
   @override
   List<SyncDataType> getSupportSyncDataTypeList() {
     // 目前支持单项同步的类型
-    final syncTypes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15, 16, 20, 21, 22];
+    final syncTypes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15, 16, 20, 21, 22, 23];
     final supportSyncDataTypes = <int>[];
     for (var type in syncTypes) {
       final rs = IDOProtocolCoreManager().isSupportSyncHealthDataType(type);
@@ -67,6 +67,46 @@ class _IDOSyncData implements IDOSyncData {
       }
     }
     return supportSyncDataTypes.mappingValues;
+  }
+
+  @override
+  int consumeReliableCacheRecord({
+    required SyncDataType dataType,
+    required int year,
+    required int month,
+    required int day,
+    int hour = 0,
+    int minute = 0,
+    int second = 0,
+  }) {
+    final cType = dataType.cHealthDataType;
+    if (cType == null) {
+      return ErrorCode.invalid_param;
+    }
+    return IDOProtocolCoreManager().consumeReliableCacheRecord(
+      dataType: cType,
+      year: year,
+      month: month,
+      day: day,
+      hour: hour,
+      minute: minute,
+      second: second,
+    );
+  }
+
+  @override
+  int clearReliableCacheRecords() {
+    return IDOProtocolCoreManager().clearReliableCacheRecords();
+  }
+
+  @override
+  int setReliableCacheEnable(bool enable) {
+    return IDOProtocolCoreManager().setReliableCacheEnable(enable);
+  }
+
+  @override
+  bool isReliableCacheEnabled() {
+    return IDOProtocolCoreManager().isReliableCacheEnabled();
   }
 
 }

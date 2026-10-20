@@ -531,6 +531,16 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
                 result.success(false)
                 return
             }
+            if (!isNordicDfuLibAvailable()) {
+                val msg =
+                    "Missing dependency no.nordicsemi.android:dfu:2.5.0. " +
+                        "Add it to the app build.gradle when using Nordic Legacy/Secure DFU."
+                Logger.e("startDFU: $msg")
+                val mac = params["macAddress"] as String? ?: ""
+                onDfuFailed(BleDFUState.FailReason.OTHER, mac)
+                result.success(false)
+                return
+            }
 //            val dfuConfig = JSON.parseObject(JSON.toJSONString(params), BleDFUConfig::class.java)
 //            {isNeedAuth=false, macAddress=E3:D3:2F:A1:8F:EF, isDeviceSupportPairedWithPhoneSystem=false, filePath=/data/user/0/com.watch.life.test/app_flutter/ota/379/ID206_dfu_V115.zip, isNeedReOpenBluetoothSwitchIfFailed=true, maxRetryTime=6, otaWorkMode=0, uuid=, deviceId=null, PRN=0, platform=0}
             val dfuConfig = BleDFUConfig()
@@ -561,6 +571,21 @@ class FlutterBluetoothPlugin : FlutterPlugin, MethodCallHandler,
         } catch (e: Exception) {
             e.printStackTrace()
             Logger.e("startDFU failed: $e")
+            result.success(false)
+        }
+    }
+
+    /**
+     * Nordic DFU 为 compileOnly：未声明依赖时不得加载 NodicDFUManager / DFUService。
+     */
+    private fun isNordicDfuLibAvailable(): Boolean {
+        return try {
+            Class.forName("no.nordicsemi.android.dfu.DfuServiceInitiator")
+            true
+        } catch (_: ClassNotFoundException) {
+            false
+        } catch (_: NoClassDefFoundError) {
+            false
         }
     }
 

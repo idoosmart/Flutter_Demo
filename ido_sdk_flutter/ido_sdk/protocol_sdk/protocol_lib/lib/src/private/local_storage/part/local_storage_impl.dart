@@ -195,8 +195,9 @@ class _LocalStorage implements LocalStorage {
   }
 
   @override
-  Future<String?> loadBindEncryptedDataByDisk() {
-    return getString(key: _keyBindEncryptedData);
+  Future<String?> loadBindEncryptedDataByDisk([String? macAddress]) async {
+    final storage = await getStorage();
+    return storage.read<String>(k(_keyBindEncryptedData, macAddress));
   }
 
   @override

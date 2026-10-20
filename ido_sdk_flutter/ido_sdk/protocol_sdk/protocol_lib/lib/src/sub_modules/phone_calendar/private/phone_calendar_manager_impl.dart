@@ -35,7 +35,7 @@ class _IDOPhoneCalendarManager implements IDOPhoneCalendarManager {
 
   @override
   Future<PhoneCalendarSyncResult> syncPhoneCalendar({
-    required List<PhoneCalendarEvent> events,
+    List<PhoneCalendarEvent>? events,
     PhoneCalendarCropStrategy? strategy,
     void Function(double progress)? onTransferProgress,
     void Function(FileTransStatus status)? onTransferStatus,
@@ -54,11 +54,6 @@ class _IDOPhoneCalendarManager implements IDOPhoneCalendarManager {
       logger?.w('[PhoneCalendar] sync already in progress');
       return const PhoneCalendarSyncResult(
         errCode: PhoneCalendarSyncErrCode.packOrTransferFailed,
-      );
-    }
-    if (events.isEmpty) {
-      return const PhoneCalendarSyncResult(
-        errCode: PhoneCalendarSyncErrCode.invalidParam,
       );
     }
 
@@ -84,8 +79,12 @@ class _IDOPhoneCalendarManager implements IDOPhoneCalendarManager {
         ...resolvedStrategy.toJson(),
         ...updateTime.toJson(),
         'max_file_size': meta['support_max_size'],
-        'items': events.map((e) => e.toJson()).toList(),
       };
+      if (events == null) {
+        syncJson['items'] = null;
+      } else {
+        syncJson['items'] = events.map((e) => e.toJson()).toList();
+      }
 
       final syncPayload = jsonEncode(syncJson);
       _logAppJson('syncPhoneCalendarCal request', syncPayload);

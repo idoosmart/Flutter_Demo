@@ -190,7 +190,12 @@ extension IDONordicDFUManager: FirmwareUpgradeDelegate{
         
         guard bytesSent < imageSize else {
             let averageSpeedInKiloBytesPerSecond = Double(imageSize - initialBytes) / msSinceUploadBegan
-            _logNative("[Ring OTA] uploadProgressDidChange:\(imageSize) bytes sent avg \(String(format: "%.2f kB/s",averageSpeedInKiloBytesPerSecond))")
+            let speed = String(format: "%.2f kB/s", averageSpeedInKiloBytesPerSecond)
+            let progress = Float(bytesSent) / Float(imageSize)
+            _logNative("[Ring OTA] uploadProgressDidChange progress: \(progress) speed: \(speed) bytesSent : \(bytesSent) , imageSize: \(imageSize),timestamp: \(timestamp)")
+            _logNative("[Ring OTA] uploadProgressDidChange:\(imageSize) bytes sent avg \(speed)")
+            // 补报 100%，让上层兜底能触发
+            delegate?.uploadProgressDidChange(speed: speed, progress: 1.0, bytesSent: imageSize, imageSize: imageSize, timestamp: timestamp)
             return
         }
         

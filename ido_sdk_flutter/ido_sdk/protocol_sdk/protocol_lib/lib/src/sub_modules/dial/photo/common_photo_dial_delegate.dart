@@ -171,9 +171,13 @@ abstract class _CommonPhotoDialDelegate {
     }
     final isSifli = libManager.deviceInfo.isSilfiPlatform();
     final fileType = isSifli ? FileTransType.watch : FileTransType.iwf_lz;
+    // Actions 等平台打包产物为固定 temp.zip，传输名必须用 dialFaceName（如 custom1），
+    // 否则会变成 temp.zip.iwf.lz。思澈 .watch 包本身已带正确文件名。
     final fileName = isSifli
-        ? '${path.basename(filePath)}'
-        : path.basename(filePath);
+        ? path.basename(filePath)
+        : (dialFaceName?.deleteIWF().isNotEmpty == true
+            ? dialFaceName!.deleteIWF()
+            : path.basenameWithoutExtension(filePath));
     final watchFile = File(filePath);
     final fileSize =
         watchFile.existsSync() ? await watchFile.length() : 0;
@@ -182,6 +186,7 @@ abstract class _CommonPhotoDialDelegate {
       onFailed?.call(IDOPhotoDialInstallStatus.failed, '表盘文件为空');
       return;
     }
+    saveDialLog('transfer start: type=$fileType name=$fileName path=$filePath');
     final fileItem = NormalFileModel(
       fileType: fileType,
       filePath: filePath,

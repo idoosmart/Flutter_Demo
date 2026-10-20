@@ -30,4 +30,48 @@ extension IDOProtocolCoreManagerExtSyncData on IDOProtocolCoreManager {
     print("isSupportSyncHealthDataType dataType:$dataType rs: $rs");
     return rs != 0;
   }
+
+  /// 开关数据同步可靠缓存（默认关闭）
+  ///
+  /// 开启后须配合 [consumeReliableCacheRecord]；现网未接 consume 的客户请保持关闭。
+  int setReliableCacheEnable(bool enable) {
+    return IDOProtocolClibManager()
+        .cLib
+        .setReliableCacheEnable(enable: enable);
+  }
+
+  /// 查询数据同步可靠缓存是否开启
+  bool isReliableCacheEnabled() {
+    return IDOProtocolClibManager().cLib.isReliableCacheEnabled();
+  }
+
+  /// 确认一条已落库的 V3 健康同步缓存
+  ///
+  /// 按条：传完整年月日时分秒；按天：时分秒传 0。
+  /// [dataType] 为 C 层 PROTOCOL_V3_HEALTH_DATA_TYPE（由 protocol_lib 从 SyncDataType 映射后传入）。
+  /// 返回 0 成功（含尚未落盘：已记 pending）。
+  int consumeReliableCacheRecord({
+    required int dataType,
+    required int year,
+    required int month,
+    required int day,
+    int hour = 0,
+    int minute = 0,
+    int second = 0,
+  }) {
+    return IDOProtocolClibManager().cLib.consumeReliableCacheRecord(
+      dataType: dataType,
+      year: year,
+      month: month,
+      day: day,
+      hour: hour,
+      minute: minute,
+      second: second,
+    );
+  }
+
+  /// 清理全部可靠缓存（不依赖开关）
+  int clearReliableCacheRecords() {
+    return IDOProtocolClibManager().cLib.clearReliableCacheRecords();
+  }
 }

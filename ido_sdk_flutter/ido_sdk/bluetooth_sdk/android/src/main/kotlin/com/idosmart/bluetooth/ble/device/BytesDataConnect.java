@@ -32,7 +32,7 @@ public abstract class BytesDataConnect extends BaseConnect {
     /**
      * 发送过去之后，无响应的超时时间
      */
-    private static final long TIME_SEND_TIMEOUT = 3000;
+    private static final long TIME_SEND_TIMEOUT = 10 * 1000;
 
     private static final int MAX_CMD_QUEUE_SIZE = 30;
     /**

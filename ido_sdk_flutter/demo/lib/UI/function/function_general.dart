@@ -11,7 +11,6 @@ import 'setting/preventLost_set.dart';
 import 'setting/smartNotfity_set.dart';
 import 'setting/currentTime_set.dart';
 import 'setting/alarmRemind_set.dart';
-import 'setting/longSitRemind_set.dart';
 import 'setting/heartRateMode_set.dart';
 import 'setting/heartInterval_Set.dart';
 import 'setting/noDisturbMode_set.dart';
@@ -191,8 +190,7 @@ class _GeneralState extends State<GeneralContent> {
         RebootDeviceSet(navTitle: S.current.rebootdevice), // 重启设备
     S.current.setalarmremind:
         AlarmRemindSet(navTitle: S.current.setalarmremind), // 设置闹钟提醒
-    S.current.setlongsitremind:
-        LongSitRemindSet(navTitle: S.current.setlongsitremind), // 设置久坐提醒
+    // setLongSit 已废弃，入口隐藏；请使用走动提醒 setWalkRemind
     S.current.setweatherforecast:
         FindPhoneSet(navTitle: S.current.setweatherforecast), // 设置v2天气预报
     S.current.setheartratemode:

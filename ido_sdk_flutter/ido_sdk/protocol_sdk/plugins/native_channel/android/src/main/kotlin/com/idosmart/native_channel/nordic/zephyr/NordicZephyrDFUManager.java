@@ -14,6 +14,7 @@ import com.idosmart.native_channel.common.presenter.BaseDFUPresenter;
 import com.idosmart.native_channel.common.presenter.DFULibProgressStateChangePresenter;
 import com.idosmart.native_channel.common.presenter.IBaseDFUPresenter;
 import com.idosmart.native_channel.common.presenter.IDFULibProgressStateChange;
+import com.idosmart.native_channel.nordic.NordicToFlutterImpl;
 
 import io.runtime.mcumgr.exception.McuMgrException;
 
@@ -210,6 +211,7 @@ public class NordicZephyrDFUManager {
 
 
     private static void printLog(String log){
-        LogTool.p(TAG,log);
+        //LogTool.p(TAG,log);
+        NordicToFlutterImpl.INSTANCE.log(log);
     }
 }

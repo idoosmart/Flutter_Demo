@@ -94,6 +94,26 @@ extension IDOProtocolCoreManagerExtTools on IDOProtocolCoreManager {
         blockSize: blockSize);
   }
 
+  /// 制作表盘压缩文件(iwf.lz)，按固件 compression_method 编码像素
+  /// compressionMethod: 0x00 默认 0x01 分块 0x04 INDEX8
+  int makeWatchDialFileCompressionWithMethod(
+      {required String filePath,
+      required String saveFileName,
+      required int format,
+      required int blockSize,
+      required int compressionMethod,
+      required int tileW,
+      required int tileH}) {
+    return IDOProtocolClibManager().cLib.makeWatchDialFileCompressionWithMethod(
+        filePath: filePath,
+        saveFileName: saveFileName,
+        format: format,
+        blockSize: blockSize,
+        compressionMethod: compressionMethod,
+        tileW: tileW,
+        tileH: tileH);
+  }
+
   /// 制作(IWF)文件,根据表盘包获取到IWF文件接口
   /// ```dart
   /// filePath 素材路径
@@ -412,6 +432,12 @@ extension IDOProtocolCoreManagerExtTools on IDOProtocolCoreManager {
   /// v2发送来电提醒状态为来电已拒, 告诉设备停止提醒用户(部分设备实现)
   int missedV2MissedCallEvt() {
     return IDOProtocolClibManager().cLib.missedV2MissedCallEvt();
+  }
+
+  /// v2发送来电提醒状态为通话中挂断, 告诉设备停止提醒用户(部分设备实现)
+  /// 需功能表 v2_set_notice_hang_up_in_call 为 true
+  int hangUpV2InCallEvt() {
+    return IDOProtocolClibManager().cLib.hangUpV2InCallEvt();
   }
 
   /// 设置持久化路径, 用于保存功能表数据, 初始化时调用即可，无顺序要求，最后不要加斜杠 /

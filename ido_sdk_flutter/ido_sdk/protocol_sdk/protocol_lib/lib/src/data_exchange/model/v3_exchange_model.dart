@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:json_annotation/json_annotation.dart';
 
+import 'base_exchange_model.dart';
+
 part 'v3_exchange_model.g.dart';
 
 @JsonSerializable()
@@ -214,6 +216,9 @@ class IDOV3ExchangeModel {
   /// 上个月平均每周的运动时间 单位分钟
   int? avgWeekActivityTime;
 
+  /// 泳池长度，单位米，支持小数
+  double? swimPoolDistance;
+
   /// 摄氧量等级  1:低等 2:业余 3:一般 4：平均 5：良好 6：优秀 7：专业
   int? grade;
 
@@ -403,6 +408,198 @@ class IDOV3ExchangeModel {
   @JsonKey(name: "act_type")
   int? actType;
 
+  /// 总挥拍次数（version=0x21）
+  /// Total swings count (version=0x21)
+  @JsonKey(name: 'total_swings_num')
+  int? totalSwingsNum;
+
+  /// 总仰卧起坐次数（version=0x21）
+  /// Total sit-up count (version=0x21)
+  @JsonKey(name: 'total_sit_up_count')
+  int? totalSitUpCount;
+
+  int? load;
+
+  @JsonKey(name: 'body_age')
+  int? bodyAge;
+
+  @JsonKey(name: 'distance3d')
+  int? distance3d;
+
+  @JsonKey(name: 'avg_3d_speed')
+  int? avg3dSpeed;
+
+  @JsonKey(name: 'avg_vertical_speed')
+  int? avgVerticalSpeed;
+
+  @JsonKey(name: 'avg_slope')
+  int? avgSlope;
+
+  @JsonKey(name: 'gps_status')
+  int? gpsStatus;
+
+  @JsonKey(name: 'running_economy')
+  int? runningEconomy;
+
+  @JsonKey(name: 'max_running_power')
+  int? maxRunningPower;
+
+  @JsonKey(name: 'min_running_power')
+  int? minRunningPower;
+
+  @JsonKey(name: 'avg_running_power')
+  int? avgRunningPower;
+
+  @JsonKey(name: 'running_power_count')
+  int? runningPowerCount;
+
+  @JsonKey(name: 'rtpe_count')
+  int? rtpeCount;
+
+  @JsonKey(name: 'max_rtoc')
+  int? maxRtoc;
+
+  @JsonKey(name: 'min_rtoc')
+  int? minRtoc;
+
+  @JsonKey(name: 'avg_rtoc')
+  int? avgRtoc;
+
+  @JsonKey(name: 'rtoc_count')
+  int? rtocCount;
+
+  @JsonKey(name: 'max_rope_frequency')
+  int? maxRopeFrequency;
+
+  @JsonKey(name: 'min_rope_frequency')
+  int? minRopeFrequency;
+
+  @JsonKey(name: 'avg_rope_frequency')
+  int? avgRopeFrequency;
+
+  @JsonKey(name: 'max_rope_skip_count')
+  int? maxRopeSkipCount;
+
+  @JsonKey(name: 'rope_trip_count')
+  int? ropeTripCount;
+
+  @JsonKey(name: 'total_rope_count')
+  int? totalRopeCount;
+
+  @JsonKey(name: 'rope_item_count')
+  int? ropeItemCount;
+
+  @JsonKey(name: 'km_pace')
+  int? kmPace;
+
+  @JsonKey(name: 'fast_km_pace')
+  int? fastKmPace;
+
+  @JsonKey(name: 'km_pace_count')
+  int? kmPaceCount;
+
+  @JsonKey(name: 'mi_pace_count')
+  int? miPaceCount;
+
+  @JsonKey(name: 'pace_real_time_count')
+  int? paceRealTimeCount;
+
+  @JsonKey(name: 'aerobic_power_interval')
+  int? aerobicPowerInterval;
+
+  @JsonKey(name: 'mixed_oxygen_power_interval')
+  int? mixedOxygenPowerInterval;
+
+  @JsonKey(name: 'threshold_running_power_interval')
+  int? thresholdRunningPowerInterval;
+
+  @JsonKey(name: 'intermittent_run_power_interval')
+  int? intermittentRunPowerInterval;
+
+  @JsonKey(name: 'sprint_run_power_interval')
+  int? sprintRunPowerInterval;
+
+  @JsonKey(name: 'stride_count')
+  int? strideCount;
+
+  @JsonKey(name: 'stride_items')
+  List<int>? strideItems = [];
+
+  @JsonKey(name: 'item_running_power')
+  List<int>? itemRunningPower = [];
+
+  @JsonKey(name: 'item_rtpe')
+  List<int>? itemRtpe = [];
+
+  @JsonKey(name: 'item_rtoc')
+  List<int>? itemRtoc = [];
+
+  @JsonKey(name: 'item_rope_info')
+  List<IDOActivityRopeSkipItem>? itemRopeInfo = [];
+
+  @JsonKey(name: 'smart_competitor')
+  int? smartCompetitor;
+
+  @JsonKey(name: 'ai_image_id')
+  int? aiImageId;
+
+  @JsonKey(name: 'user_image_id')
+  int? userImageId;
+
+  @JsonKey(name: 'bg_image_id')
+  int? bgImageId;
+
+  @JsonKey(name: 'smart_competitor_pace')
+  int? smartCompetitorPace;
+
+  @JsonKey(name: 'tennis_serve_count')
+  int? tennisServeCount;
+
+  @JsonKey(name: 'tennis_forehead_count')
+  int? tennisForeheadCount;
+
+  @JsonKey(name: 'tennis_backhand_count')
+  int? tennisBackhandCount;
+
+  /// 与 tennis_serve_count 同值（C JSON 双写，兼容旧 APP）
+  @JsonKey(name: 'serve_count')
+  int? serveCount;
+
+  /// 与 tennis_forehead_count 同值（C JSON 双写，兼容旧 APP）
+  @JsonKey(name: 'forehand_count')
+  int? forehandCount;
+
+  /// 与 tennis_backhand_count 同值（C JSON 双写，兼容旧 APP）
+  @JsonKey(name: 'backhand_count')
+  int? backhandCount;
+
+  @JsonKey(name: 'trips')
+  int? trips;
+
+  @JsonKey(name: 'average_swolf')
+  int? averageSwolf;
+
+  @JsonKey(name: 'total_strokes_number')
+  int? totalStrokesNumber;
+
+  @JsonKey(name: 'swimming_posture')
+  int? swimmingPosture;
+
+  @JsonKey(name: 'swimming_avg_pace')
+  int? swimmingAvgPace;
+
+  @JsonKey(name: 'avg_frequency')
+  int? avgFrequency;
+
+  @JsonKey(name: 'swimming_pool_distance')
+  double? swimmingPoolDistance;
+
+  @JsonKey(name: 'swimming_item_count')
+  int? swimmingItemCount;
+
+  @JsonKey(name: 'swimming_items')
+  List<IDOActivitySwimmingLapItem>? swimmingItems = [];
+
   IDOV3ExchangeModel({
     this.year = 0,
     this.month = 0,
@@ -471,6 +668,7 @@ class IDOV3ExchangeModel {
     this.hrCompletionRate = 0,
     this.recoverTime = 0,
     this.avgWeekActivityTime = 0,
+    this.swimPoolDistance = 0,
     this.grade = 0,
     this.actionData = const [],
     this.trainingOffset = 0,
@@ -516,6 +714,68 @@ class IDOV3ExchangeModel {
     this.thresholdZoneTime = 0,
     this.anaerobicZoneTime = 0,
     this.intervalZoneTime = 0,
+    this.totalSwingsNum = 0,
+    this.totalSitUpCount = 0,
+    this.load = 0,
+    this.bodyAge = 0,
+    this.distance3d = 0,
+    this.avg3dSpeed = 0,
+    this.avgVerticalSpeed = 0,
+    this.avgSlope = 0,
+    this.gpsStatus = 0,
+    this.runningEconomy = 0,
+    this.maxRunningPower = 0,
+    this.minRunningPower = 0,
+    this.avgRunningPower = 0,
+    this.runningPowerCount = 0,
+    this.rtpeCount = 0,
+    this.maxRtoc = 0,
+    this.minRtoc = 0,
+    this.avgRtoc = 0,
+    this.rtocCount = 0,
+    this.maxRopeFrequency = 0,
+    this.minRopeFrequency = 0,
+    this.avgRopeFrequency = 0,
+    this.maxRopeSkipCount = 0,
+    this.ropeTripCount = 0,
+    this.totalRopeCount = 0,
+    this.ropeItemCount = 0,
+    this.kmPace = 0,
+    this.fastKmPace = 0,
+    this.kmPaceCount = 0,
+    this.miPaceCount = 0,
+    this.paceRealTimeCount = 0,
+    this.aerobicPowerInterval = 0,
+    this.mixedOxygenPowerInterval = 0,
+    this.thresholdRunningPowerInterval = 0,
+    this.intermittentRunPowerInterval = 0,
+    this.sprintRunPowerInterval = 0,
+    this.strideCount = 0,
+    this.strideItems = const [],
+    this.itemRunningPower = const [],
+    this.itemRtpe = const [],
+    this.itemRtoc = const [],
+    this.itemRopeInfo = const [],
+    this.smartCompetitor = 0,
+    this.aiImageId = 0,
+    this.userImageId = 0,
+    this.bgImageId = 0,
+    this.smartCompetitorPace = 0,
+    this.tennisServeCount = 0,
+    this.tennisForeheadCount = 0,
+    this.tennisBackhandCount = 0,
+    this.serveCount = 0,
+    this.forehandCount = 0,
+    this.backhandCount = 0,
+    this.trips = 0,
+    this.averageSwolf = 0,
+    this.totalStrokesNumber = 0,
+    this.swimmingPosture = 0,
+    this.swimmingAvgPace = 0,
+    this.avgFrequency = 0,
+    this.swimmingPoolDistance = 0,
+    this.swimmingItemCount = 0,
+    this.swimmingItems = const [],
   });
 
   factory IDOV3ExchangeModel.fromJson(Map<String, dynamic> json) =>

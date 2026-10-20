@@ -54,6 +54,45 @@ extension IDOProtocolAPIExtSyncHealthData on IDOProtocolAPI {
     return bindings.stopSyncV3HealthData();
   }
 
+  /// 开关数据同步可靠缓存（默认关闭）
+  int setReliableCacheEnable({required bool enable}) {
+    return bindings.setReliableCacheEnable(enable ? 1 : 0);
+  }
+
+  /// 可靠缓存是否已开启
+  bool isReliableCacheEnabled() {
+    return bindings.isReliableCacheEnabled() != 0;
+  }
+
+  /// 消费一条已成功接收的可靠缓存记录（删除本地副本）
+  ///
+  /// 按条：传完整年月日时分秒；按天：时分秒传 0。
+  /// 返回 0 成功；5 未找到；其它失败。
+  int consumeReliableCacheRecord({
+    required int dataType,
+    required int year,
+    required int month,
+    required int day,
+    int hour = 0,
+    int minute = 0,
+    int second = 0,
+  }) {
+    return bindings.consumeReliableCacheRecord(
+      dataType,
+      year,
+      month,
+      day,
+      hour,
+      minute,
+      second,
+    );
+  }
+
+  /// 清理全部可靠缓存（不依赖开关）
+  int clearReliableCacheRecords() {
+    return bindings.clearReliableCacheRecords();
+  }
+
   /// 同步v3健康数据的自定义一项
   /// @param data_type 数据同步类型
   /// 1 同步血氧

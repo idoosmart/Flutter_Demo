@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:archive/archive_io.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as path;
 import 'package:native_channel/native_channel.dart';
 import 'package:protocol_core/protocol_core.dart';
@@ -45,6 +47,8 @@ class FileTask extends BaseTask {
       _cancelSilfi();
     } else if (_isNordicOta()) {
       _cancelNordic();
+    } else if (_isActionsOta()) {
+      _cancelActions();
     } else {
       _cancelNormal();
     }
@@ -74,6 +78,8 @@ extension _FileTask on FileTask {
       return _execSilfi();
     } else if (_isNordicOta()) {
       return _execNordic();
+    } else if (_isActionsOta()) {
+      return _execActions();
     } else {
       return _execNormal();
     }
@@ -139,6 +145,14 @@ extension _FileTask on FileTask {
   bool _isNordicOta() {
     // 1: Nordic Zephyr DFU
     if (fileTranItem.platform == 1 && fileTranItem.dataType == FileTranDataType.fw) {
+      return true;
+    }
+    return false;
+  }
+
+  bool _isActionsOta() {
+    // 91: 炬芯 Actions OTA
+    if (fileTranItem.platform == 91 && fileTranItem.dataType == FileTranDataType.fw) {
       return true;
     }
     return false;
@@ -451,6 +465,11 @@ extension _FileTaskSilfi on FileTask {
 
       // 解压文件
       await _unzipFile(fileTranItem.filePath, tmpDir);
+
+      if (_isSilfiCanceledOrCompleted()) {
+        return _completer!.future;
+      }
+
       // 兼容多级目录情况，找到bin文件所在的目录并返回
       final fileList = await _getDirFiles(tmpDir);
       if (fileList == null || fileList.isEmpty) {
@@ -519,19 +538,23 @@ extension _FileTaskSilfi on FileTask {
     return _completer!.future;
   }
 
+  bool _isSilfiCanceledOrCompleted() {
+    return _status == TaskStatus.canceled || (_completer?.isCompleted ?? false);
+  }
+
   Future<void> _unzipFile(String zipFilePath, String targetDir) async {
-    final dir = Directory(targetDir);
     await _removeDir(targetDir);
-    await dir.create(recursive: true);
-    final inputStream = InputFileStream(zipFilePath);
-    final archive = ZipDecoder().decodeBuffer(inputStream);
+    await Directory(targetDir).create(recursive: true);
+
+    await compute(
+      _silfiUnzipInIsolate,
+      _SilfiUnzipArgs(zipFilePath, targetDir),
+    ).timeout(
+      const Duration(seconds: 60),
+      onTimeout: () => throw TimeoutException('silfi unzip timeout'),
+    );
+
     logger?.d('silfi - unzip $zipFilePath \n\t to $targetDir');
-    await extractArchiveToDisk(archive, targetDir);
-    // 目标目录为空，记录日志
-    if (dir.listSync().isEmpty) {
-      logger?.e(
-          'silfi - error: The file is too small, and an exception may exist.');
-    }
   }
 
   /// 删除指定目录
@@ -676,5 +699,123 @@ extension _FileTaskNordic on FileTask {
     }
 
     return future;
+  }
+}
+
+/// Actions OTA（OTA文件传输，platform=91）
+extension _FileTaskActions on FileTask {
+  _cancelActions() {
+    logger?.d('actions - stop OTA');
+    _coreMgr.actionsChannel?.actionsHost.stopOTA();
+    if (_completer != null && !_completer!.isCompleted) {
+      statusCallback(ErrorCode.failed, 0);
+      _status = TaskStatus.finished;
+      final res = CmdResponse(code: ErrorCode.failed, msg: "call stop OTA");
+      _completer?.complete(res);
+      _completer = null;
+    }
+  }
+
+  Future<CmdResponse> _execActions() async {
+    final future = _completer!.future;
+    try {
+      final file = File(fileTranItem.filePath);
+
+      if (!await file.exists()) {
+        logger?.e(
+            'actions - file not exists filePath:${fileTranItem.filePath}  fileName:${fileTranItem.fileName}');
+        _status = TaskStatus.stopped;
+        final res = CmdResponse(code: ErrorCode.failed, msg: 'actions - file not exists');
+        _completer!.complete(res);
+        return future;
+      }
+
+      if (fileTranItem.macAddress == null || fileTranItem.macAddress!.isEmpty) {
+        logger?.e('actions - macAddress/uuid is null or empty');
+        _status = TaskStatus.stopped;
+        final res = CmdResponse(code: ErrorCode.failed, msg: 'actions - macAddress/uuid is null');
+        _completer!.complete(res);
+        return future;
+      }
+
+      logger?.d("actions - 1");
+
+      _coreMgr.actionsChannel?.logBlock = (String logMsg) {
+        logger?.d("actions - native - $logMsg");
+      };
+
+      _coreMgr.actionsChannel?.stateBlock = (ActionsOTAState state, String errorMessage) {
+        logger?.d("actions - state:${state.toString()}  errorMessage:$errorMessage");
+        if (state == ActionsOTAState.completed) {
+          if (_completer != null && !_completer!.isCompleted) {
+            statusCallback(ErrorCode.success, 0);
+            _status = TaskStatus.finished;
+            final res = CmdResponse(code: ErrorCode.success, msg: 'OTA completed');
+            _completer?.complete(res);
+            _completer = null;
+          }
+        } else if (state == ActionsOTAState.failed) {
+          if (_completer != null && !_completer!.isCompleted) {
+            statusCallback(ErrorCode.failed, 0);
+            _status = TaskStatus.finished;
+            final res = CmdResponse(code: ErrorCode.failed, msg: errorMessage);
+            _completer?.complete(res);
+            _completer = null;
+          }
+        } else if (state == ActionsOTAState.cancelled) {
+          if (_completer != null && !_completer!.isCompleted) {
+            statusCallback(ErrorCode.canceled, 0);
+            _status = TaskStatus.finished;
+            final res = CmdResponse(code: ErrorCode.canceled, msg: 'OTA cancelled');
+            _completer?.complete(res);
+            _completer = null;
+          }
+        }
+      };
+
+      logger?.d("actions - 2");
+
+      _coreMgr.actionsChannel?.progressBlock = (double progress, String message) {
+        progressCallback(progress / 100.0);
+      };
+
+      logger?.d("actions - 3, ${Platform.isAndroid ? "macAddress: " : "uuid: "}${fileTranItem.macAddress}");
+
+      await _coreMgr.actionsChannel?.actionsHost.startOTA(
+        fileTranItem.macAddress!,
+        fileTranItem.filePath,
+      );
+    } catch (e) {
+      logger?.e("actions err - $e");
+      _status = TaskStatus.stopped;
+      if (_completer != null && !_completer!.isCompleted) {
+        final res = CmdResponse(code: ErrorCode.failed, msg: e.toString());
+        _completer!.complete(res);
+      }
+    }
+
+    return future;
+  }
+}
+
+class _SilfiUnzipArgs {
+  final String zipPath;
+  final String targetDir;
+
+  const _SilfiUnzipArgs(this.zipPath, this.targetDir);
+}
+
+Future<void> _silfiUnzipInIsolate(_SilfiUnzipArgs args) async {
+  InputFileStream? inputStream;
+  try {
+    inputStream = InputFileStream(args.zipPath);
+    final archive = ZipDecoder().decodeBuffer(inputStream);
+    await extractArchiveToDisk(archive, args.targetDir);
+    final dir = Directory(args.targetDir);
+    if (!dir.existsSync() || dir.listSync().isEmpty) {
+      throw ArchiveException('silfi unzip result empty');
+    }
+  } finally {
+    inputStream?.closeSync();
   }
 }

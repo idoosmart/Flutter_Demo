@@ -27,6 +27,9 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
   NordicChannelImpl? nordicChannel;
 
   @override
+  ActionsChannelImpl? actionsChannel;
+
+  @override
   bool isWriteStreamByte = false;
 
   /// 不使用队列且不需要响应的指令
@@ -276,7 +279,7 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
     if (!needKeepTransFileTask) {
       _queueTrans.dispose();
     }else{
-      logger?.d("platform is 97|98|99, needKeepTransFileTask is true, ignore queueTrans.dispose()");
+      logger?.d("platform is 1|91|98|99, needKeepTransFileTask is true, ignore queueTrans.dispose()");
     }
     _taskTool.cancelAll();
   }
@@ -420,6 +423,15 @@ class _IDOProtocolCoreManager implements IDOProtocolCoreManager {
       logger?.d("init nordic ota channel");
       nordicChannel = NordicChannelImpl();
       ApiNordicFlutter.setup(nordicChannel!);
+    }
+  }
+
+  @override
+  void initActionsChannel() {
+    if (actionsChannel == null) {
+      logger?.d("init actions ota channel");
+      actionsChannel = ActionsChannelImpl();
+      ApiActionsFlutter.setup(actionsChannel!);
     }
   }
 

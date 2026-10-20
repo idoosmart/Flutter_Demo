@@ -82,6 +82,8 @@ enum SyncJsonType {
   activityMerge,
   /// 宠物睡眠数据 (v3)
   petSleep,
+  /// 活动量数据 (v3，15.4.23)
+  activityAmount,
 }
 
 /// 同步类型 1:v2健康 2:v2多运动 3:v2 gps 4: v3数据
@@ -187,6 +189,9 @@ abstract class ErrorCode {
 
   ///空间整理中
   static const error_space_organization_ing = 25;
+
+  /// V3 健康同步可靠落盘失败（未向设备发 STOP；应重试同步并按时间键去重）
+  static const health_persist_fail = 28;
 
   // 以下为协议库扩展，非c库和固件定义
 

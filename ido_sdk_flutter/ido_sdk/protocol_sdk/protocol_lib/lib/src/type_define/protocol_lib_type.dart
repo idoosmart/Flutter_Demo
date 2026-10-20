@@ -169,6 +169,14 @@ class IDODeviceNotificationModel {
   /// 95 固件用户信息有更改, 通知app获取(0209)                
   /// 96 固件左右手佩戴设置有更改, 通知app获取(0223)          
   /// 97 手表通知APP智能模式
+  /// 98 表盘下载中（设备可独立安装）
+  /// 99 表盘安装中（设备可独立安装）
+  /// 100 表盘安装完成（设备可独立安装）
+  /// 101 表盘取消（设备可独立安装）
+  /// 102 小程序下载中（设备可独立安装）
+  /// 103 小程序安装中（设备可独立安装）
+  /// 104 小程序安装完成（设备可独立安装）
+  /// 105 小程序取消（设备可独立安装）
   /// 106 设备可独立升级 设备升级开始
   /// 107 设备可独立升级 设备升级中
   /// 108 设备可独立升级 设备升级结束
@@ -182,6 +190,16 @@ class IDODeviceNotificationModel {
   /// 116 心率开关状态变更通知
   /// 117 手表通知APP获取血糖数据
   /// 118  手表通知APP更新习惯养成奖励数量
+  /// 122 高心率预警，预警值见 parameter，单位：次/分
+  /// 123 低心率预警，预警值见 parameter，单位：次/分
+  /// 124 低血氧饱和度预警，预警值见 parameter，单位：%
+  /// 125 高压力预警，预警值见 parameter
+  /// 126 设备自动识别到的运动结束后通知，运动开始本地时间戳见 parameter，单位：秒
+  /// 127 APP 发起的运动中，设备识别到用户未在运动，通知 APP 询问是否结束运动；确认后调用结束运动
+  /// 130 固件有手机日历待删除事件；收到后查询待删事件列表（含 calendarId、eventId、startTime）
+  /// 131 药盒状态变化；收到后获取药盒状态并同步
+  /// 133 任务清单状态变化；读取 taskId、taskCompletStatus
+  /// 134 走动提醒；读取 walkReminderStatus、walkReminderGoalValue、walkReminderAchievedValue
   /// ```
   final int? dataType;
 
@@ -189,11 +207,29 @@ class IDODeviceNotificationModel {
   ///  16  勿擾模式获取 32 手机音量的下发
   final int? notifyType;
 
-  /// 每个消息对应一个ID
+  /// 每个消息对应一个ID（快速短信等场景）
   final int? msgId;
 
   ///  0 无效 1 自定义短信1（正在开会，稍后联系）2 自定义短信2
   final int? msgNotice;
+
+  /// 任务清单状态变化通知（`dataType == 133`）的任务 ID
+  final int? taskId;
+
+  /// 任务清单状态变化通知（`dataType == 133`）的完成状态：`0` 未完成 / `1` 已完成
+  final int? taskCompletStatus;
+
+  /// 走动提醒通知（`dataType == 134`）状态：`0` 未达成 / `1` 已达成
+  final int? walkReminderStatus;
+
+  /// 走动提醒通知（`dataType == 134`）目标值
+  final int? walkReminderGoalValue;
+
+  /// 走动提醒通知（`dataType == 134`）达成值
+  final int? walkReminderAchievedValue;
+
+  /// 携带数据（数字，Dart `int` / 原生 Long）：如 `dataType` 84、97、122～126 等；`98～105`、`127`、`130`、`131`、`133`、`134` 不使用本字段
+  final int? parameter;
 
   ///  01 ACC  加速度 02 PPG  心率 03 TP   触摸 04 FLASH
   ///  05 过热（PPG）06 气压 07 GPS 08 地磁
@@ -241,6 +277,12 @@ class IDODeviceNotificationModel {
       this.notifyType,
       this.msgId,
       this.msgNotice,
+      this.taskId,
+      this.taskCompletStatus,
+      this.walkReminderStatus,
+      this.walkReminderGoalValue,
+      this.walkReminderAchievedValue,
+      this.parameter,
       this.errorIndex,
       this.controlEvt,
       this.controlJson});
@@ -251,6 +293,12 @@ class IDODeviceNotificationModel {
       'notifyType': notifyType,
       'msgId': msgId,
       'msgNotice': msgNotice,
+      'taskId': taskId,
+      'taskCompletStatus': taskCompletStatus,
+      'walkReminderStatus': walkReminderStatus,
+      'walkReminderGoalValue': walkReminderGoalValue,
+      'walkReminderAchievedValue': walkReminderAchievedValue,
+      'parameter': parameter,
       'errorIndex': errorIndex,
       'controlEvt': controlEvt,
       'controlJson': controlJson,

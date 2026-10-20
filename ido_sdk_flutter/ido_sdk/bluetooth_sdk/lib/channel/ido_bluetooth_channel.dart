@@ -132,6 +132,11 @@ class IDOBluetoothChannel {
     }
   }
 
+  bool _uuidListContainsService(List<String> uuids, String serviceUuid) {
+    final target = serviceUuid.toLowerCase();
+    return uuids.any((e) => target.contains(e.toLowerCase()));
+  }
+
   /// 检查设备是否在 ota
   void _checkOtaService(Map arguments) {
     if (arguments.containsKey("servicesUUID")) {
@@ -140,20 +145,22 @@ class IDOBluetoothChannel {
           method: "_checkOtaService");
       bool isOta = isOtaWithServices(uuids);
       if (uuids.isNotEmpty) {
-        //包含思澈主服务，但不包含爱都主服务，处于 ota 模式中
-        bool containIdoMainService = uuids
-            .map((e) =>
-                idoMainServiceUUID.toLowerCase().contains(e.toLowerCase()))
-            .firstWhere((contain) => contain, orElse: () => false);
+        // 不含爱都主服务时，检测思澈 / Actions OTA 服务
+        final containIdoMainService =
+            _uuidListContainsService(uuids, idoMainServiceUUID);
         print("是否包含爱都服务：$containIdoMainService");
         if (!containIdoMainService) {
-          isOta = uuids
-              .map((e) =>
-                  siceMainService.toLowerCase().contains(e.toLowerCase()))
-              .firstWhere((contain) => contain, orElse: () => false);
-          if (isOta) {
+          final containSice = _uuidListContainsService(uuids, siceMainService);
+          final containActions =
+              _uuidListContainsService(uuids, actionsOtaServiceUUID);
+          isOta = isOta || containSice || containActions;
+          if (containSice) {
             print("思澈 ota 中");
             bluetoothManager.addLog("思澈98平台ota模式", method: "_checkOtaService");
+          }
+          if (containActions) {
+            print("炬芯 Actions ota 中");
+            bluetoothManager.addLog("炬芯 Actions ota模式", method: "_checkOtaService");
           }
         }
       }

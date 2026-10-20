@@ -15,6 +15,7 @@ IDOAppStartExchangeModel _$IDOAppStartExchangeModelFromJson(
       vo2max: (json['vo2max'] as num?)?.toInt(),
       recoverTime: (json['recover_time'] as num?)?.toInt(),
       avgWeekActivityTime: (json['avg_week_activity_time'] as num?)?.toInt(),
+      swimPoolDistance: (json['swim_pool_distance'] as num?)?.toDouble(),
     )
       ..day = (json['day'] as num?)?.toInt()
       ..hour = (json['hour'] as num?)?.toInt()
@@ -36,6 +37,7 @@ Map<String, dynamic> _$IDOAppStartExchangeModelToJson(
       'vo2max': instance.vo2max,
       'recover_time': instance.recoverTime,
       'avg_week_activity_time': instance.avgWeekActivityTime,
+      'swim_pool_distance': instance.swimPoolDistance,
     };
 
 IDOAppStartReplyExchangeModel _$IDOAppStartReplyExchangeModelFromJson(
@@ -339,6 +341,14 @@ IDOAppIngV3ReplyExchangeModel _$IDOAppIngV3ReplyExchangeModelFromJson(
       countHour: (json['count_hour'] as num?)?.toInt(),
       countMinute: (json['count_minute'] as num?)?.toInt(),
       countSecond: (json['count_second'] as num?)?.toInt(),
+      totalSwingsNum: (json['total_swings_num'] as num?)?.toInt(),
+      totalSitUpCount: (json['total_sit_up_count'] as num?)?.toInt(),
+      totalRopeCount: (json['total_rope_count'] as num?)?.toInt(),
+      cumulativeClimb: (json['cumulative_altitude_rise'] as num?)?.toInt(),
+      cumulativeDecline: (json['cumulative_altitude_loss'] as num?)?.toInt(),
+      gpsStatus: (json['gps_status'] as num?)?.toInt(),
+      avgSpeed: (json['avg_speed'] as num?)?.toInt(),
+      trips: (json['trips'] as num?)?.toInt(),
     )
       ..day = (json['day'] as num?)?.toInt()
       ..hour = (json['hour'] as num?)?.toInt()
@@ -371,6 +381,14 @@ Map<String, dynamic> _$IDOAppIngV3ReplyExchangeModelToJson(
       'count_hour': instance.countHour,
       'count_minute': instance.countMinute,
       'count_second': instance.countSecond,
+      'total_swings_num': instance.totalSwingsNum,
+      'total_sit_up_count': instance.totalSitUpCount,
+      'total_rope_count': instance.totalRopeCount,
+      'cumulative_altitude_rise': instance.cumulativeClimb,
+      'cumulative_altitude_loss': instance.cumulativeDecline,
+      'gps_status': instance.gpsStatus,
+      'avg_speed': instance.avgSpeed,
+      'trips': instance.trips,
     };
 
 IDOActivitySwimmingLapItem _$IDOActivitySwimmingLapItemFromJson(
@@ -385,6 +403,7 @@ IDOActivitySwimmingLapItem _$IDOActivitySwimmingLapItemFromJson(
       pace: (json['pace'] as num?)?.toInt(),
       stopTime: (json['stop_time'] as num?)?.toInt(),
       differenceTime: (json['difference_time'] as num?)?.toInt(),
+      avgHr: (json['avg_hr'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$IDOActivitySwimmingLapItemToJson(
@@ -399,6 +418,7 @@ Map<String, dynamic> _$IDOActivitySwimmingLapItemToJson(
       'pace': instance.pace,
       'stop_time': instance.stopTime,
       'difference_time': instance.differenceTime,
+      'avg_hr': instance.avgHr,
     };
 
 IDOActivityRopeSkipItem _$IDOActivityRopeSkipItemFromJson(
@@ -578,9 +598,18 @@ IDOAppActivityDataV3ExchangeModel _$IDOAppActivityDataV3ExchangeModelFromJson(
       userImageId: (json['user_image_id'] as num?)?.toInt(),
       bgImageId: (json['bg_image_id'] as num?)?.toInt(),
       smartCompetitorPace: (json['smart_competitor_pace'] as num?)?.toInt(),
-      tennisServeCount: (json['tennis_serve_count'] as num?)?.toInt(),
-      tennisForeheadCount: (json['tennis_forehead_count'] as num?)?.toInt(),
-      tennisBackhandCount: (json['tennis_backhand_count'] as num?)?.toInt(),
+      tennisServeCount: (json['tennis_serve_count'] as num?)?.toInt() ??
+          (json['serve_count'] as num?)?.toInt(),
+      tennisForeheadCount: (json['tennis_forehead_count'] as num?)?.toInt() ??
+          (json['forehand_count'] as num?)?.toInt(),
+      tennisBackhandCount: (json['tennis_backhand_count'] as num?)?.toInt() ??
+          (json['backhand_count'] as num?)?.toInt(),
+      serveCount: (json['serve_count'] as num?)?.toInt() ??
+          (json['tennis_serve_count'] as num?)?.toInt(),
+      forehandCount: (json['forehand_count'] as num?)?.toInt() ??
+          (json['tennis_forehead_count'] as num?)?.toInt(),
+      backhandCount: (json['backhand_count'] as num?)?.toInt() ??
+          (json['tennis_backhand_count'] as num?)?.toInt(),
       trips: (json['trips'] as num?)?.toInt(),
       averageSwolf: (json['average_swolf'] as num?)?.toInt(),
       totalStrokesNumber: (json['total_strokes_number'] as num?)?.toInt(),
@@ -740,6 +769,9 @@ Map<String, dynamic> _$IDOAppActivityDataV3ExchangeModelToJson(
       'tennis_serve_count': instance.tennisServeCount,
       'tennis_forehead_count': instance.tennisForeheadCount,
       'tennis_backhand_count': instance.tennisBackhandCount,
+      'serve_count': instance.serveCount,
+      'forehand_count': instance.forehandCount,
+      'backhand_count': instance.backhandCount,
       'trips': instance.trips,
       'average_swolf': instance.averageSwolf,
       'total_strokes_number': instance.totalStrokesNumber,
