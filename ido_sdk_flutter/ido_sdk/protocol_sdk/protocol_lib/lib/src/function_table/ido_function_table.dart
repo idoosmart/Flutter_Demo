@@ -1701,6 +1701,10 @@ class BaseFunctionTable {
   /// 支持情绪健康
   bool get supportEmotionHealth => ft?.supportEmotionHealth ?? false;
 
+  /// 支持APP发起的运动，暂停后需要继续获取运动中数据
+  bool get supportGetContinuedSportData =>
+      ft?.supportGetContinuedSportData ?? false;
+
   /// 支持v3同步通讯录版本20
   bool get supportV3SyncContactVersion20 =>
       ft?.v3SupportSyncContactVersion20 ?? false;

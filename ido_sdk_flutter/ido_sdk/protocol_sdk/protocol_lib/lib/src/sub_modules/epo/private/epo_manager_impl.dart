@@ -174,7 +174,7 @@ extension _IDOEPOManagerPrivate on _IDOEPOManager {
     }
 
     if (_isSupported() == false) {
-      debugPrint("libManager.deviceInfo: ${libManager.deviceInfo.toJson()}");
+      //debugPrint("libManager.deviceInfo: ${libManager.deviceInfo.toJson()}");
       logger?.i(
           'OTA: 功能表不支持EPO ${libManager.funTable.setAirohaGpsChip} ${libManager.funTable.syncGps}  ${libManager.funTable.syncV3Gps} ${libManager.deviceInfo.gpsPlatform}');
       return false;

@@ -5,9 +5,9 @@ class _IDOProtocolLibManager
   static const _pathStorageC = 'c_files';
   static const _pathStorageLib = 'protocol_lib';
   static const _pathStorageLog = 'logs';
-  // 最后修改时间: 2026-10-20 09:10:39
-  static const _sdkVersion = '4.2.13';
-  static const _sdkBuildNum = '6AD6BF8F';
+  // 最后修改时间: 2026-10-21 17:43:24
+  static const _sdkVersion = '4.2.14';
+  static const _sdkBuildNum = '6AD8893C';
 
   static bool _outputToConsoleClib = false;
   static bool _isReleaseClib = true;
